@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PayerSub - O'yin Valyutasi</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background-color: #0f172a; 
+            color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .game-card { 
+            background: #1e293b; 
+            transition: transform 0.1s;
+            border: 1px solid #334155;
+        }
+        .game-card:active { 
+            transform: scale(0.95); 
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+
+    <!-- Header -->
+    <div class="p-4 flex items-center justify-between bg-slate-900 sticky top-0 z-10 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-lg" id="avatar">P</div>
+            <div>
+                <p class="text-xs text-slate-400">Salom 👋</p>
+                <p class="font-bold" id="username">Yuklanmoqda...</p>
+            </div>
+        </div>
+        <button class="bg-slate-800 p-2 rounded-lg text-xl">🌙</button>
+    </div>
+
+    <!-- Balans -->
+    <div class="p-4">
+        <div class="gradient-bg p-5 rounded-2xl shadow-lg">
+            <p class="text-sm text-purple-100 font-medium">UMUMIY BALANS</p>
+            <p class="text-3xl font-bold mt-1">0 <span class="text-lg text-purple-200">so'm</span></p>
+            <button class="mt-4 bg-white text-purple-600 px-6 py-2.5 rounded-xl font-bold text-sm w-full">
+                ➕ Balansni to'ldirish
+            </button>
+        </div>
+    </div>
+
+    <!-- Promokod va Yordam -->
+    <div class="px-4 grid grid-cols-2 gap-3 mb-4">
+        <button class="bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-700">
+            <span class="text-2xl">️</span>
+            <span class="font-medium text-sm">Promokodlar</span>
+        </button>
+        <button class="bg-slate-800 p-3 rounded-xl flex items-center gap-2 border border-slate-700">
+            <span class="text-2xl">🎧</span>
+            <span class="font-medium text-sm">Yordam</span>
+        </button>
+    </div>
+
+    <!-- Banner -->
+    <div class="px-4 mb-4">
+        <div class="bg-gradient-to-r from-purple-900 to-indigo-900 rounded-2xl p-6 relative overflow-hidden border border-purple-700">
+            <div class="relative z-10">
+                <h3 class="text-2xl font-bold mb-1">ENG TEZ</h3>
+                <h3 class="text-3xl font-bold text-purple-300 mb-2">ARZON UC</h3>
+                <p class="text-sm opacity-80">XIZMATIMIZ</p>
+            </div>
+            <div class="absolute right-0 top-0 w-32 h-32 bg-purple-500 rounded-full opacity-20 -mr-10 -mt-10"></div>
+        </div>
+    </div>
+
+    <!-- O'yinlar -->
+    <div class="px-4">
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="font-bold text-lg">🔥 Ommabop o'yinlar</h2>
+            <button class="text-purple-400 font-medium text-sm">Barchasi →</button>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-3" id="games-grid">
+            <!-- JavaScript orqali to'ldiriladi -->
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-2 z-20">
+        <div class="flex justify-around">
+            <button class="flex flex-col items-center gap-1 p-2 text-purple-400">
+                <span class="text-2xl">🏠</span>
+                <span class="text-xs font-medium">Asosiy</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-slate-400">
+                <span class="text-2xl">🎮</span>
+                <span class="text-xs">O'yinlar</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-slate-400">
+                <span class="text-2xl">💳</span>
+                <span class="text-xs">To'ldirish</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-slate-400">
+                <span class="text-2xl">📦</span>
+                <span class="text-xs">Buyurtmalar</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-slate-400">
+                <span class="text-2xl">👤</span>
+                <span class="text-xs">Profil</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Web App ni ishga tushirish
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#0f172a');
+        tg.setBackgroundColor('#0f172a');
+
+        // Foydalanuvchi ma'lumotlarini olish
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('username').innerText = user.first_name;
+            document.getElementById('avatar').innerText = user.first_name[0].toUpperCase();
+        }
+
+        // O'yinlar ro'yxati
+        const games = [
+            { name: 'PUBG Mobile', icon: '' },
+            { name: 'Free Fire', icon: '🔥' },
+            { name: 'Mobile Legends', icon: '⚔️' },
+            { name: 'Honor of Kings', icon: '👑' },
+            { name: 'Stand Off 2', icon: '🔫' },
+            { name: 'Steam', icon: '🎮' },
+            { name: 'Telegram Stars', icon: '⭐' },
+            { name: 'Brawl Stars', icon: '💥' },
+            { name: 'Clash Royale', icon: '🏰' }
+        ];
+
+        // O'yinlarni ko'rsatish
+        const grid = document.getElementById('games-grid');
+        games.forEach(game => {
+            const card = document.createElement('div');
+            card.className = 'game-card p-3 rounded-xl flex flex-col items-center gap-2 cursor-pointer';
+            card.innerHTML = `
+                <div class="text-3xl">${game.icon}</div>
+                <span class="text-xs font-medium text-center leading-tight">${game.name}</span>
+            `;
+            card.onclick = () => {
+                tg.showAlert(`${game.name} - tez orada qo'shiladi!`);
+            };
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+  </html>
