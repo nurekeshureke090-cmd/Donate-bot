@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PayerSub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background-color: #f3f4f6; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
+.page { display: none; padding-bottom: 80px; }
+.page.active { display: block; }
+.game-card { background: white; transition: all 0.2s; border: 1px solid #e5e7eb; }
+.game-card:active { transform: scale(0.95); }
+.game-img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; }
+.gradient-bg { background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); }
+.nav-btn { transition: all 0.2s; color: #9ca3af; }
+.nav-btn.active { color: #8b5cf6; }
+.nav-btn.active svg { fill: #8b5cf6; }
+.pack-card { background: white; border: 1px solid #e5e7eb; transition: all 0.2s; border-radius: 12px; }
+.pack-card:active { border-color: #8b5cf6; background: #f9fafb; }
+.pack-card.selected { border-color: #8b5cf6; background: #f3e8ff; }
+.profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; margin: 0 auto; color: white; }
+.tab-btn { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; transition: all 0.2s; border: none; cursor: pointer; }
+.tab-btn.active { background: #8b5cf6; color: white; }
+.tab-btn:not(.active) { background: #f3f4f6; color: #6b7280; }
+.game-banner { height: 180px; background-size: cover; background-position: center; position: relative; }
+.game-banner::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+.rating-badge { background: white; padding: 4px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ASOSIY SAHIFA -->
+<div id="page-home" class="page active">
+<div class="p-4 flex items-center justify-between bg-white sticky top-0 z-10 border-b border-gray-200">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-xl text-white" id="avatar">P</div>
+<div>
+<p class="text-xs text-gray-500">Salom 👋</p>
+<p class="font-bold text-lg text-gray-900" id="username">Yuklanmoqda...</p>
+</div>
+</div>
+<button class="bg-gray-100 p-2 rounded-lg text-xl">🌙</button>
+</div>
+
+<div class="p-4">
+<div class="gradient-bg p-5 rounded-2xl shadow-lg">
+<p class="text-sm text-purple-100 font-medium">UMUMIY BALANS</p>
+<p class="text-3xl font-bold mt-1 text-white" id="user-balance">0 <span class="text-lg text-purple-200">so'm</span></p>
+<button onclick="navigateTo('topup')" class="mt-4 bg-white text-purple-600 px-6 py-2.5 rounded-xl font-bold text-sm w-full"> Balansni to'ldirish</button>
+</div>
+</div>
+
+<div class="px-4 grid grid-cols-2 gap-3 mb-4">
+<button class="bg-white p-3 rounded-xl flex items-center justify-center gap-2 border border-gray-200"><span class="text-2xl">🎫</span><span class="font-medium text-sm text-gray-700">Promokodlar</span></button>
+<button class="bg-white p-3 rounded-xl flex items-center justify-center gap-2 border border-gray-200"><span class="text-2xl">🎧</span><span class="font-medium text-sm text-gray-700">Yordam</span></button>
+</div>
+
+<div class="px-4 mb-4">
+<div class="bg-gradient-to-r from-purple-900 to-indigo-900 rounded-2xl p-6 relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-2xl font-bold mb-1 text-white">ENG TEZ</h3>
+<h3 class="text-3xl font-bold text-purple-300 mb-2">ARZON UC</h3>
+<p class="text-sm opacity-80 text-white">XIZMATIMIZ</p>
+</div>
+</div>
+</div>
+
+<div class="px-4">
+<div class="flex justify-between items-center mb-3">
+<h2 class="font-bold text-lg text-gray-900"> Ommabop o'yinlar</h2>
+<button onclick="navigateTo('games')" class="text-purple-600 font-medium text-sm">Barchasi →</button>
+</div>
+<div class="grid grid-cols-3 gap-3" id="popular-games"></div>
+</div>
+</div>
+
+<!-- O'YINLAR SAHIFASI -->
+<div id="page-games" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10">
+<h1 class="text-xl font-bold text-gray-900">Barcha o'yinlar</h1>
+<input type="text" placeholder="O'yin qidirish..." class="mt-3 w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900" oninput="searchGames(this.value)">
+</div>
+<div class="p-4 grid grid-cols-3 gap-3" id="all-games"></div>
+</div>
+
+<!-- O'YIN DETAIL SAHIFA -->
+<div id="page-game-detail" class="page">
+<div class="game-banner" id="game-banner">
+<button onclick="navigateTo('home')" class="absolute top-4 left-4 bg-black/50 p-2 rounded-full text-white z-10">←</button>
+<div class="absolute bottom-4 left-4 z-10">
+<h1 class="text-2xl font-bold text-white" id="detail-name">O'yin</h1>
+<div class="rating-badge mt-2">
+<span class="text-yellow-500">⭐</span>
+<span class="text-gray-700" id="detail-rating">5 · 1020</span>
+</div>
+</div>
+</div>
+
+<!-- PUBG Mobile uchun tab'lar -->
+<div id="pubg-tabs" class="p-4 hidden">
+<div class="flex gap-2 mb-4">
+<button class="tab-btn active" id="tab-uc" onclick="switchTab('uc')">🟡 UC</button>
+<button class="tab-btn" id="tab-prime" onclick="switchTab('prime')"> Prime</button>
+</div>
+<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+<div id="packages-list" class="grid grid-cols-2 gap-3"></div>
+<button onclick="buyPackage()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+</div>
+
+<!-- Brawl Stars uchun -->
+<div id="brawl-tabs" class="p-4 hidden">
+<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+<div id="brawl-packages-list" class="grid grid-cols-2 gap-3"></div>
+<button onclick="buyPackage()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+</div>
+
+<!-- Steam uchun -->
+<div id="steam-form" class="p-4 hidden">
+<div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl mb-4">
+<div class="flex justify-center mb-4">
+<div class="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center">
+<span class="text-5xl"></span>
+</div>
+</div>
+<h3 class="text-white text-xl font-bold text-center mb-4">Steam hamyonini to'ldiring</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-slate-700/50 p-3 rounded-xl">
+<p class="text-white font-bold">Xavfsiz to'lov</p>
+<p class="text-gray-400 text-xs">Himoyalangan</p>
+</div>
+<div class="bg-slate-700/50 p-3 rounded-xl">
+<p class="text-white font-bold">Tezkor</p>
+<p class="text-gray-400 text-xs">Darhol qo'shiladi</p>
+</div>
+</div>
+</div>
+
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-2">Steam akkauntingizni kiriting</label>
+<input type="text" id="steam-login" placeholder="Steam loginingizni kiriting" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm">
+</div>
+
+<div class="bg-purple-50 p-4 rounded-xl mb-4 border border-purple-200">
+<div class="flex items-center gap-3">
+<span class="text-3xl">💲</span>
+<div>
+<p class="text-sm text-gray-500">Joriy kurs</p>
+<p class="text-lg font-bold text-purple-600">1$ = 12 250 so'm</p>
+</div>
+</div>
+</div>
+
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-2">Summa ($)</label>
+<input type="number" id="steam-amount" placeholder="Masalan: 10" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm" oninput="calculateSteamPrice()">
+</div>
+
+<div class="bg-gray-100 p-4 rounded-xl mb-4">
+<p class="text-sm text-gray-500">To'lov summasi:</p>
+<p class="text-2xl font-bold text-gray-900" id="steam-total">0 so'm</p>
+</div>
+
+<button onclick="buySteam()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Keyingisi</button>
+</div>
+
+<!-- Boshqa o'yinlar uchun standart -->
+<div id="default-packages" class="p-4 hidden">
+<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+<div id="default-packages-list" class="grid grid-cols-2 gap-3"></div>
+<button onclick="buyPackage()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+</div>
+</div>
+
+<!-- BALANS TO'LDIRISH -->
+<div id="page-topup" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center gap-3">
+<button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button>
+<h1 class="text-xl font-bold text-gray-900">Balansni to'ldirish</h1>
+</div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl mb-4 border border-gray-200">
+<p class="text-sm text-gray-500">Hozirgi balans</p>
+<p class="text-2xl font-bold text-gray-900" id="topup-balance">0 so'm</p>
+</div>
+<div class="space-y-3">
+<button onclick="showAlert('Click tez orada!')" class="w-full bg-blue-500 p-4 rounded-xl flex items-center gap-3">
+<span class="text-3xl">💳</span>
+<div class="text-left"><p class="font-bold text-lg text-white">Click</p><p class="text-sm text-blue-100">Tez va qulay</p></div>
+</button>
+<button onclick="showAlert('Payme tez orada!')" class="w-full bg-purple-500 p-4 rounded-xl flex items-center gap-3">
+<span class="text-3xl">💰</span>
+<div class="text-left"><p class="font-bold text-lg text-white">Payme</p><p class="text-sm text-purple-100">Onlayn to'lov</p></div>
+</button>
+</div>
+</div>
+</div>
+
+<!-- BUYURTMALAR -->
+<div id="page-orders" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10">
+<h1 class="text-xl font-bold text-gray-900">Buyurtmalarim</h1>
+</div>
+<div class="p-4">
+<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200">
+<p class="text-5xl mb-3">📦</p>
+<p class="font-medium">Buyurtmalar yo'q</p>
+<p class="text-sm mt-2">O'yin valyutasi sotib olganingizdan keyin shu yerda ko'rinadi</p>
+</div>
+</div>
+</div>
+
+<!-- ADMIN PANEL SAHIFASI -->
+<div id="page-admin" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10">
+<h1 class="text-xl font-bold text-gray-900">🛠️ Admin Panel</h1>
+</div>
+<div class="p-4">
+<div class="grid grid-cols-2 gap-3 mb-4">
+<div class="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-xl text-white">
+<p class="text-xs opacity-80">Foydalanuvchilar</p>
+<p class="text-2xl font-bold" id="admin-users-count">0</p>
+</div>
+<div class="bg-gradient-to-br from-blue-500 to-cyan-500 p-4 rounded-xl text-white">
+<p class="text-xs opacity-80">Buyurtmalar</p>
+<p class="text-2xl font-bold" id="admin-orders-count">0</p>
+</div>
+<div class="bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-xl text-white">
+<p class="text-xs opacity-80">Daromad</p>
+<p class="text-2xl font-bold" id="admin-revenue">0</p>
+</div>
+<div class="bg-gradient-to-br from-orange-500 to-red-500 p-4 rounded-xl text-white">
+<p class="text-xs opacity-80">Balanslar</p>
+<p class="text-2xl font-bold" id="admin-total-balance">0</p>
+</div>
+</div>
+<div class="space-y-3">
+<button onclick="showUsersList()" class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">👥</span><span class="font-medium text-gray-900">Foydalanuvchilar</span></span>
+<span class="text-gray-400">→</span>
+</button>
+<button onclick="showOrdersList()" class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">📦</span><span class="font-medium text-gray-900">Buyurtmalar</span></span>
+<span class="text-gray-400">→</span>
+</button>
+<button onclick="showAddBalanceForm()" class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">💰</span><span class="font-medium text-gray-900">Balans qo'shish</span></span>
+<span class="text-gray-400">→</span>
+</button>
+<button onclick="showSettings()" class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">⚙️</span><span class="font-medium text-gray-900">Sozlamalar</span></span>
+<span class="text-gray-400">→</span>
+</button>
+</div>
+</div>
+</div>
+
+<!-- FOYDALANUVCHILAR RO'YXATI -->
+<div id="page-users-list" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center gap-3">
+<button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button>
+<h1 class="text-xl font-bold text-gray-900">Foydalanuvchilar</h1>
+</div>
+<div class="p-4">
+<input type="text" placeholder="ID yoki ism bo'yicha qidirish..." class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm mb-4" oninput="searchUsers(this.value)">
+<div id="users-list-container" class="space-y-3"></div>
+</div>
+</div>
+
+<!-- BUYURTMALAR RO'YXATI -->
+<div id="page-orders-list" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center gap-3">
+<button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button>
+<h1 class="text-xl font-bold text-gray-900">Buyurtmalar</h1>
+</div>
+<div class="p-4">
+<div id="orders-list-container" class="space-y-3"></div>
+</div>
+</div>
+
+<!-- BALANS QO'SHISH FORMASI -->
+<div id="page-add-balance" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center gap-3">
+<button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button>
+<h1 class="text-xl font-bold text-gray-900">Balans qo'shish</h1>
+</div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Foydalanuvchi ID</label>
+<input type="number" id="add-balance-user-id" placeholder="Masalan: 8467707826" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm">
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-2">Summa (so'm)</label>
+<input type="number" id="add-balance-amount" placeholder="Masalan: 50000" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm">
+</div>
+<button onclick="addBalanceToUser()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Qo'shish</button>
+</div>
+</div>
+</div>
+
+<!-- SOZLAMALAR -->
+<div id="page-settings" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center gap-3">
+<button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button>
+<h1 class="text-xl font-bold text-gray-900">Sozlamalar</h1>
+</div>
+<div class="p-4 space-y-3">
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<p class="font-bold text-gray-900 mb-2">Admin ID</p>
+<p class="text-gray-600" id="settings-admin-id">8467707826</p>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<p class="font-bold text-gray-900 mb-2">Bot Token</p>
+<p class="text-gray-600 text-sm">8914170959:AAEXGpAD0fIFWMV6S-***</p>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<p class="font-bold text-gray-900 mb-2">MongoDB</p>
+<p class="text-gray-600 text-sm">Ulangan ✅</p>
+</div>
+<button onclick="showAlert('Tez orada!')" class="w-full bg-red-500 py-3 rounded-xl font-bold text-white">Botni qayta ishga tushirish</button>
+</div>
+</div>
+
+<!-- PROFIL -->
+<div id="page-profile" class="page">
+<div class="p-4 bg-white border-b border-gray-200 sticky top-0 z-10">
+<h1 class="text-xl font-bold text-gray-900">Profil</h1>
+</div>
+<div class="p-4">
+<div class="profile-avatar mb-4" id="profile-avatar">P</div>
+<h2 class="text-2xl font-bold text-center mb-1 text-gray-900" id="profile-name">Foydalanuvchi</h2>
+<p class="text-gray-500 text-center mb-6" id="profile-username">@username</p>
+<div class="space-y-3">
+<div class="bg-white p-4 rounded-xl flex items-center gap-3 border border-gray-200">
+<span class="text-2xl">🆔</span>
+<div><p class="text-sm text-gray-500">Telegram ID</p><p class="font-bold text-gray-900" id="profile-id">-</p></div>
+</div>
+<div class="bg-white p-4 rounded-xl flex items-center gap-3 border border-gray-200">
+<span class="text-2xl">💰</span>
+<div><p class="text-sm text-gray-500">Balans</p><p class="font-bold text-purple-600" id="profile-balance">0 so'm</p></div>
+</div>
+<div class="bg-white p-4 rounded-xl flex items-center gap-3 border border-gray-200">
+<span class="text-2xl">📅</span>
+<div><p class="text-sm text-gray-500">Ro'yxatdan o'tgan</p><p class="font-bold text-gray-900">1 Oktyabr 2026</p></div>
+</div>
+</div>
+<div class="mt-6 space-y-3">
+<button class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">⚙️</span><span class="font-medium text-gray-900">Sozlamalar</span></span>
+<span class="text-gray-400">→</span>
+</button>
+<button class="w-full bg-white p-4 rounded-xl flex items-center justify-between border border-gray-200">
+<span class="flex items-center gap-3"><span class="text-2xl">❓</span><span class="font-medium text-gray-900">Yordam</span></span>
+<span class="text-gray-400">→</span>
+</button>
+</div>
+</div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-20">
+<div class="flex justify-around" id="bottom-nav">
+<button onclick="navigateTo('home')" class="nav-btn active flex flex-col items-center gap-1 p-2" data-page="home">
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+<span class="text-xs">Asosiy</span>
+</button>
+<button onclick="navigateTo('games')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="games">
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M13 7h4v2h-4V7zM3 7h4v2H3V7zm10 6h4v2h-4v-2zM3 13h4v2H3v-2z"/></svg>
+<span class="text-xs">O'yinlar</span>
+</button>
+<button onclick="navigateTo('topup')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="topup">
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+<span class="text-xs">To'ldirish</span>
+</button>
+<button onclick="navigateTo('orders')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="orders">
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+<span class="text-xs">Buyurtmalar</span>
+</button>
+<button onclick="navigateTo('profile')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="profile">
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+<span class="text-xs">Profil</span>
+</button>
+</div>
+  </div><script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.setHeaderColor('#ffffff');
+tg.setBackgroundColor('#f3f4f6');
+
+const user = tg.initDataUnsafe?.user;
+let currentUser = { id: 0, name: '', balance: 0 };
+let selectedGame = null;
+let selectedPackage = null;
+let currentTab = 'uc';
+let currentGameType = 'default';
+let isAdmin = false;
+const ADMIN_ID = 8467707826;
+
+const games = [
+{ id: 1, name: 'PUBG Mobile', currency: 'UC', popular: true, icon: '🎯', color: 'from-yellow-500 to-orange-600', banner: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800', rating: '5 · 1020' },
+{ id: 2, name: 'Free Fire', currency: 'Diamonds', popular: true, icon: '🔥', color: 'from-red-500 to-orange-500', banner: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800', rating: '4.9 · 856' },
+{ id: 3, name: 'Mobile Legends', currency: 'Diamonds', popular: true, icon: '️', color: 'from-blue-500 to-purple-600', banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', rating: '4.8 · 720' },
+{ id: 4, name: 'Honor of Kings', currency: 'Coins', popular: true, icon: '👑', color: 'from-yellow-400 to-red-500', banner: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800', rating: '4.7 · 650' },
+{ id: 5, name: 'Stand Off 2', currency: 'Gold', popular: true, icon: '🔫', color: 'from-gray-600 to-gray-800', banner: 'https://images.unsplash.com/photo-1542751110-97427bbecf20?w=800', rating: '4.9 · 540' },
+{ id: 6, name: 'Steam', currency: 'Wallet', popular: true, icon: '🎮', color: 'from-blue-600 to-indigo-700', banner: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=800', rating: '5 · 2100' },
+{ id: 7, name: 'Telegram Stars', currency: 'Stars', popular: false, icon: '⭐', color: 'from-yellow-400 to-yellow-600', banner: 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=800', rating: '5 · 3200' },
+{ id: 8, name: 'Brawl Stars', currency: 'Gems', popular: false, icon: '💥', color: 'from-purple-500 to-pink-500', banner: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', rating: '4.8 · 980' },
+{ id: 9, name: 'Clash Royale', currency: 'Gems', popular: false, icon: '🏰', color: 'from-blue-500 to-blue-700', banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800', rating: '4.7 · 1500' },
+{ id: 10, name: 'Genshin Impact', currency: 'Primogems', popular: false, icon: '⚡', color: 'from-cyan-400 to-blue-500', banner: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800', rating: '4.9 · 2400' },
+{ id: 11, name: 'Roblox', currency: 'Robux', popular: false, icon: '🎮', color: 'from-red-600 to-red-800', banner: 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=800', rating: '4.6 · 1800' },
+{ id: 12, name: 'Fortnite', currency: 'V-Bucks', popular: false, icon: '🎪', color: 'from-purple-600 to-blue-600', banner: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800', rating: '4.8 · 3100' }
+];
+
+const gamePackages = {
+1: {
+uc: [
+{ amount: 60, price: 11700, icon: '🪙' },
+{ amount: 325, price: 59000, icon: '💎' },
+{ amount: 660, price: 115000, icon: '💰' },
+{ amount: 1800, price: 290000, icon: '' },
+{ amount: 3850, price: 575000, icon: '🏆' },
+{ amount: 8100, price: 1165000, icon: '💎' }
+],
+prime: [
+{ amount: '1 Month', price: 12500, icon: '📘' },
+{ amount: '3 Months', price: 37000, icon: '📗' },
+{ amount: '6 Months', price: 71000, icon: '📙' },
+{ amount: '12 Months', price: 138000, icon: '📕' },
+{ amount: 'Prime Plus 1 Month', price: 114000, icon: '👑' },
+{ amount: 'Prime Plus 3 Months', price: 340000, icon: '👑' },
+{ amount: 'Prime Plus 6 Months', price: 685000, icon: '' },
+{ amount: 'Prime Plus 12 Months', price: 1340000, icon: '👑' },
+{ amount: 'First Purchase Pack', price: 14000, icon: '🎁' },
+{ amount: 'Weekly Deal Pack 1', price: 14000, icon: '📦' },
+{ amount: 'Weekly Mythic Emblem', price: 34000, icon: '🎖️' },
+{ amount: 'Upgradable Firearm', price: 38000, icon: '🔫' },
+{ amount: 'Mythic Emblem Pack', price: 60000, icon: '' },
+{ amount: 'Elite Pass LV1-50', price: 72000, icon: '🎫' },
+{ amount: 'Elite Pass LV1-100', price: 140000, icon: '🎟️' }
+]
+},
+8: {
+default: [
+{ amount: 'Brawl Pass', price: 73000, icon: '🎫' },
+{ amount: 'Brawl Pass Plus', price: 95000, icon: '🎟️' },
+{ amount: 'Brawl Pass Pro', price: 194000, icon: '' },
+{ amount: '80 Gems', price: 38000, icon: '💚' },
+{ amount: '170 Gems', price: 73000, icon: '💚' },
+{ amount: '360 Gems', price: 144000, icon: '💚' },
+{ amount: '950 Gems', price: 354000, icon: '💚' },
+{ amount: '2000 Gems', price: 699000, icon: '💚' },
+{ amount: '4000 Gems', price: 1394000, icon: '💚' }
+]
+},
+6: { steam: true },
+2: {
+default: [
+{ amount: 100, price: 10000, icon: '💎' },
+{ amount: 310, price: 30000, icon: '💎' },
+{ amount: 520, price: 50000, icon: '💎' },
+{ amount: 1060, price: 100000, icon: '💎' },
+{ amount: 2180, price: 200000, icon: '💎' }
+]
+},
+3: {
+default: [
+{ amount: 5, price: 5000, icon: '💠' },
+{ amount: 12, price: 12000, icon: '💠' },
+{ amount: 50, price: 50000, icon: '💠' },
+{ amount: 72, price: 70000, icon: '💠' },
+{ amount: 145, price: 140000, icon: '💠' }
+]
+},
+4: {
+default: [
+{ amount: 100, price: 15000, icon: '🪙' },
+{ amount: 300, price: 40000, icon: '🪙' },
+{ amount: 500, price: 65000, icon: '🪙' },
+{ amount: 1000, price: 120000, icon: '🪙' }
+]
+},
+5: {
+default: [
+{ amount: 100, price: 8000, icon: '' },
+{ amount: 250, price: 18000, icon: '🔫' },
+{ amount: 500, price: 35000, icon: '🔫' },
+{ amount: 1000, price: 65000, icon: '🔫' }
+]
+},
+7: {
+default: [
+{ amount: 50, price: 10000, icon: '⭐' },
+{ amount: 100, price: 18000, icon: '⭐' },
+{ amount: 250, price: 42000, icon: '⭐' },
+{ amount: 500, price: 80000, icon: '⭐' }
+]
+},
+9: {
+default: [
+{ amount: 500, price: 15000, icon: '🏰' },
+{ amount: 1200, price: 35000, icon: '🏰' },
+{ amount: 2500, price: 70000, icon: '🏰' },
+{ amount: 6500, price: 175000, icon: '🏰' }
+]
+},
+10: {
+default: [
+{ amount: 60, price: 12000, icon: '⚡' },
+{ amount: 300, price: 55000, icon: '⚡' },
+{ amount: 980, price: 175000, icon: '' },
+{ amount: 1960, price: 340000, icon: '⚡' }
+]
+},
+11: {
+default: [
+{ amount: 80, price: 10000, icon: '🎮' },
+{ amount: 400, price: 48000, icon: '🎮' },
+{ amount: 800, price: 95000, icon: '🎮' },
+{ amount: 1700, price: 195000, icon: '🎮' }
+]
+},
+12: {
+default: [
+{ amount: 1000, price: 100000, icon: '🎪' },
+{ amount: 2800, price: 270000, icon: '' },
+{ amount: 5000, price: 470000, icon: '🎪' },
+{ amount: 13500, price: 1200000, icon: '🎪' }
+]
+}
+};
+
+let demoUsers = [
+{ id: 8467707826, name: 'Admin', username: 'admin', balance: 500000, orders: 12 },
+{ id: 123456789, name: 'Test User', username: 'testuser', balance: 25000, orders: 3 },
+{ id: 987654321, name: 'Player', username: 'player123', balance: 100000, orders: 7 }
+];
+
+let demoOrders = [
+{ id: 1, userId: 8467707826, game: 'PUBG Mobile', amount: 341, price: 34000, status: 'completed', date: '2026-10-01' },
+{ id: 2, userId: 123456789, game: 'Free Fire', amount: 520, price: 50000, status: 'pending', date: '2026-10-01' },
+{ id: 3, userId: 987654321, game: 'Mobile Legends', amount: 72, price: 70000, status: 'completed', date: '2026-09-30' }
+];function navigateTo(pageName) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+document.getElementById('page-' + pageName).classList.add('active');
+document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+document.querySelector('.nav-btn[data-page="' + pageName + '"]')?.classList.add('active');
+if (pageName === 'profile') loadProfile();
+window.scrollTo(0, 0);
+}
+
+function renderGames() {
+const popularContainer = document.getElementById('popular-games');
+const allContainer = document.getElementById('all-games');
+games.filter(g => g.popular).forEach(game => { popularContainer.innerHTML += createGameCard(game); });
+games.forEach(game => { allContainer.innerHTML += createGameCard(game); });
+}
+
+function createGameCard(game) {
+return '<div class="game-card rounded-xl overflow-hidden cursor-pointer" onclick="openGame(' + game.id + ')"><img src="' + game.banner + '" class="game-img" alt="' + game.name + '" onerror="this.style.display=\'none\'"><div class="p-2 bg-gradient-to-br ' + game.color + ' h-20 flex items-center justify-center"><span class="text-4xl">' + game.icon + '</span></div><div class="p-2"><span class="text-xs font-medium text-center block leading-tight text-gray-700">' + game.name + '</span></div></div>';
+}
+
+function openGame(gameId) {
+selectedGame = games.find(g => g.id === gameId);
+selectedPackage = null;
+document.getElementById('detail-name').textContent = selectedGame.name;
+document.getElementById('detail-rating').textContent = selectedGame.rating || '5 · 1020';
+document.getElementById('game-banner').style.backgroundImage = 'url(' + selectedGame.banner + ')';
+
+document.getElementById('pubg-tabs').classList.add('hidden');
+document.getElementById('brawl-tabs').classList.add('hidden');
+document.getElementById('steam-form').classList.add('hidden');
+document.getElementById('default-packages').classList.add('hidden');
+
+if (gameId === 1) {
+document.getElementById('pubg-tabs').classList.remove('hidden');
+currentGameType = 'pubg';
+currentTab = 'uc';
+document.getElementById('tab-uc').classList.add('active');
+document.getElementById('tab-prime').classList.remove('active');
+renderPUBGPackages('uc');
+} else if (gameId === 8) {
+document.getElementById('brawl-tabs').classList.remove('hidden');
+currentGameType = 'brawl';
+renderBrawlPackages();
+} else if (gameId === 6) {
+document.getElementById('steam-form').classList.remove('hidden');
+currentGameType = 'steam';
+} else {
+document.getElementById('default-packages').classList.remove('hidden');
+currentGameType = 'default';
+renderDefaultPackages(gameId);
+}
+
+navigateTo('game-detail');
+}
+
+function renderPUBGPackages(tab) {
+const packs = gamePackages[1][tab] || [];
+const container = document.getElementById('packages-list');
+container.innerHTML = '';
+packs.forEach((pack, idx) => {
+container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="text-4xl">' + pack.icon + '</div><div class="flex-1"><p class="font-bold text-lg text-gray-900">' + pack.amount + '</p><p class="text-sm text-gray-500">' + pack.price.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="pack-' + idx + '"></div></div>';
+});
+}
+
+function renderBrawlPackages() {
+const packs = gamePackages[8].default || [];
+const container = document.getElementById('brawl-packages-list');
+container.innerHTML = '';
+packs.forEach((pack, idx) => {
+container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="text-4xl">' + pack.icon + '</div><div class="flex-1"><p class="font-bold text-lg text-gray-900">' + pack.amount + '</p><p class="text-sm text-gray-500">' + pack.price.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="brawl-pack-' + idx + '"></div></div>';
+});
+}
+
+function renderDefaultPackages(gameId) {
+const packs = gamePackages[gameId]?.default || [{ amount: 100, price: 10000, icon: '💎' }];
+const container = document.getElementById('default-packages-list');
+container.innerHTML = '';
+packs.forEach((pack, idx) => {
+container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="text-4xl">' + pack.icon + '</div><div class="flex-1"><p class="font-bold text-lg text-gray-900">' + pack.amount + ' ' + selectedGame.currency + '</p><p class="text-sm text-gray-500">' + pack.price.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="default-pack-' + idx + '"></div></div>';
+});
+}
+
+function switchTab(tab) {
+currentTab = tab;
+if (tab === 'uc') {
+document.getElementById('tab-uc').classList.add('active');
+document.getElementById('tab-prime').classList.remove('active');
+} else {
+document.getElementById('tab-prime').classList.add('active');
+document.getElementById('tab-uc').classList.remove('active');
+}
+renderPUBGPackages(tab);
+}
+
+function selectPackage(idx, element) {
+document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+element.classList.add('selected');
+selectedPackage = idx;
+}
+
+function buyPackage() {
+if (selectedPackage === null) { showAlert('Paketni tanlang!'); return; }
+let pack;
+if (currentGameType === 'pubg') {
+pack = gamePackages[1][currentTab][selectedPackage];
+} else if (currentGameType === 'brawl') {
+pack = gamePackages[8].default[selectedPackage];
+} else {
+pack = gamePackages[selectedGame.id]?.default[selectedPackage];
+}
+showAlert(selectedGame.name + ' - ' + pack.amount + ' buyurtma qilindi!');
+navigateTo('orders');
+}
+
+function calculateSteamPrice() {
+const amount = document.getElementById('steam-amount').value;
+const total = amount * 12250;
+document.getElementById('steam-total').textContent = total.toLocaleString() + ' so\'m';
+}
+
+function buySteam() {
+const login = document.getElementById('steam-login').value;
+const amount = document.getElementById('steam-amount').value;
+if (!login || !amount) {
+showAlert('Login va summani kiriting!');
+return;
+}
+showAlert('Steam ' + amount + '$ to\'ldirish buyurtma qilindi!');
+navigateTo('orders');
+}
+
+function searchGames(query) {
+const allContainer = document.getElementById('all-games');
+allContainer.innerHTML = '';
+games.filter(g => g.name.toLowerCase().includes(query.toLowerCase())).forEach(game => { allContainer.innerHTML += createGameCard(game); });
+}
+
+function loadProfile() {
+if (user) {
+document.getElementById('profile-name').textContent = user.first_name;
+document.getElementById('profile-username').textContent = '@' + (user.username || 'username');
+document.getElementById('profile-id').textContent = user.id;
+document.getElementById('username').textContent = user.first_name;
+document.getElementById('avatar').textContent = user.first_name[0].toUpperCase();
+document.getElementById('profile-avatar').textContent = user.first_name[0].toUpperCase();
+}
+document.getElementById('profile-balance').textContent = currentUser.balance.toLocaleString() + ' so\'m';
+document.getElementById('topup-balance').textContent = currentUser.balance.toLocaleString() + ' so\'m';
+}
+
+function showAlert(msg) { tg.showAlert(msg); }
+
+function loadAdminPanel() {
+if (user && user.id === ADMIN_ID) {
+isAdmin = true;
+document.getElementById('admin-users-count').textContent = demoUsers.length;
+document.getElementById('admin-orders-count').textContent = demoOrders.length;
+document.getElementById('admin-revenue').textContent = demoOrders.reduce((sum, o) => sum + o.price, 0).toLocaleString() + ' so\'m';
+document.getElementById('admin-total-balance').textContent = demoUsers.reduce((sum, u) => sum + u.balance, 0).toLocaleString() + ' so\'m';
+
+const navContainer = document.getElementById('bottom-nav');
+const adminBtn = document.createElement('button');
+adminBtn.className = 'nav-btn flex flex-col items-center gap-1 p-2';
+adminBtn.setAttribute('data-page', 'admin');
+adminBtn.onclick = () => navigateTo('admin');
+adminBtn.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg><span class="text-xs">Admin</span>';
+navContainer.appendChild(adminBtn);
+}
+}
+
+function showUsersList() {
+const container = document.getElementById('users-list-container');
+container.innerHTML = '';
+demoUsers.forEach(u => {
+container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + u.name + '</p><p class="text-sm text-gray-500">@' + u.username + ' · ID: ' + u.id + '</p></div><span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-xs font-bold">' + u.orders + ' buyurtma</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">Balans: <span class="font-bold text-purple-600">' + u.balance.toLocaleString() + ' so\'m</span></p><button onclick="editUserBalance(' + u.id + ')" class="text-sm text-blue-600 font-medium">O\'zgartirish</button></div></div>';
+});
+navigateTo('users-list');
+}
+
+function showOrdersList() {
+const container = document.getElementById('orders-list-container');
+container.innerHTML = '';
+demoOrders.forEach(o => {
+const statusColor = o.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600';
+const statusText = o.status === 'completed' ? 'Bajarildi' : 'Kutilmoqda';
+container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + o.game + '</p><p class="text-sm text-gray-500">User ID: ' + o.userId + ' · ' + o.date + '</p></div><span class="' + statusColor + ' px-2 py-1 rounded-lg text-xs font-bold">' + statusText + '</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">' + o.amount + '</p><p class="font-bold text-gray-900">' + o.price.toLocaleString() + ' so\'m</p></div></div>';
+});
+navigateTo('orders-list');
+}
+
+function showAddBalanceForm() {
+navigateTo('add-balance');
+}
+
+function addBalanceToUser() {
+const userId = document.getElementById('add-balance-user-id').value;
+const amount = document.getElementById('add-balance-amount').value;
+if (!userId || !amount) {
+showAlert('ID va summani kiriting!');
+return;
+}
+const userIndex = demoUsers.findIndex(u => u.id === parseInt(userId));
+if (userIndex !== -1) {
+demoUsers[userIndex].balance += parseInt(amount);
+showAlert('Muvaffaqiyatli! ' + demoUsers[userIndex].name + ' ga ' + parseInt(amount).toLocaleString() + ' so\'m qo\'shildi.');
+document.getElementById('add-balance-user-id').value = '';
+document.getElementById('add-balance-amount').value = '';
+} else {
+showAlert('Foydalanuvchi topilmadi!');
+}
+}
+
+function showSettings() {
+navigateTo('settings');
+}
+
+function searchUsers(query) {
+const container = document.getElementById('users-list-container');
+container.innerHTML = '';
+demoUsers.filter(u => u.name.toLowerCase().includes(query.toLowerCase()) || u.id.toString().includes(query)).forEach(u => {
+container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + u.name + '</p><p class="text-sm text-gray-500">@' + u.username + ' · ID: ' + u.id + '</p></div><span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-xs font-bold">' + u.orders + ' buyurtma</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">Balans: <span class="font-bold text-purple-600">' + u.balance.toLocaleString() + ' so\'m</span></p><button onclick="editUserBalance(' + u.id + ')" class="text-sm text-blue-600 font-medium">O\'zgartirish</button></div></div>';
+});
+}
+
+function editUserBalance(userId) {
+const newBalance = prompt('Yangi balansni kiriting (so\'m):');
+if (newBalance) {
+const userIndex = demoUsers.findIndex(u => u.id === userId);
+if (userIndex !== -1) {
+demoUsers[userIndex].balance = parseInt(newBalance);
+showAlert('Balans o\'zgartirildi!');
+showUsersList();
+}
+}
+}
+
+renderGames();
+loadProfile();
+loadAdminPanel();
+</script>
+</body>
+</html>
