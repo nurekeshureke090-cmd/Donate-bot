@@ -795,15 +795,24 @@ const PLAYPAY = {
 
 async function ppRequest(method, path, body = null) {
   try {
-    const options = { method: method, headers: { 'X-API-Key': PLAYPAY.API_KEY, 'Content-Type': 'application/json' } };
-    if (body && method === 'POST') options.body = JSON.stringify(body);
-    let url = `${PLAYPAY.API_URL}${path}`;
-    if (method === 'GET' && PLAYPAY.CURRENCY) url += `?currency=${PLAYPAY.CURRENCY}`;
-    const response = await fetch(url, options);
+    const proxyUrl = `/api/proxy?path=${encodeURIComponent(path)}`;
+    const options = {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body && method === 'POST') {
+      options.body = JSON.stringify({ path, data: body });
+    }
+    const response = await fetch(proxyUrl, options);
     const data = await response.json();
-    if (!response.ok) return { ok: false, error: data.error || `HTTP ${response.status}`, status: response.status };
+    if (!response.ok) {
+      return { ok: false, error: data.error || `HTTP ${response.status}`, status: response.status };
+    }
     return data;
-  } catch (error) { console.error('PlayPay API xatolik:', error); return { ok: false, error: error.message }; }
+  } catch (error) {
+    console.error('Proxy API xatolik:', error);
+    return { ok: false, error: error.message };
+  }
 }
 
 async function ppGetGames() { return await ppRequest('GET', '/games'); }
