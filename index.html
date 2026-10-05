@@ -80,6 +80,28 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .loading-spinner { width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* To'ldirish sahifasi - PayerPin uslubi */
+.payment-method-card { cursor: pointer; }
+.payment-method-card:active { transform: scale(0.97); }
+.payment-method-card.active-method { 
+  border-color: #8b5cf6 !important; 
+  background: #faf5ff !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+.quick-amount-btn:active { 
+  background: #f3e8ff !important; 
+  border-color: #8b5cf6 !important;
+  transform: scale(0.95);
+}
+.amount-input::placeholder { color: #d1d5db; }
+#topup-next-btn:not(:disabled) {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+#topup-next-btn:not(:disabled):active {
+  transform: scale(0.98);
+}
 </style>
 </head>
 <body>
