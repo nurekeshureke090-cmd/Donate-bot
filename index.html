@@ -1969,7 +1969,24 @@ function searchUsers(query) {
     container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + u.name + '</p><p class="text-sm text-gray-500">@' + u.username + ' · ID: ' + u.id + '</p></div><span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-xs font-bold">' + u.totalOrders + ' buyurtma</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">Balans: <span class="font-bold text-purple-600">' + u.balance.toLocaleString() + ' so\'m</span></p><button onclick="editUserBalance(' + u.id + ')" class="text-sm text-blue-600 font-medium">O\'zgartirish</button></div></div>';
   });
 }
-
+function selectPaymentMethod(method, element) {
+  if (method === 'visa') {
+    showAlert('🔧 Visa orqali to\'lov hozircha texnik ishlar tufayli ishlamaydi.');
+    return;
+  }
+  const allCards = document.querySelectorAll('.payment-method-card');
+  allCards.forEach(m => {
+    m.classList.remove('active-method');
+    m.style.borderColor = '#e5e7eb';
+  });
+  if (element) {
+    element.classList.add('active-method');
+    element.style.borderColor = '#8b5cf6';
+  }
+  cardSettings.type = method.toUpperCase();
+  localStorage.setItem('cardSettings', JSON.stringify(cardSettings));
+  updateTopupDisplay();
+  }
 function editUserBalance(userId) { const newBalance = prompt('Yangi balansni kiriting (so\'m):'); if (newBalance) { if (usersData[userId]) { usersData[userId].balance = parseInt(newBalance); saveUsersData(); showAlert('Balans o\'zgartirildi!'); showUsersList(); logSecurity('Balans o\'zgartirildi: ' + userId); } } }
 
 loadUserData();
