@@ -229,31 +229,105 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 </div>
 </div>
 
-<!-- BALANS TO'LDIRISH -->
+<!-- BALANS TO'LDIRISH (PAYERPIN USLUBIDA) -->
 <div id="page-topup" class="page">
-<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Summani kiriting</h1></div>
+<div class="top-header flex items-center gap-3">
+  <button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button>
+  <h1 class="text-xl font-bold text-gray-900">Balansni to'ldirish</h1>
+</div>
 <div class="p-4">
-<div class="bg-white p-4 rounded-2xl border border-gray-200 mb-4 flex items-center justify-between">
-<div class="flex items-center gap-3"><div class="w-12 h-12 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-xs">HUMO</div><div><p class="font-bold text-gray-900" id="topup-card-name">HUMO</p><p class="text-sm text-gray-500">Kartaga o'tkazma</p></div></div>
-<button onclick="showCardOptions()" class="text-purple-600 font-medium text-sm">O'zgartirish</button>
-</div>
-<p class="font-bold text-gray-700 mb-2">Summani kiriting</p>
-<div class="bg-white rounded-2xl border-2 border-gray-200 p-4 mb-3 flex items-center"><input type="number" id="topup-amount" class="amount-input flex-1 border-none outline-none" placeholder="0" oninput="updateTopupButton()"><span class="text-gray-500 font-bold text-lg">so'm</span></div>
-<div class="grid grid-cols-4 gap-2 mb-3">
-<div class="quick-amount" onclick="setTopupAmount(50000)">50k</div>
-<div class="quick-amount" onclick="setTopupAmount(100000)">100k</div>
-<div class="quick-amount" onclick="setTopupAmount(200000)">200k</div>
-<div class="quick-amount" onclick="setTopupAmount(500000)">500k</div>
-</div>
-<div class="flex justify-between text-sm text-gray-500 mb-6"><span>Eng kam: 1 000</span><span>Balans: <span id="topup-balance-display" class="font-bold">0</span></span></div>
-<p class="text-xs font-bold text-gray-500 mb-3 tracking-wider">TO'LDIRISH BOSQICHLARI</p>
-<div class="space-y-2">
-<div class="step-item"><div class="step-number">1</div><div class="flex-1"><p class="font-medium text-gray-900">To'lov usuli va summani tanlang</p></div></div>
-<div class="step-item"><div class="step-number">2</div><div class="flex-1"><p class="font-medium text-gray-900">Ko'rsatilgan kartaga AYNAN shu summani o'tkazing</p></div></div>
-<div class="step-item"><div class="step-number">3</div><div class="flex-1"><p class="font-medium text-gray-900">To'lov avtomatik tekshiriladi (1-2 daqiqa)</p></div></div>
-<div class="step-item"><div class="step-number">4</div><div class="flex-1"><p class="font-medium text-gray-900">Balansingiz yangilanadi</p></div></div>
-</div>
-<button id="topup-next-btn" onclick="goToPayment()" class="mt-6 w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold text-lg" disabled>Summani kiriting</button>
+
+  <!-- Katta balans kartochkasi -->
+  <div class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-3xl p-6 mb-5 text-white shadow-2xl relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-30 -mr-10 -mt-10"></div>
+    <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl opacity-30 -ml-10 -mb-10"></div>
+    <div class="relative z-10">
+      <p class="text-xs text-purple-200 uppercase tracking-widest font-bold">Balans</p>
+      <p class="text-5xl font-bold mt-3"><span id="topup-balance-display">0</span> <span class="text-lg text-purple-200">so'm</span></p>
+    </div>
+  </div>
+
+  <!-- To'lov usullari -->
+  <p class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">To'lov usuli</p>
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    
+    <!-- UZCARD -->
+    <button onclick="selectPaymentMethod('uzcard', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-purple-500 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">U</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">UZCARD</p>
+        <p class="text-xs text-gray-500">Kartaga o'tkazma</p>
+      </div>
+    </button>
+
+    <!-- HUMO -->
+    <button onclick="selectPaymentMethod('humo', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">HUMO</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">HUMO</p>
+        <p class="text-xs text-gray-500">Kartaga o'tkazma</p>
+      </div>
+    </button>
+
+    <!-- BANKOMAT -->
+    <button onclick="selectPaymentMethod('bankomat', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center text-2xl shadow-md"></div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">BANKOMAT</p>
+        <p class="text-xs text-gray-500">Terminal orqali</p>
+      </div>
+    </button>
+
+    <!-- VISA (texnik ishlar) -->
+    <button onclick="selectPaymentMethod('visa', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm opacity-70">
+      <div class="w-14 h-14 bg-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">VISA</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">INTERNATIONAL</p>
+        <p class="text-xs text-orange-500 font-semibold">🔧 Texnik ishlar</p>
+      </div>
+    </button>
+  </div>
+
+  <!-- Summa kiritish -->
+  <div class="bg-white rounded-2xl border-2 border-gray-200 p-5 mb-4 flex items-center shadow-sm">
+    <input type="number" id="topup-amount" class="amount-input flex-1 border-none outline-none text-4xl font-bold bg-transparent" placeholder="0" oninput="updateTopupButton()">
+    <span class="text-gray-400 font-bold text-lg ml-2">so'm</span>
+  </div>
+
+  <!-- Tez summa tugmalari -->
+  <div class="grid grid-cols-4 gap-2 mb-5">
+    <button onclick="setTopupAmount(50000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">50k</button>
+    <button onclick="setTopupAmount(100000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">100k</button>
+    <button onclick="setTopupAmount(200000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">200k</button>
+    <button onclick="setTopupAmount(500000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">500k</button>
+  </div>
+
+  <!-- Min va havola -->
+  <div class="flex justify-between items-center mb-5 px-1">
+    <span class="text-sm text-gray-500">Eng kam: <span class="font-bold text-gray-700">1 000 so'm</span></span>
+    <button onclick="showAlert('📹 Video qo\'llanma tez orada qo\'shiladi!')" class="text-sm text-purple-600 font-bold flex items-center gap-1">
+      Qanday to'ldirish? <span class="text-lg">›</span>
+    </button>
+  </div>
+
+  <!-- HAVOLALAR bo'limi -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1">Havolalar</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showAlert('📹 Video tez orada!')" class="bg-white p-4 rounded-2xl border border-gray-200 flex items-center gap-3 w-full shadow-sm">
+      <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl">▶️</div>
+      <div class="flex-1 text-left">
+        <p class="font-bold text-gray-900 text-sm">Balansni qanday to'ldirish?</p>
+        <p class="text-xs text-gray-500">Video qo'llanma – ko'rish</p>
+      </div>
+      <span class="text-gray-400 text-xl">›</span>
+    </button>
+  </div>
+
+  <!-- Davom etish tugmasi -->
+  <button id="topup-next-btn" onclick="goToPayment()" class="w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold text-lg transition-all shadow-sm" disabled>
+    Summani kiriting
+  </button>
+
 </div>
 </div>
 
