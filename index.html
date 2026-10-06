@@ -160,61 +160,66 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 <div class="p-4 grid grid-cols-3 gap-3" id="all-games"></div>
 </div>
 
-<!-- O'YIN DETAIL SAHIFA -->
+<!-- O'YIN DETAIL SAHIFA (PAYERPIN USLUBIDA) -->
 <div id="page-game-detail" class="page">
 <div class="game-banner" id="game-banner">
-<button onclick="navigateTo('home')" class="absolute top-4 left-4 bg-black/50 p-2 rounded-full text-white z-10">←</button>
-<div class="absolute bottom-4 left-4 z-10">
-<h1 class="text-2xl font-bold text-white" id="detail-name">O'yin</h1>
-<div class="rating-badge mt-2"><span class="text-yellow-500">⭐</span><span class="text-gray-700" id="detail-rating">5 · 1020</span></div>
-</div>
+  <button onclick="navigateTo('games')" class="absolute top-4 left-4 bg-black/50 p-2 rounded-full text-white z-10">←</button>
+  <div class="absolute bottom-4 left-4 z-10">
+    <h1 class="text-2xl font-bold text-white" id="detail-name">O'yin</h1>
+    <div class="rating-badge mt-2"><span class="text-yellow-500">⭐</span><span class="text-gray-700" id="detail-rating">5 · 1020</span></div>
+  </div>
 </div>
 
+<!-- PUBG Tabs -->
 <div id="pubg-tabs" class="p-4 hidden">
-<div class="flex gap-2 mb-4">
-<button class="tab-btn active" id="tab-uc" onclick="switchTab('uc')"> UC</button>
-<button class="tab-btn" id="tab-prime" onclick="switchTab('prime')">🎁 Prime</button>
-</div>
-<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
-<div id="packages-list" class="grid grid-cols-2 gap-3"></div>
-<button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+  <div class="flex gap-2 mb-4">
+    <button class="tab-btn active" id="tab-uc" onclick="switchTab('uc')">💎 UC</button>
+    <button class="tab-btn" id="tab-prime" onclick="switchTab('prime')"> Prime</button>
+  </div>
+  <h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+  <div id="packages-list" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Sotib olish</button>
 </div>
 
+<!-- Free Fire Tabs -->
 <div id="freefire-tabs" class="p-4 hidden">
-<div class="flex gap-2 mb-4">
-<button class="tab-btn active" id="tab-diamonds" onclick="switchFFTab('diamonds')">💎 Diamonds</button>
-<button class="tab-btn" id="tab-pacs" onclick="switchFFTab('pacs')">🎁 Pacs</button>
-</div>
-<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
-<div id="freefire-packages-list" class="grid grid-cols-2 gap-3"></div>
-<button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+  <div class="flex gap-2 mb-4">
+    <button class="tab-btn active" id="tab-diamonds" onclick="switchFFTab('diamonds')">💎 Diamonds</button>
+    <button class="tab-btn" id="tab-pacs" onclick="switchFFTab('pacs')">🎁 Pacs</button>
+  </div>
+  <h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+  <div id="freefire-packages-list" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Sotib olish</button>
 </div>
 
+<!-- Brawl Stars -->
 <div id="brawl-tabs" class="p-4 hidden">
-<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
-<div id="brawl-packages-list" class="grid grid-cols-2 gap-3"></div>
-<button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+  <h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+  <div id="brawl-packages-list" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Sotib olish</button>
 </div>
 
+<!-- Steam -->
 <div id="steam-form" class="p-4 hidden">
-<div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl mb-4">
-<div class="flex justify-center mb-4"><div class="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center"><span class="text-5xl">🎮</span></div></div>
-<h3 class="text-white text-xl font-bold text-center mb-4">Steam hamyonini to'ldiring</h3>
-</div>
-<div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Steam loginingiz</label><input type="text" id="steam-login" placeholder="Steam login" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm"></div>
-<div class="bg-purple-50 p-4 rounded-xl mb-4 border border-purple-200"><div class="flex items-center gap-3"><span class="text-3xl">💲</span><div><p class="text-sm text-gray-500">Joriy kurs</p><p class="text-lg font-bold text-purple-600">1$ = 12 250 so'm</p></div></div></div>
-<div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Summa ($)</label><input type="number" id="steam-amount" placeholder="10" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm" oninput="calculateSteamPrice()"></div>
-<div class="bg-gray-100 p-4 rounded-xl mb-4"><p class="text-sm text-gray-500">To'lov summasi:</p><p class="text-2xl font-bold text-gray-900" id="steam-total">0 so'm</p></div>
-<button onclick="buySteam()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Keyingisi</button>
+  <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl mb-4">
+    <div class="flex justify-center mb-4"><div class="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center"><span class="text-5xl">🎮</span></div></div>
+    <h3 class="text-white text-xl font-bold text-center mb-4">Steam hamyonini to'ldiring</h3>
+  </div>
+  <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Steam loginingiz</label><input type="text" id="steam-login" placeholder="Steam login" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm"></div>
+  <div class="bg-purple-50 p-4 rounded-xl mb-4 border border-purple-200"><div class="flex items-center gap-3"><span class="text-3xl">💲</span><div><p class="text-sm text-gray-500">Joriy kurs</p><p class="text-lg font-bold text-purple-600">1$ = 12 250 so'm</p></div></div></div>
+  <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Summa ($)</label><input type="number" id="steam-amount" placeholder="10" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm" oninput="calculateSteamPrice()"></div>
+  <div class="bg-gray-100 p-4 rounded-xl mb-4"><p class="text-sm text-gray-500">To'lov summasi:</p><p class="text-2xl font-bold text-gray-900" id="steam-total">0 so'm</p></div>
+  <button onclick="buySteam()" class="w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Keyingisi</button>
 </div>
 
+<!-- Default Packages (PlayPay) -->
 <div id="default-packages" class="p-4 hidden">
-<h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
-<div id="default-packages-list" class="grid grid-cols-2 gap-3"></div>
-<button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white text-lg">Sotib olish</button>
+  <h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+  <div id="default-packages-list" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Sotib olish</button>
 </div>
 </div>
-
+  
 <!-- O'YIN ID KIRITISH SAHIFASI -->
 <div id="page-game-id" class="page">
 <div class="top-header flex items-center gap-3"><button onclick="navigateTo('game-detail')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">O'yin ID kiriting</h1></div>
@@ -853,13 +858,35 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 </div>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-20">
-<div class="flex justify-around" id="bottom-nav">
-<button onclick="navigateTo('home')" class="nav-btn active flex flex-col items-center gap-1 p-2" data-page="home"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg><span class="text-xs">Asosiy</span></button>
-<button onclick="navigateTo('games')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="games"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M13 7h4v2h-4V7zM3 7h4v2H3V7zm10 6h4v2h-4v-2zM3 13h4v2H3v-2z"/></svg><span class="text-xs">O'yinlar</span></button>
-<button onclick="navigateTo('topup')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="topup"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg><span class="text-xs">To'ldirish</span></button>
-<button onclick="navigateTo('profile')" class="nav-btn flex flex-col items-center gap-1 p-2" data-page="profile"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg><span class="text-xs">Profil</span></button>
+<!-- BOTTOM NAVIGATION (PAYERPIN USLUBIDA) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20 shadow-2xl">
+<div class="flex justify-around items-center p-2" id="bottom-nav">
+  <button onclick="navigateTo('home')" class="nav-btn active flex flex-col items-center gap-1 p-2 flex-1" data-page="home">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+    <span class="text-xs font-semibold">Asosiy</span>
+  </button>
+  
+  <button onclick="navigateTo('games')" class="nav-btn flex flex-col items-center gap-1 p-2 flex-1" data-page="games">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M13 7h4v2h-4V7zM3 7h4v2H3V7zm10 6h4v2h-4v-2zM3 13h4v2H3v-2z"/></svg>
+    <span class="text-xs font-semibold">O'yinlar</span>
+  </button>
+  
+  <button onclick="navigateTo('topup')" class="relative -mt-6">
+    <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+      <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+    </div>
+    <span class="text-xs font-bold text-purple-600 block text-center mt-1">To'ldirish</span>
+  </button>
+  
+  <button onclick="navigateTo('orders')" class="nav-btn flex flex-col items-center gap-1 p-2 flex-1" data-page="orders">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg>
+    <span class="text-xs font-semibold">Buyurtmalar</span>
+  </button>
+  
+  <button onclick="navigateTo('profile')" class="nav-btn flex flex-col items-center gap-1 p-2 flex-1" data-page="profile">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+    <span class="text-xs font-semibold">Profil</span>
+  </button>
 </div>
 </div>
 
