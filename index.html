@@ -77,6 +77,11 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 .bar:hover { opacity: 0.8; }
 .bar-label { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; }
 .contest-card { background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; padding: 20px; color: white; margin-bottom: 12px; }
+/* Admin panel - PayerPin uslubi */
+#page-admin .bg-white { transition: all 0.2s; }
+#page-admin .bg-white:active { transform: scale(0.97); }
+#page-admin .bg-gradient-to-br { transition: all 0.3s; }
+#page-admin .bg-gradient-to-br:active { transform: scale(0.95); }
 .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .loading-spinner { width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -567,7 +572,8 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 <button onclick="changeLanguage('ru')" class="w-full p-4 rounded-xl border-2 border-gray-200 font-bold text-lg">🇷🇺 Русский</button>
 </div>
 </div>
-</div><!-- ADMIN PANEL -->
+</div>
+<!-- ADMIN PANEL -->
 <div id="page-admin" class="page">
 <div class="top-header"><h1 class="text-xl font-bold text-gray-900">🛠️ Admin Panel</h1></div>
 <div class="p-4">
@@ -803,53 +809,274 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 <!-- ADMIN: Tanlov menejeri -->
 <div id="page-contest-manager" class="page">
 <div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎉 Tanlov yaratish</h1></div>
+<!-- ADMIN PANEL (PAYERPIN USLUBIDA) -->
+<div id="page-admin" class="page">
+<div class="top-header"><h1 class="text-xl font-bold text-gray-900">🛠️ Admin Panel</h1></div>
 <div class="p-4">
-<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
-<div><label class="block text-sm font-medium text-gray-700 mb-2">Tanlov nomi</label><input type="text" id="contest-name" placeholder="Masalan: Eng ko'p buyurtma" class="admin-input"></div>
-<div><label class="block text-sm font-medium text-gray-700 mb-2">Sovrin</label><input type="text" id="contest-prize" placeholder="Masalan: 100,000 UC" class="admin-input"></div>
-<div><label class="block text-sm font-medium text-gray-700 mb-2">Muddat (kun)</label><input type="number" id="contest-duration" placeholder="7" class="admin-input" value="7"></div>
-<button onclick="createContest()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Yaratish</button>
-</div>
-<div id="admin-contest-list" class="space-y-2"></div>
-</div>
-</div>
 
-<!-- ADMIN: Statistika -->
-<div id="page-admin-stats" class="page">
-<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">📈 Statistika</h1></div>
-<div class="p-4">
-<div class="grid grid-cols-2 gap-3 mb-4">
-<div class="stat-card"><p class="text-xs text-gray-500">Bugungi daromad</p><p class="text-xl font-bold text-green-600" id="admin-today-revenue">0</p></div>
-<div class="stat-card"><p class="text-xs text-gray-500">Bugungi to'lovlar</p><p class="text-xl font-bold text-blue-600" id="admin-today-payments">0</p></div>
-<div class="stat-card"><p class="text-xs text-gray-500">Jami foydalanuvchilar</p><p class="text-xl font-bold text-purple-600" id="admin-total-users">0</p></div>
-<div class="stat-card"><p class="text-xs text-gray-500">Aktiv referallar</p><p class="text-xl font-bold text-orange-600" id="admin-active-referrals">0</p></div>
-</div>
-<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4"><h3 class="font-bold text-gray-900 mb-3">📊 Haftalik daromad</h3><div class="bar-chart" id="weekly-chart"></div></div>
-<div class="bg-white p-4 rounded-xl border border-gray-200"><h3 class="font-bold text-gray-900 mb-3">🏆 Top o'yinlar</h3><div id="top-games-list" class="space-y-2"></div></div>
-</div>
-</div>
+  <!-- Statistika kartochkalari -->
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    <div class="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-2xl text-white shadow-lg">
+      <p class="text-xs opacity-80">Foydalanuvchilar</p>
+      <p class="text-2xl font-bold mt-1" id="admin-users-count">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 p-4 rounded-2xl text-white shadow-lg">
+      <p class="text-xs opacity-80">Buyurtmalar</p>
+      <p class="text-2xl font-bold mt-1" id="admin-orders-count">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-2xl text-white shadow-lg">
+      <p class="text-xs opacity-80">Daromad</p>
+      <p class="text-2xl font-bold mt-1" id="admin-revenue">0</p>
+    </div>
+    <div class="bg-gradient-to-br from-orange-500 to-red-500 p-4 rounded-2xl text-white shadow-lg">
+      <p class="text-xs opacity-80">Balanslar</p>
+      <p class="text-2xl font-bold mt-1" id="admin-total-balance">0</p>
+    </div>
+  </div>
 
-<!-- ADMIN: Xavfsizlik log'lari -->
-<div id="page-security-logs" class="page">
-<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🔒 Xavfsizlik log'lari</h1></div>
-<div class="p-4" id="security-logs-list"></div>
-</div>
+  <!-- Asosiy boshqaruv -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Asosiy boshqaruv</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showPaymentChecks()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl"></div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">To'lov cheklari</p>
+          <p class="text-xs text-gray-500">Tasdiqlash/Rad etish</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold" id="pending-count">0</span>
+        <span class="text-gray-400">›</span>
+      </div>
+    </button>
 
-<!-- ADMIN: Foydalanuvchilar -->
-<div id="page-users-list" class="page">
-<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Foydalanuvchilar</h1></div>
-<div class="p-4"><input type="text" placeholder="ID yoki ism bo'yicha qidirish..." class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm mb-4" oninput="searchUsers(this.value)"><div id="users-list-container" class="space-y-3"></div></div>
-</div>
+    <button onclick="showGameOrders()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🎮</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">O'yin buyurtmalari</p>
+          <p class="text-xs text-gray-500">Barcha buyurtmalar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
 
-<!-- ADMIN: Balans qo'shish -->
-<div id="page-add-balance" class="page">
-<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Balans qo'shish</h1></div>
-<div class="p-4">
-<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
-<div><label class="block text-sm font-medium text-gray-700 mb-2">Foydalanuvchi ID</label><input type="number" id="add-balance-user-id" placeholder="8467707826" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm"></div>
-<div><label class="block text-sm font-medium text-gray-700 mb-2">Summa (so'm)</label><input type="number" id="add-balance-amount" placeholder="50000" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm"></div>
-<button onclick="addBalanceToUser()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Qo'shish</button>
-</div>
+    <button onclick="showPlaypayBalance()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">💰</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">PlayPay balansi</p>
+          <p class="text-xs text-gray-500">API balansi</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+  </div>
+
+  <!-- Sozlamalar -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Sozlamalar</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showCardSettings()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">💳</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Karta sozlamalari</p>
+          <p class="text-xs text-gray-500">To'lov kartasi</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showPriceManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl">💲</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Narxlarni boshqarish</p>
+          <p class="text-xs text-gray-500">Foizlar va narxlar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showVipManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl">👑</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">VIP darajalar</p>
+          <p class="text-xs text-gray-500">Chegirmalar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+  </div>
+
+  <!-- Kontent -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kontent</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showVideoManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl"></div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Video qo'llanmalar</p>
+          <p class="text-xs text-gray-500">Havolalar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showFaqManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl">❓</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">FAQ boshqaruvi</p>
+          <p class="text-xs text-gray-500">Savol-javoblar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showNotificationManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-2xl">🔔</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Bildirishnomalar</p>
+          <p class="text-xs text-gray-500">Xabar yuborish</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showContestManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">🎉</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Tanlovlar</p>
+          <p class="text-xs text-gray-500">Musobaqalar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+  </div>
+
+  <!-- Foydalanuvchilar -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Foydalanuvchilar</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showUsersList()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center text-2xl">👥</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Foydalanuvchilar</p>
+          <p class="text-xs text-gray-500">Ro'yxat</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showAddBalanceForm()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">💵</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Balans qo'shish</p>
+          <p class="text-xs text-gray-500">Foydalanuvchiga</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showReferralSettings()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center text-2xl">👥</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Referal sozlamalari</p>
+          <p class="text-xs text-gray-500">Foiz va bot</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showDailyBonusSettings()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center text-2xl"></div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Kunlik bonus</p>
+          <p class="text-xs text-gray-500">Miqdorlar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showPromoManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center text-2xl"></div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Promokodlar</p>
+          <p class="text-xs text-gray-500">Yaratish/Boshqarish</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+  </div>
+
+  <!-- Tizim -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Tizim</p>
+  <div class="space-y-2">
+    <button onclick="showAddGameForm()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">🎮</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Yangi o'yin qo'shish</p>
+          <p class="text-xs text-gray-500">O'yinlar ro'yxati</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showPopularGamesManager()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl">🔥</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Ommabop o'yinlar</p>
+          <p class="text-xs text-gray-500">Bosh sahifa</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showAdminStats()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center text-2xl">📈</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Statistika</p>
+          <p class="text-xs text-gray-500">Grafiklar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="exportData()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center text-2xl">📤</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Export (CSV)</p>
+          <p class="text-xs text-gray-500">Ma'lumotlar</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+
+    <button onclick="showSecurityLogs()" class="bg-white p-4 rounded-2xl flex items-center justify-between border border-gray-200 shadow-sm w-full">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl">🔒</div>
+        <div class="text-left">
+          <p class="font-bold text-gray-900">Xavfsizlik log'lari</p>
+          <p class="text-xs text-gray-500">Faollik tarixi</p>
+        </div>
+      </div>
+      <span class="text-gray-400">›</span>
+    </button>
+  </div>
+
 </div>
 </div>
 
