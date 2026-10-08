@@ -1288,9 +1288,45 @@ function renderPlaypayPackages(gameId, packages) {
   const container = document.getElementById('default-packages-list');
   container.innerHTML = '';
   if (!packages || packages.length === 0) { container.innerHTML = '<p class="text-center text-gray-500 col-span-2">Paketlar topilmadi</p>'; return; }
+  
+  // Har bir o'yin uchun rasm URL'lari
+  const gameImages = {
+    1: 'https://playpay.lol/images/games/pubg.png', // PUBG
+    2: 'https://playpay.lol/images/games/freefire.png', // Free Fire
+    3: 'https://playpay.lol/images/games/ml.png', // Mobile Legends
+    8: 'https://playpay.lol/images/games/brawl.png', // Brawl Stars
+    4: 'https://playpay.lol/images/games/hok.png', // Honor of Kings
+    5: 'https://playpay.lol/images/games/so2.png', // Stand Off 2
+    6: 'https://playpay.lol/images/games/steam.png', // Steam
+    7: 'https://playpay.lol/images/games/roblox.png' // Roblox
+  };
+  
+  // Paket turiga qarab rasm tanlash
+  function getPackageImage(packName, gameId) {
+    const name = packName.toLowerCase();
+    const gameImg = gameImages[gameId] || 'https://playpay.lol/images/games/default.png';
+    
+    if (name.includes('weekly')) return 'https://playpay.lol/images/packs/weekly.png';
+    if (name.includes('monthly')) return 'https://playpay.lol/images/packs/monthly.png';
+    if (name.includes('prime')) return 'https://playpay.lol/images/packs/prime.png';
+    if (name.includes('diamond')) return 'https://playpay.lol/images/packs/diamond.png';
+    if (name.includes('uc')) return 'https://playpay.lol/images/packs/uc.png';
+    
+    return gameImg;
+  }
+  
   packages.forEach((pack, idx) => {
     const priceUzs = pack.price?.amount ? Math.round(pack.price.amount) : 0;
-    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPlaypayPackage(' + idx + ', ' + pack.paket_id + ', ' + priceUzs + ', \'' + pack.name.replace(/'/g, "\\'") + '\')"><div class="pack-icon"></div><div class="flex-1"><p class="font-bold text-base text-gray-900">' + pack.name + '</p><p class="text-xs text-gray-500">' + priceUzs.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="pp-pack-' + idx + '"></div></div>';
+    const packImage = getPackageImage(pack.name, gameId);
+    
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPlaypayPackage(' + idx + ', \'' + pack.id + '\', ' + priceUzs + ', \'' + pack.name.replace(/'/g, "\\'") + '\')" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px; transition:all 0.2s;">' +
+      '<img src="' + packImage + '" alt="' + pack.name + '" style="width:60px; height:60px; border-radius:12px; object-fit:cover;" onerror="this.src=\'https://playpay.lol/images/games/default.png\'">' +
+      '<div class="flex-1">' +
+        '<p class="font-bold text-sm" style="color:#111827;">' + pack.name + '</p>' +
+        '<p class="text-xs" style="color:#6b7280;">' + priceUzs.toLocaleString() + ' so\'m</p>' +
+      '</div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0"></div>' +
+    '</div>';
   });
 }
 
@@ -1303,37 +1339,72 @@ function selectPlaypayPackage(idx, paketId, price, name) {
 
 function renderPUBGPackages(tab) {
   const packs = gamePackages[1][tab] || [];
-  const container = document.getElementById('packages-list'); container.innerHTML = '';
+  const container = document.getElementById('packages-list');
+  container.innerHTML = '';
+  const pubgImage = 'https://playpay.lol/images/games/pubg.png';
+  
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(tab === 'uc' ? 1 : '1_prime', idx, pack.price);
-    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="pack-icon">' + (pack.icon.includes('http') ? '<img src="' + pack.icon + '">' : pack.icon) + '</div><div class="flex-1"><p class="font-bold text-base text-gray-900">' + pack.amount + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="pack-' + idx + '"></div></div>';
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
+      '<img src="' + pubgImage + '" alt="PUBG" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
+    '</div>';
   });
 }
 
 function renderFFPackages(tab) {
   const packs = gamePackages[2][tab] || [];
-  const container = document.getElementById('freefire-packages-list'); container.innerHTML = '';
+  const container = document.getElementById('freefire-packages-list');
+  container.innerHTML = '';
+  const ffImage = 'https://playpay.lol/images/games/freefire.png';
+  
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(tab === 'diamonds' ? 2 : '2_pacs', idx, pack.price);
-    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="pack-icon">' + (pack.icon.includes('http') ? '<img src="' + pack.icon + '">' : pack.icon) + '</div><div class="flex-1"><p class="font-bold text-base text-gray-900">' + pack.amount + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="ff-pack-' + idx + '"></div></div>';
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
+      '<img src="' + ffImage + '" alt="Free Fire" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
+    '</div>';
   });
 }
 
 function renderBrawlPackages() {
   const packs = gamePackages[8].default || [];
-  const container = document.getElementById('brawl-packages-list'); container.innerHTML = '';
+  const container = document.getElementById('brawl-packages-list');
+  container.innerHTML = '';
+  const brawlImage = 'https://playpay.lol/images/games/brawl.png';
+  
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(8, idx, pack.price);
-    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="pack-icon">' + (pack.icon.includes('http') ? '<img src="' + pack.icon + '">' : pack.icon) + '</div><div class="flex-1"><p class="font-bold text-base text-gray-900">' + pack.amount + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="brawl-pack-' + idx + '"></div></div>';
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
+      '<img src="' + brawlImage + '" alt="Brawl Stars" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
+    '</div>';
   });
 }
-
 function renderDefaultPackages(gameId) {
   const packs = gamePackages[gameId]?.default || [];
-  const container = document.getElementById('default-packages-list'); container.innerHTML = '';
+  const container = document.getElementById('default-packages-list');
+  container.innerHTML = '';
+  
+  const gameImages = {
+    3: 'https://playpay.lol/images/games/ml.png',
+    4: 'https://playpay.lol/images/games/hok.png',
+    5: 'https://playpay.lol/images/games/so2.png',
+    6: 'https://playpay.lol/images/games/steam.png',
+    7: 'https://playpay.lol/images/games/roblox.png'
+  };
+  const gameImg = gameImages[gameId] || 'https://playpay.lol/images/games/default.png';
+  
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(gameId, idx, pack.price);
-    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)"><div class="pack-icon">' + (pack.icon.includes('http') ? '<img src="' + pack.icon + '">' : pack.icon) + '</div><div class="flex-1"><p class="font-bold text-base text-gray-900">' + pack.amount + ' ' + selectedGame.currency + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div><div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center" id="default-pack-' + idx + '"></div></div>';
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
+      '<img src="' + gameImg + '" alt="Game" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
+    '</div>';
   });
 }
 
