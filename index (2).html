@@ -196,6 +196,20 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 .page {
   padding-bottom: 100px !important;
 }
+/* Pastki menyu */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding: 8px 8px 16px; display: flex; justify-content: space-around; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; }
+.nav-btn .icon-box { width: 48px; height: 48px; border-radius: 14px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+.nav-btn .icon-box svg { width: 24px; height: 24px; fill: #6b7280; transition: 0.3s; }
+.nav-btn .label { font-size: 11px; font-weight: 600; color: #6b7280; transition: 0.3s; }
+.nav-btn.active .icon-box { background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transform: translateY(-3px); }
+.nav-btn.active .icon-box svg { fill: white; }
+.nav-btn.active .label { color: #8b5cf6; font-weight: 700; }
+.nav-btn.center-btn { margin-top: -24px; }
+.nav-btn.center-btn .icon-box { width: 56px; height: 56px; background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+.nav-btn.center-btn .icon-box svg { fill: white; }
+.nav-btn.center-btn .label { color: #8b5cf6; font-weight: 700; }
+.page { padding-bottom: 100px !important; }
 </style>
 </head>
 <body>
