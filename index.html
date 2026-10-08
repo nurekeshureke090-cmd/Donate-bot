@@ -1341,45 +1341,99 @@ function renderPUBGPackages(tab) {
   const packs = gamePackages[1][tab] || [];
   const container = document.getElementById('packages-list');
   container.innerHTML = '';
-  const pubgImage = 'https://playpay.lol/images/games/pubg.png';
+  
+  // PUBG paket rasmlari
+  const pubgImages = {
+    '60': 'https://i.postimg.cc/CxMhxZ2v/7b65d0a87b5c1386232dfd337015feca.jpg',
+    '325': 'https://i.postimg.cc/fLdZrY3m/images-(10).jpg',
+    '660': 'https://i.postimg.cc/mrvWChdc/images-(13).jpg',
+    '1800': 'https://i.postimg.cc/rFf6gfnp/images-(12).jpg',
+    '3850': 'https://i.postimg.cc/mrvWChdc/images-(13).jpg',
+    '8100': 'https://i.postimg.cc/0j930S7m/images-(14).jpg',
+    '1 Month': 'https://i.postimg.cc/HLG6t5gW/51fa5596-7e74-412a-9219-72613969b914.webp',
+    '3 Months': 'https://i.postimg.cc/TwBjRvYt/e4a47383-21ce-488f-ab75-20478a28b4f6.webp',
+    '6 Months': 'https://i.postimg.cc/7YfX8XHc/577e0d5e-80d8-48e8-8bc3-3e4ffea00843.webp',
+    '12 Months': 'https://i.postimg.cc/7Zq3PVwh/9a088030-50e8-4628-938a-70985fbcb24b.webp',
+    'Prime Plus 1 Month': 'https://i.postimg.cc/BvcBcVpH/4e41b4f4-b0ed-44d0-8b76-30b66e138e03.webp',
+    'Prime Plus 3 Months': 'https://i.postimg.cc/Tw5mNNq7/2b30c42e-f142-4ae6-821c-6b714743d5b8.webp',
+    'Prime Plus 6 Months': 'https://i.postimg.cc/4ynvGNgL/98e5d702-f0f0-45ec-9e67-b0d4b80d7cc5.webp',
+    'Prime Plus 12 Months': 'https://i.postimg.cc/bN9n5tkJ/6173a69b-e2dc-46eb-a14d-8dbb791ca9ff.webp',
+    'First Purchase Pack': 'https://i.postimg.cc/MKC0kSrf/67dd49eb-f726-4603-93e1-7888d085da7d.webp',
+    'Weekly Deal Pack 1': 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp',
+    'Weekly Mythic Emblem': 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp',
+    'Upgradable Firearm': 'https://i.postimg.cc/wxc3xdvL/7c346d4d-2b2e-42b1-9483-fc35824aa5d6.webp',
+    'Mythic Emblem Pack': 'https://i.postimg.cc/XXSrPV7G/dea6e57d-9982-46a2-a210-05fc407a1b90.webp',
+    'Elite Pass LV1-50': 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp',
+    'Elite Pass LV1-100': 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp'
+  };
   
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(tab === 'uc' ? 1 : '1_prime', idx, pack.price);
+    const packName = typeof pack.amount === 'string' ? pack.amount : pack.amount + (tab === 'uc' ? ' UC' : '');
+    const packIcon = pack.icon || pubgImages[pack.amount.toString()] || pubgImages[packName] || 'https://i.postimg.cc/CxMhxZ2v/7b65d0a87b5c1386232dfd337015feca.jpg';
+    
     container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
-      '<img src="' + pubgImage + '" alt="PUBG" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
-      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<img src="' + packIcon + '" alt="PUBG" style="width:64px; height:64px; border-radius:12px; object-fit:cover;" onerror="this.src=\'https://i.postimg.cc/CxMhxZ2v/7b65d0a87b5c1386232dfd337015feca.jpg\'">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + packName + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
       '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
     '</div>';
   });
 }
-
 function renderFFPackages(tab) {
   const packs = gamePackages[2][tab] || [];
   const container = document.getElementById('freefire-packages-list');
   container.innerHTML = '';
-  const ffImage = 'https://playpay.lol/images/games/freefire.png';
+  
+  // Free Fire paket rasmlari
+  const ffImages = {
+    'Level Up Package 6': 'https://i.postimg.cc/jjNzqkm8/images-(9).jpg',
+    'Level Up Package 10': 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg',
+    'Level Up Package 15': 'https://i.postimg.cc/HnW52WnG/1790855523904.jpg',
+    'Level Up Package 20': 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg',
+    'Level Up Package 25': 'https://i.postimg.cc/J42JNLLz/1790855507616.jpg',
+    'Level Up Package 30': 'https://i.postimg.cc/Gtp8DMg4/1790855593969.jpg',
+    'Weekly Lite': 'https://i.postimg.cc/Fs8dfVy1/IMG-20261001-165506-460.jpg',
+    'Weekly Membership': 'https://i.postimg.cc/HL4VhGfM/IMG-20261001-165507-767.jpg',
+    'Monthly Membership': 'https://i.postimg.cc/J0gnkRBX/IMG-20261001-165508-955.jpg'
+  };
   
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(tab === 'diamonds' ? 2 : '2_pacs', idx, pack.price);
+    const packName = typeof pack.amount === 'string' ? pack.amount : pack.amount + ' Diamonds';
+    const packIcon = pack.icon || ffImages[packName] || 'https://i.postimg.cc/jjNzqkm8/images-(9).jpg';
+    
     container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
-      '<img src="' + ffImage + '" alt="Free Fire" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
-      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<img src="' + packIcon + '" alt="FF" style="width:64px; height:64px; border-radius:12px; object-fit:cover;" onerror="this.src=\'https://i.postimg.cc/jjNzqkm8/images-(9).jpg\'">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + packName + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
       '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
     '</div>';
   });
-}
+  }
 
 function renderBrawlPackages() {
   const packs = gamePackages[8].default || [];
   const container = document.getElementById('brawl-packages-list');
   container.innerHTML = '';
-  const brawlImage = 'https://playpay.lol/images/games/brawl.png';
+  
+  const brawlImages = {
+    'Brawl Pass': 'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp',
+    'Brawl Pass Plus': 'https://i.postimg.cc/zHDwRWBs/01KYBN16Q7JNANPYYS92NJ3AZG.webp',
+    'Brawl Pass Pro': 'https://i.postimg.cc/CnMCfD1m/01KYBN1G4DF57TPEX693M4NKJJ.webp',
+    '80 Gems': 'https://i.postimg.cc/30rjDpRV/01KYBN1SQ59X8CK3NT6Z1NP642.webp',
+    '170 Gems': 'https://i.postimg.cc/YL2Nmg9y/01KYBN27ZZEHQ0RJ0KM33Z4WP4.webp',
+    '360 Gems': 'https://i.postimg.cc/WqpmJr39/01KYBN2VZWV2PSVSP3B7CTM114.webp',
+    '950 Gems': 'https://i.postimg.cc/V0s9bM6V/01KYBN367ARKZ46GTXP5G477HK.webp',
+    '2000 Gems': 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png',
+    '4000 Gems': 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png'
+  };
   
   packs.forEach((pack, idx) => {
     const finalPrice = getFinalPrice(8, idx, pack.price);
+    const packIcon = pack.icon || brawlImages[pack.amount] || 'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp';
+    
     container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
-      '<img src="' + brawlImage + '" alt="Brawl Stars" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">' +
-      '<div class="flex-1"><p class="font-bold text-sm">' + pack.name + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<img src="' + packIcon + '" alt="HOK" style="width:64px; height:64px; border-radius:12px; object-fit:cover;" onerror="this.src=\'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp\'">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.amount + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
       '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
     '</div>';
   });
@@ -1389,13 +1443,47 @@ function renderDefaultPackages(gameId) {
   const container = document.getElementById('default-packages-list');
   container.innerHTML = '';
   
-  const gameImages = {
-    3: 'https://playpay.lol/images/games/ml.png',
-    4: 'https://playpay.lol/images/games/hok.png',
-    5: 'https://playpay.lol/images/games/so2.png',
-    6: 'https://playpay.lol/images/games/steam.png',
-    7: 'https://playpay.lol/images/games/roblox.png'
+  const defaultIcons = {
+    3: 'https://i.postimg.cc/64vSgrWx/01KWCQS0MKMM5ZPYJE3YKNYT7G.png', // Mobile Legends
+    8: 'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp', // Honor of Kings
+    11: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg', // Roblox
   };
+  const defaultIcon = defaultIcons[gameId] || 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg';
+  
+  // Mobile Legends rasmlari
+  const mlImages = {
+    '5': 'https://i.postimg.cc/64vSgrWx/01KWCQS0MKMM5ZPYJE3YKNYT7G.png',
+    '12': 'https://i.postimg.cc/WtFQdvMt/01KWCQX8HE5QJ4463F7YQBCPS0.png',
+    '50': 'https://i.postimg.cc/rz0vDkSK/06316848-beb3-4f8b-8399-8427f23bc4ce.webp',
+    '72': 'https://i.postimg.cc/23bP1D4q/0a79095a-0e53-429f-879b-c01e1b3d4fe0.webp',
+    '145': 'https://i.postimg.cc/7bGp5kgG/1985f989-ae7c-47b4-a52e-44531ab279a2.webp'
+  };
+  
+  // Roblox rasmlari
+  const robloxImages = {
+    '80': 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg',
+    '400': 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg',
+    '800': 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg',
+    '1700': 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg'
+  };
+  
+  packs.forEach((pack, idx) => {
+    const finalPrice = getFinalPrice(gameId, idx, pack.price);
+    let packIcon = pack.icon || defaultIcon;
+    
+    if (gameId === 3) {
+      packIcon = mlImages[pack.amount.toString()] || defaultIcon;
+    } else if (gameId === 11) {
+      packIcon = robloxImages[pack.amount.toString()] || defaultIcon;
+    }
+    
+    container.innerHTML += '<div class="pack-card p-4 flex items-center gap-3 cursor-pointer" onclick="selectPackage(' + idx + ', this)" style="background:white; border-radius:16px; border:2px solid #e5e7eb; margin-bottom:8px;">' +
+      '<img src="' + packIcon + '" alt="Game" style="width:64px; height:64px; border-radius:12px; object-fit:cover;" onerror="this.src=\'' + defaultIcon + '\'">' +
+      '<div class="flex-1"><p class="font-bold text-sm">' + pack.amount + (gameId === 3 ? ' DM' : gameId === 11 ? ' Robux' : '') + '</p><p class="text-xs text-gray-500">' + finalPrice.toLocaleString() + ' so\'m</p></div>' +
+      '<div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>' +
+    '</div>';
+  });
+}
   const gameImg = gameImages[gameId] || 'https://playpay.lol/images/games/default.png';
   
   packs.forEach((pack, idx) => {
