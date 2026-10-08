@@ -1194,47 +1194,6 @@ body.dark .bg-gray-200 { background: #6b7280 !important; }
 </div>
 </div>
 </div>
-
-<!-- TO'LIQ PASTKI MENYU -->
-<div id="main-bottom-nav" style="position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; background: white !important; border-top: 1px solid #e5e7eb !important; z-index: 9999 !important; box-shadow: 0 -4px 20px rgba(0,0,0,0.1) !important; padding: 10px 5px 15px 5px !important; display: flex !important; justify-content: space-around !important; align-items: center !important;">
-  
-  <button onclick="navigateTo('home')" class="clean-nav-btn active" data-page="home" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer;">
-    <div style="width: 45px; height: 45px; border-radius: 14px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
-      <svg style="width: 24px; height: 24px; fill: #6b7280;" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-    </div>
-    <span style="font-size: 11px; font-weight: 600; color: #6b7280;">Asosiy</span>
-  </button>
-  
-  <button onclick="navigateTo('games')" class="clean-nav-btn" data-page="games" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer;">
-    <div style="width: 45px; height: 45px; border-radius: 14px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
-      <svg style="width: 24px; height: 24px; fill: #6b7280;" viewBox="0 0 20 20"><path d="M13 7h4v2h-4V7zM3 7h4v2H3V7zm10 6h4v2h-4v-2zM3 13h4v2H3v-2z"/></svg>
-    </div>
-    <span style="font-size: 11px; font-weight: 600; color: #6b7280;">O'yinlar</span>
-  </button>
-  
-  <button onclick="navigateTo('topup')" class="clean-nav-btn" data-page="topup" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; margin-top: -20px;">
-    <div style="width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #ec4899); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: 0.3s;">
-      <svg style="width: 28px; height: 28px; fill: white;" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
-    </div>
-    <span style="font-size: 11px; font-weight: 700; color: #8b5cf6;">To'ldirish</span>
-  </button>
-  
-  <button onclick="navigateTo('orders')" class="clean-nav-btn" data-page="orders" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer;">
-    <div style="width: 45px; height: 45px; border-radius: 14px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
-      <svg style="width: 24px; height: 24px; fill: #6b7280;" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg>
-    </div>
-    <span style="font-size: 11px; font-weight: 600; color: #6b7280;">Buyurtmalar</span>
-  </button>
-  
-  <button onclick="navigateTo('profile')" class="clean-nav-btn" data-page="profile" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer;">
-    <div style="width: 45px; height: 45px; border-radius: 14px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
-      <svg style="width: 24px; height: 24px; fill: #6b7280;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-    </div>
-    <span style="font-size: 11px; font-weight: 600; color: #6b7280;">Profil</span>
-  </button>
-
-</div>
-
 <script>
 function setActiveMenu(page) {
   document.querySelectorAll('.clean-nav-btn').forEach(btn => {
