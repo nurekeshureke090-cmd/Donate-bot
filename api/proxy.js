@@ -12,7 +12,9 @@ const FALLBACK = {
 
 import crypto from 'crypto';
 
-const env = (k) => process.env[k] || FALLBACK[k] || '';
+// ADMIN_ID sir emas: shu fayldagi qiymat ustun turadi (Vercel'dagi eski qiymat xalaqit bermasin).
+// Boshqa sirlar uchun Vercel'dagi qiymat birinchi, bo'lmasa shu fayldagisi olinadi.
+const env = (k) => (k === 'ADMIN_ID' && FALLBACK.ADMIN_ID) ? FALLBACK.ADMIN_ID : (process.env[k] || FALLBACK[k] || '');
 const PLAYPAY_API = 'https://playpay.uz/api/v1';
 
 const GET_PUBLIC = [/^\/games$/, /^\/games\/\d+\/packages$/, /^\/_config$/];
@@ -137,4 +139,4 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ ok: false, error: 'Server xatosi' });
   }
-  }
+}
