@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PayerSub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background-color: #f3f4f6; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: all 0.3s; }
+body.dark { background-color: #1f2937; color: #f3f4f6; }
+body.dark .top-header, body.dark .game-card, body.dark .pack-card, body.dark .payment-card, body.dark .step-item, body.dark .bg-white { background: #374151 !important; color: #f3f4f6 !important; border-color: #4b5563 !important; }
+body.dark input, body.dark select, body.dark textarea { background: #4b5563 !important; color: #f3f4f6 !important; border-color: #6b7280 !important; }
+body.dark .text-gray-900 { color: #f3f4f6 !important; }
+body.dark .text-gray-700 { color: #e5e7eb !important; }
+body.dark .text-gray-600 { color: #d1d5db !important; }
+body.dark .text-gray-500 { color: #9ca3af !important; }
+body.dark .bg-gray-100 { background: #4b5563 !important; }
+body.dark .bg-gray-200 { background: #6b7280 !important; }
+.page { display: none; padding-bottom: 90px; }
+.page.active { display: block; }
+.game-card { background: white; transition: all 0.2s; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.game-card:active { transform: scale(0.95); }
+.game-logo { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.game-logo img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+.gradient-bg { background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); }
+.nav-btn { transition: all 0.2s; color: #9ca3af; }
+.nav-btn.active { color: #8b5cf6; }
+.nav-btn.active svg { fill: #8b5cf6; }
+.pack-card { background: white; border: 1px solid #e5e7eb; transition: all 0.2s; border-radius: 12px; }
+.pack-card:active { border-color: #8b5cf6; background: #f9fafb; }
+.pack-card.selected { border-color: #8b5cf6; background: #f3e8ff; }
+.profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; margin: 0 auto; color: white; }
+.tab-btn { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; transition: all 0.2s; border: none; cursor: pointer; }
+.tab-btn.active { background: #8b5cf6; color: white; }
+.tab-btn:not(.active) { background: #f3f4f6; color: #6b7280; }
+.game-banner { height: 200px; background-size: cover; background-position: center; position: relative; }
+.game-banner::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+.rating-badge { background: white; padding: 4px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.hidden { display: none !important; }
+.top-header { position: sticky; top: 0; z-index: 50; background: white; padding: 16px; border-bottom: 1px solid #e5e7eb; }
+.pack-icon { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.pack-icon img { width: 100%; height: 100%; object-fit: contain; }
+.admin-input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; margin-top: 4px; font-size: 14px; }
+.amount-input { width: 100%; padding: 16px; font-size: 32px; font-weight: bold; border: 2px solid #e5e7eb; border-radius: 16px; outline: none; }
+.amount-input:focus { border-color: #8b5cf6; }
+.quick-amount { padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-weight: bold; text-align: center; background: white; cursor: pointer; }
+.quick-amount:active { background: #f3e8ff; border-color: #8b5cf6; }
+.card-display { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 20px; padding: 24px; color: white; }
+.copy-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.step-item { display: flex; gap: 12px; padding: 16px; background: white; border-radius: 12px; margin-bottom: 8px; }
+.step-number { width: 32px; height: 32px; background: #ede9fe; color: #7c3aed; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+.warning-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; }
+.timer-bar { height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+.timer-fill { height: 100%; background: #8b5cf6; transition: width 1s linear; }
+.payment-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.btn-approve { background: #10b981; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+.btn-reject { background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+.vip-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+.vip-silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+.vip-gold { background: linear-gradient(135deg, #ffd700, #ffaa00); }
+.vip-diamond { background: linear-gradient(135deg, #b9f2ff, #00bfff); }
+.stat-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+.notif-card { background: white; border-left: 4px solid #8b5cf6; border-radius: 12px; padding: 16px; margin-bottom: 8px; }
+.faq-item { background: white; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.faq-question { padding: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.faq-answer { padding: 0 16px 16px; color: #6b7280; display: none; }
+.faq-item.open .faq-answer { display: block; }
+.chat-message { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; max-width: 80%; }
+.chat-message.user { background: #8b5cf6; color: white; margin-left: auto; }
+.chat-message.admin { background: white; border: 1px solid #e5e7eb; }
+.theme-option { width: 60px; height: 60px; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+.theme-option.active { border-color: #8b5cf6; transform: scale(1.1); }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 200px; padding: 16px; background: white; border-radius: 12px; border: 1px solid #e5e7eb; }
+.bar { flex: 1; background: linear-gradient(to top, #8b5cf6, #a855f7); border-radius: 4px 4px 0 0; transition: all 0.3s; position: relative; }
+.bar:hover { opacity: 0.8; }
+.bar-label { position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; }
+.contest-card { background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; padding: 20px; color: white; margin-bottom: 12px; }
+.loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.loading-spinner { width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* To'ldirish sahifasi - PayerPin uslubi */
+.payment-method-card { cursor: pointer; }
+.payment-method-card:active { transform: scale(0.97); }
+.payment-method-card.active-method { 
+  border-color: #8b5cf6 !important; 
+  background: #faf5ff !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+.quick-amount-btn:active { 
+  background: #f3e8ff !important; 
+  border-color: #8b5cf6 !important;
+  transform: scale(0.95);
+}
+.amount-input::placeholder { color: #d1d5db; }
+#topup-next-btn:not(:disabled) {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+#topup-next-btn:not(:disabled):active {
+  transform: scale(0.98);
+}
+/* Admin panel - PayerPin uslubi */
+#page-admin .stat-card { transition: all 0.3s; border-radius: 20px; }
+#page-admin .stat-card:active { transform: scale(0.95); }
+#page-admin .menu-item { transition: all 0.2s; border-radius: 16px; }
+#page-admin .menu-item:active { transform: scale(0.97); background: #f9fafb; }
+#page-admin .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin: 20px 0 12px; padding: 0 4px; }
+.badge-count { background: #ef4444; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; min-width: 24px; text-align: center; }
+
+/* ===== YANGI DIZAYN: paket kartalari, banner, tablar, suzuvchi menyu ===== */
+:root { --p: #8b5cf6; --s: #a855f7; }
+body:not(.dark) { background-color: #eef0f6; }
+.game-banner { height: 190px; }
+.game-banner::after { height: 110px; background: linear-gradient(transparent, #eef0f6); }
+body.dark .game-banner::after { background: linear-gradient(transparent, #1f2937); }
+#game-banner > div.absolute { left: 16px !important; right: 16px; bottom: 14px !important; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+#game-banner #detail-name { color: #111827 !important; font-size: 26px; line-height: 1.15; text-shadow: 0 1px 8px rgba(255,255,255,.55); }
+body.dark #game-banner #detail-name { color: #f3f4f6 !important; text-shadow: none; }
+#game-banner .rating-badge { margin-top: 0 !important; flex-shrink: 0; }
+.tab-btn { padding: 10px 18px; font-size: 15px; }
+.tab-btn.active { background: linear-gradient(135deg, var(--p), var(--s)); color: #fff; box-shadow: 0 4px 12px rgba(139,92,246,.35); }
+.tab-btn:not(.active) { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+body.dark .tab-btn:not(.active) { background: #374151; color: #f3f4f6; }
+.pk-grid, #packages-list, #freefire-packages-list, #brawl-packages-list, #default-packages-list { gap: 12px !important; }
+.pk-card { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; background: #fff; border: 2px solid transparent; border-radius: 18px; box-shadow: 0 1px 4px rgba(17,24,39,.06); cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s; }
+.pk-card:active { transform: scale(.97); }
+.pk-card.selected { border-color: var(--p); background: #f5f0ff; box-shadow: 0 4px 14px rgba(139,92,246,.25); }
+body.dark .pk-card.selected { background: #4c3a7a !important; }
+.pk-img { width: 56px; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.pk-emoji { font-size: 38px; line-height: 1; }
+.pk-img img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+.pk-info { min-width: 0; flex: 1; }
+.pk-name { font-weight: 700; font-size: 15px; line-height: 1.25; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pk-price { font-weight: 800; font-size: 17px; line-height: 1.3; color: #111827; margin-top: 2px; white-space: nowrap; }
+.pk-price span { font-weight: 600; font-size: 12px; color: #9ca3af; }
+body.dark .pk-name, body.dark .pk-price { color: #f3f4f6; }
+/* Sotib olish tugmasi: nav ustida yopishib turadi */
+#pubg-tabs > button, #freefire-tabs > button, #brawl-tabs > button, #default-packages > button { position: sticky; bottom: 104px; z-index: 15; }
+/* Suzuvchi pastki menyu */
+#nav-wrap { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+#bottom-nav { pointer-events: auto; background: #fff; border-radius: 30px; box-shadow: 0 6px 24px rgba(17,24,39,.14); padding: 6px; gap: 2px; }
+body.dark #bottom-nav { background: #374151; }
+#bottom-nav .nav-btn { border-radius: 24px; padding: 8px 4px !important; color: #8b8fa3; gap: 2px; }
+#bottom-nav .nav-btn svg { width: 24px; height: 24px; fill: none !important; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#bottom-nav .nav-btn span { font-size: 11px; font-weight: 600; }
+#bottom-nav .nav-btn.active { background: linear-gradient(135deg, var(--p), var(--s)); color: #fff !important; box-shadow: 0 4px 12px rgba(139,92,246,.4); }
+#bottom-nav .nav-btn.active svg { fill: none !important; stroke: #fff; }
+.page { padding-bottom: 110px; }
+
+/* ===== PROFIL (yangi dizayn) ===== */
+:where(.pf) button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
+.pf svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.pf-card{background:#fff;border:1px solid #e6e3f5;border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px rgba(124,58,237,.06);width:100%;text-align:left}
+.pf-hero{text-align:center;padding:22px 16px 16px;border-color:#d9d0fa}
+.pf-ring{width:84px;height:84px;border-radius:50%;padding:3px;margin:0 auto 10px;background:linear-gradient(135deg,#8b5cf6,#c4b5fd);box-shadow:0 0 22px rgba(139,92,246,.3)}
+.pf-ava{position:relative;overflow:hidden;width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#5eead4,#14b8a6);color:#fff;font-size:34px;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #fff}
+.pf-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pf-name{font-size:22px;font-weight:800;color:#111827}
+.pf-pill{display:inline-flex;gap:10px;margin-top:8px;padding:6px 16px;border:1px solid #e5e7eb;border-radius:999px;background:#f3f4f6;font-size:13px;color:#4b5563;font-family:monospace}
+.pf-bal{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:14px;background:#f3f4f8;border:1px solid #e5e7eb;border-radius:20px;text-align:left}
+.pf-lbl{font-size:12px;letter-spacing:.14em;font-weight:700;color:#6b7280}
+.pf-amt{font-size:28px;font-weight:800;color:#111827}.pf-amt small{font-size:14px;font-weight:500;color:#6b7280}
+.pf-btn{background:linear-gradient(135deg,#8b5cf6,#6d5ef5);color:#fff;font-weight:700;padding:12px 18px;border-radius:14px;box-shadow:0 6px 16px rgba(124,58,237,.35)}
+.pf-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;color:#7c3aed}
+.pf-t{font-weight:700;color:#111827;font-size:16px}.pf-s{font-size:13px;color:#6b7280}
+.pf-outline{width:100%;padding:13px;border-radius:14px;background:#f3f4f8;border:1px solid #e5e7eb;color:#6d5ef5;font-weight:600}
+.pf-promo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin-top:10px;border:1.5px dashed #c4b5fd;border-radius:16px;background:#f5f3ff}
+.pf-promo b{display:block;font-family:monospace;letter-spacing:.1em;font-size:18px;color:#6d28d9}.pf-promo span{font-size:13px;color:#4b5563}
+.pf-promo button{color:#6d28d9;font-weight:700}
+.pf-promo.on{background:#e7f6ee;border:1.5px solid #86d9a8}.pf-promo.on b{color:#16a34a}
+.pf-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}.pf-two .pf-card{margin:0;color:#7c3aed}
+.pf-tile{display:flex;flex-direction:column;gap:8px;min-height:140px}.pf-tile .pf-t{font-size:17px;line-height:1.25}
+.pf-set{padding:4px 16px}
+.pf-srow{display:flex;align-items:center;gap:12px;width:100%;padding:15px 0;border-bottom:1px solid #eceaf5;color:#6b7280;text-align:left}
+.pf-srow:last-child{border-bottom:0}.pf-srow .pf-t{flex:1}.pf-go i{font-style:normal;font-size:24px;color:#9ca3af}
+.pf-seg{display:flex;padding:4px;border:1px solid #e5e7eb;background:#f3f4f8;border-radius:999px}
+.pf-seg button{min-width:48px;padding:7px 14px;border-radius:999px;font-weight:700;font-size:14px;color:#6b7280;display:flex;justify-content:center}
+.pf-seg button svg{width:18px;height:18px}
+.pf-seg button.on{background:linear-gradient(135deg,#8b5cf6,#6d5ef5);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.35)}
+.pf-sec{margin:20px 4px 10px}
+.pf-link{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:12px}
+.pf-link div{flex:1}.pf-link i{font-style:normal;font-size:26px;color:#9ca3af}
+.pf-yt{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(220,38,38,.3)}
+.pf-social{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px;font-weight:700;letter-spacing:.05em;color:#374151}
+body.dark .pf-card{background:#1f1b33;border-color:#2e2a4a}
+body.dark .pf-name,body.dark .pf-t,body.dark .pf-amt,body.dark .pf-social{color:#f3f4f6}
+body.dark .pf-pill,body.dark .pf-bal,body.dark .pf-outline,body.dark .pf-seg{background:#2a2545;border-color:#3a3560;color:#d1d5db}
+body.dark .pf-promo{background:#2a2545}body.dark .pf-srow{border-color:#2e2a4a}
+
+/* ===== ADMIN (yangi dizayn) ===== */
+.ad-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.ad-stat{background:linear-gradient(135deg,#8b5cf6,#6d5ef5);color:#fff;border-radius:20px;padding:14px;box-shadow:0 6px 18px rgba(124,58,237,.25)}
+.ad-stat:nth-child(2){background:linear-gradient(135deg,#0ea5e9,#2563eb)}.ad-stat:nth-child(3){background:linear-gradient(135deg,#10b981,#059669)}.ad-stat:nth-child(4){background:linear-gradient(135deg,#f59e0b,#ea580c)}
+.ad-stat span{font-size:20px}.ad-stat p{font-size:20px;font-weight:800;margin-top:4px;word-break:break-word}.ad-stat small{font-size:12px;opacity:.85}
+.ad-chip{width:40px;height:40px;border-radius:12px;background:#f3f0ff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ad-badge{background:#ef4444;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+body.dark .ad-chip{background:#2a2545}
+#bottom-nav .nav-btn{min-width:0}
+
+/* ===== PAKET KARTALARI (yangi) ===== */
+#gd-list{gap:12px !important}
+.pk-card{padding:10px 12px;gap:10px;border-radius:20px;border:1.5px solid #e5e7eb;box-shadow:none;align-items:center}
+.pk-card.selected{border-color:var(--p)}
+.pk-img{position:relative;width:48px;height:48px}
+.pk-img img{border-radius:10px}.pk-emoji{font-size:34px}
+.pk-rib{position:absolute;left:0;right:0;bottom:-3px;background:#22c55e;color:#fff;font-size:10px;font-weight:700;text-align:center;border-radius:0 0 10px 10px;line-height:15px}
+.pk-name{font-size:14px}
+.pk-old{font-size:12px;color:#9ca3af;text-decoration:line-through;font-weight:600;line-height:1.2;margin-top:1px}
+.pk-price{display:flex;align-items:center;gap:4px;flex-wrap:wrap;color:#16a34a;font-size:16px;white-space:normal}
+.pk-price b{font-weight:800}.pk-price span{font-size:11px;color:#9ca3af}
+.pk-badge{font-style:normal;background:#22c55e;color:#fff;font-size:10px;font-weight:700;border-radius:7px;padding:0 5px;line-height:16px}
+body.dark .pk-name{color:#f3f4f6}body.dark .pk-card{border-color:#4b5563}
+.gd-dot{display:inline-block;width:6px;height:6px;background:#f59e0b;transform:rotate(45deg);margin-right:8px;vertical-align:middle}
+.gd-empty{grid-column:1/-1;text-align:center;color:#9ca3af;padding:28px 0;font-weight:600}
+.gd-star{width:18px;height:18px;fill:none;stroke:#f59e0b;stroke-width:1.6;stroke-linejoin:round;display:inline-block;vertical-align:middle;margin-right:4px}
+</style>
+</head>
+<body>
+
+<!-- ASOSIY SAHIFA (PAYERPIN USLUBIDA) -->
+<div id="page-home" class="page active">
+<div class="top-header flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-lg" id="avatar">P</div>
+    <div>
+      <p class="text-xs text-gray-500">Salom </p>
+      <p class="font-bold text-lg text-gray-900" id="username">Yuklanmoqda...</p>
+      <p class="text-xs font-bold text-yellow-600" id="vip-badge"></p>
+    </div>
+  </div>
+  <button onclick="toggleDarkMode()" class="bg-gray-100 p-2 rounded-lg text-xl" id="theme-btn"></button>
+</div>
+
+<div class="p-4">
+  <!-- Balans kartochkasi -->
+  <div class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-5 rounded-3xl shadow-2xl mb-4 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-30 -mr-10 -mt-10"></div>
+    <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl opacity-30 -ml-10 -mb-10"></div>
+    <div class="relative z-10">
+      <p class="text-xs text-purple-200 uppercase tracking-widest font-bold">UMUMIY BALANS</p>
+      <p class="text-3xl font-bold mt-2 text-white" id="user-balance">0 <span class="text-lg text-purple-200">so'm</span></p>
+      <div class="mt-3 flex gap-2">
+        <button onclick="navigateTo('topup')" class="flex-1 bg-white text-purple-600 px-4 py-2 rounded-xl font-bold text-sm shadow-md">💳 To'ldirish</button>
+        <button onclick="navigateTo('promo')" class="flex-1 bg-white/20 text-white px-4 py-2 rounded-xl font-bold text-sm border border-white/30">🎫 Promo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tezkor tugmalar -->
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <button onclick="navigateTo('daily-bonus')" class="bg-white p-4 rounded-2xl flex items-center justify-center gap-2 border border-gray-200 shadow-sm">
+      <span class="text-2xl">🎁</span>
+      <span class="font-bold text-sm text-gray-700">Kunlik bonus</span>
+    </button>
+    <button onclick="navigateTo('referal')" class="bg-white p-4 rounded-2xl flex items-center justify-center gap-2 border border-gray-200 shadow-sm">
+      <span class="text-2xl"></span>
+      <span class="font-bold text-sm text-gray-700">Referal</span>
+    </button>
+  </div>
+
+  <!-- Reklama banner -->
+  <div class="px-0 mb-4">
+    <div class="bg-gradient-to-r from-purple-900 to-indigo-900 rounded-2xl p-6 relative overflow-hidden shadow-lg">
+      <div class="relative z-10">
+        <h3 class="text-2xl font-bold mb-1 text-white">ENG TEZ</h3>
+        <h3 class="text-3xl font-bold text-purple-300 mb-2">ARZON UC</h3>
+        <p class="text-sm opacity-80 text-white">XIZMATIMIZ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tanlov -->
+  <div class="mb-4" id="active-contest"></div>
+
+  <!-- Ommabop o'yinlar -->
+  <div class="flex justify-between items-center mb-3">
+    <h2 class="font-bold text-lg text-gray-900">🔥 Ommabop o'yinlar</h2>
+    <button onclick="navigateTo('games')" class="text-purple-600 font-bold text-sm">Barchasi →</button>
+  </div>
+  <div class="grid grid-cols-3 gap-3" id="popular-games"></div>
+
+  <!-- Bildirishnomalar -->
+  <div class="mt-4" id="notifications-container"></div>
+</div>
+</div>
+</div><!-- O'YINLAR SAHIFASI -->
+<div id="page-games" class="page">
+<div class="top-header">
+<h1 class="text-xl font-bold text-gray-900">Barcha o'yinlar</h1>
+<input type="text" placeholder="O'yin qidirish..." class="mt-3 w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900" oninput="searchGames(this.value)">
+</div>
+<div class="p-4 grid grid-cols-3 gap-3" id="all-games"></div>
+</div>
+
+<!-- O'YIN DETAIL SAHIFA (PAYERPIN USLUBIDA) -->
+<div id="page-game-detail" class="page">
+<div class="game-banner" id="game-banner">
+  <button onclick="navigateTo('games')" class="absolute top-4 left-4 bg-black/50 p-2 rounded-full text-white z-10">←</button>
+  <div class="absolute bottom-4 left-4 z-10">
+    <h1 class="text-2xl font-bold text-white" id="detail-name">O'yin</h1>
+    <div class="rating-badge mt-2"><svg class="gd-star" viewBox="0 0 24 24"><path d="m12 3 2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/></svg><span class="text-gray-700" id="detail-rating">5 · 1020</span></div>
+  </div>
+</div>
+
+<div id="gd-main" class="p-4">
+  <div class="flex gap-2 mb-4" id="gd-tabs"></div>
+  <h2 class="font-bold text-lg mb-3 text-gray-900">Paketni tanlang</h2>
+  <div id="gd-list" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="showGameIdInput()" class="mt-4 w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Sotib olish</button>
+</div>
+
+<!-- Steam -->
+<div id="steam-form" class="p-4 hidden">
+  <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl mb-4">
+    <div class="flex justify-center mb-4"><div class="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center"><span class="text-5xl">🎮</span></div></div>
+    <h3 class="text-white text-xl font-bold text-center mb-4">Steam hamyonini to'ldiring</h3>
+  </div>
+  <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Steam loginingiz</label><input type="text" id="steam-login" placeholder="Steam login" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm"></div>
+  <div class="bg-purple-50 p-4 rounded-xl mb-4 border border-purple-200"><div class="flex items-center gap-3"><span class="text-3xl">💲</span><div><p class="text-sm text-gray-500">Joriy kurs</p><p class="text-lg font-bold text-purple-600">1$ = 12 250 so'm</p></div></div></div>
+  <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Summa ($)</label><input type="number" id="steam-amount" placeholder="10" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm" oninput="calculateSteamPrice()"></div>
+  <div class="bg-gray-100 p-4 rounded-xl mb-4"><p class="text-sm text-gray-500">To'lov summasi:</p><p class="text-2xl font-bold text-gray-900" id="steam-total">0 so'm</p></div>
+  <button onclick="buySteam()" class="w-full gradient-bg py-4 rounded-2xl font-bold text-white text-lg shadow-lg">Keyingisi</button>
+</div>
+
+</div>
+  
+<!-- O'YIN ID KIRITISH SAHIFASI -->
+<div id="page-game-id" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('game-detail')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">O'yin ID kiriting</h1></div>
+<div class="p-4">
+<div class="bg-white p-6 rounded-2xl border border-gray-200">
+<div class="text-center mb-4"><div class="text-5xl mb-2" id="game-id-icon"></div><h2 class="text-xl font-bold text-gray-900" id="game-id-name">O'yin</h2><p class="text-sm text-gray-500 mt-1" id="game-id-package">Paket</p></div>
+<div class="bg-purple-50 p-4 rounded-xl mb-4"><p class="text-sm text-gray-600">Tanlangan paket</p><p class="text-2xl font-bold text-purple-600" id="game-id-price">0 so'm</p></div>
+<div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2" id="game-id-label">O'yin ID raqamingiz</label><input type="text" id="game-id-input" placeholder="Masalan: 5123456789" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm"><p class="text-xs text-gray-500 mt-1" id="game-id-hint">ID'ni o'yin ichidan topishingiz mumkin</p></div>
+<div id="server-id-container" class="mb-4 hidden"><label class="block text-sm font-medium text-gray-700 mb-2" id="server-id-label">Server ID</label><input type="text" id="server-id-input" placeholder="Server ID kiriting" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm"><p class="text-xs text-gray-500 mt-1" id="server-id-hint"></p></div>
+<button onclick="confirmGameId()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Davom etish</button>
+</div>
+</div>
+</div>
+
+<!-- BALANS TO'LDIRISH (PAYERPIN USLUBIDA) -->
+<div id="page-topup" class="page">
+<div class="top-header flex items-center gap-3">
+  <button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button>
+  <h1 class="text-xl font-bold text-gray-900">Balansni to'ldirish</h1>
+</div>
+<div class="p-4">
+
+  <!-- Katta balans kartochkasi -->
+  <div class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-3xl p-6 mb-5 text-white shadow-2xl relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-30 -mr-10 -mt-10"></div>
+    <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl opacity-30 -ml-10 -mb-10"></div>
+    <div class="relative z-10">
+      <p class="text-xs text-purple-200 uppercase tracking-widest font-bold">Balans</p>
+      <p class="text-5xl font-bold mt-3"><span id="topup-balance-display">0</span> <span class="text-lg text-purple-200">so'm</span></p>
+    </div>
+  </div>
+
+  <!-- To'lov usullari -->
+  <p class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">To'lov usuli</p>
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    
+    <!-- UZCARD -->
+    <button onclick="selectPaymentMethod('uzcard', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-purple-500 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">U</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">UZCARD</p>
+        <p class="text-xs text-gray-500">Kartaga o'tkazma</p>
+      </div>
+    </button>
+
+    <!-- HUMO -->
+    <button onclick="selectPaymentMethod('humo', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">HUMO</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">HUMO</p>
+        <p class="text-xs text-gray-500">Kartaga o'tkazma</p>
+      </div>
+    </button>
+
+    <!-- BANKOMAT -->
+    <button onclick="selectPaymentMethod('bankomat', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm">
+      <div class="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center text-2xl shadow-md"></div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">BANKOMAT</p>
+        <p class="text-xs text-gray-500">Terminal orqali</p>
+      </div>
+    </button>
+
+    <!-- VISA (texnik ishlar) -->
+    <button onclick="selectPaymentMethod('visa', this)" class="payment-method-card bg-white p-4 rounded-2xl border-2 border-gray-200 flex items-center gap-3 transition-all shadow-sm opacity-70">
+      <div class="w-14 h-14 bg-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md">VISA</div>
+      <div class="text-left flex-1">
+        <p class="font-bold text-gray-900 text-sm">INTERNATIONAL</p>
+        <p class="text-xs text-orange-500 font-semibold">🔧 Texnik ishlar</p>
+      </div>
+    </button>
+  </div>
+
+  <!-- Summa kiritish -->
+  <div class="bg-white rounded-2xl border-2 border-gray-200 p-5 mb-4 flex items-center shadow-sm">
+    <input type="number" id="topup-amount" class="amount-input flex-1 border-none outline-none text-4xl font-bold bg-transparent" placeholder="0" oninput="updateTopupButton()">
+    <span class="text-gray-400 font-bold text-lg ml-2">so'm</span>
+  </div>
+
+  <!-- Tez summa tugmalari -->
+  <div class="grid grid-cols-4 gap-2 mb-5">
+    <button onclick="setTopupAmount(50000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">50k</button>
+    <button onclick="setTopupAmount(100000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">100k</button>
+    <button onclick="setTopupAmount(200000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">200k</button>
+    <button onclick="setTopupAmount(500000)" class="quick-amount-btn py-3 rounded-xl font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-purple-500 transition-all">500k</button>
+  </div>
+
+  <!-- Min va havola -->
+  <div class="flex justify-between items-center mb-5 px-1">
+    <span class="text-sm text-gray-500">Eng kam: <span class="font-bold text-gray-700">1 000 so'm</span></span>
+    <button onclick="showAlert('📹 Video qo\'llanma tez orada qo\'shiladi!')" class="text-sm text-purple-600 font-bold flex items-center gap-1">
+      Qanday to'ldirish? <span class="text-lg">›</span>
+    </button>
+  </div>
+
+  <!-- HAVOLALAR bo'limi -->
+  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-1">Havolalar</p>
+  <div class="space-y-2 mb-5">
+    <button onclick="showAlert('📹 Video tez orada!')" class="bg-white p-4 rounded-2xl border border-gray-200 flex items-center gap-3 w-full shadow-sm">
+      <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl">▶️</div>
+      <div class="flex-1 text-left">
+        <p class="font-bold text-gray-900 text-sm">Balansni qanday to'ldirish?</p>
+        <p class="text-xs text-gray-500">Video qo'llanma – ko'rish</p>
+      </div>
+      <span class="text-gray-400 text-xl">›</span>
+    </button>
+  </div>
+
+  <!-- Davom etish tugmasi -->
+  <button id="topup-next-btn" onclick="goToPayment()" class="w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold text-lg transition-all shadow-sm" disabled>
+    Summani kiriting
+  </button>
+
+</div>
+</div>
+
+<!-- TO'LOV SAHIFASI -->
+<div id="page-payment" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('topup')" class="text-2xl text-gray-700">←</button><div><h1 class="text-xl font-bold text-gray-900">To'lov</h1><p class="text-xs text-gray-500">Balansni to'ldirish</p></div></div>
+<div class="p-4">
+<div class="bg-purple-50 p-6 rounded-2xl text-center mb-4 border border-purple-200">
+<p class="text-sm text-gray-600 mb-1">Aynan</p>
+<div class="flex items-center justify-center gap-2"><p class="text-4xl font-bold text-purple-600" id="payment-amount-display">0</p><span class="text-lg text-purple-600">so'm</span><button onclick="copyAmount()" class="text-purple-400 text-xl">📋</button></div>
+<p class="text-sm text-gray-500 mt-1">o'tkazing</p>
+</div>
+<div class="warning-box mb-4 flex gap-3"><span class="text-2xl">⚠️</span><div><p class="font-bold text-gray-900">Faqat BIR o'tkazma</p><p class="text-sm text-gray-600 mt-1">Aynan shu summani BIR MARTA yuboring</p></div></div>
+<div class="bg-white p-4 rounded-2xl border border-gray-200 mb-4">
+<div class="flex justify-between items-center mb-2"><div class="flex items-center gap-2"><span class="text-xl">⏱️</span><span class="font-medium text-gray-700">Karta amal qiladi</span></div><span class="font-bold text-purple-600" id="payment-timer">4:52</span></div>
+<div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width: 100%"></div></div>
+</div>
+<div class="card-display mb-4">
+<p class="text-sm opacity-70 mb-2">Karta raqami</p>
+<div class="flex items-center justify-between mb-4"><p class="text-2xl font-mono font-bold tracking-wider" id="payment-card-number">5614 6846 0411 5244</p><button onclick="copyCardNumber()" class="text-white text-xl"></button></div>
+<div class="flex items-center gap-3 mb-4"><span class="bg-blue-600 px-3 py-1 rounded text-xs font-bold" id="payment-card-type">HUMO</span><span class="font-medium" id="payment-card-holder">Saidov Shoqosim</span></div>
+<button onclick="copyCardNumber()" class="copy-btn w-full flex items-center justify-center gap-2"><span>📋</span> Nusxa olish</button>
+</div>
+<p class="font-bold text-gray-900 mb-3">📋 To'lov qoidalari</p>
+<div class="bg-white rounded-2xl border border-gray-200 p-4 mb-4 space-y-3">
+<div class="flex items-start gap-3"><span class="text-green-500 text-lg">✅</span><p class="text-sm text-gray-700">Summani 1 so'mga ham o'zgartirmang</p></div>
+<div class="flex items-start gap-3"><span class="text-green-500 text-lg">✅</span><p class="text-sm text-gray-700">5 daqiqa ichida to'lang</p></div>
+<div class="flex items-start gap-3"><span class="text-red-500 text-lg">❌</span><p class="text-sm text-gray-700">Boshqa summa yubormang</p></div>
+<div class="flex items-start gap-3"><span class="text-red-500 text-lg">❌</span><p class="text-sm text-gray-700">Summani bo'lib yubormang</p></div>
+<div class="flex items-start gap-3"><span class="text-red-500 text-lg">❌</span><p class="text-sm text-gray-700">Bankomat orqali tashlamang</p></div>
+</div>
+<button onclick="confirmPayment()" class="w-full bg-green-500 text-white py-4 rounded-2xl font-bold text-lg">To'lovni amalga oshirdim</button>
+</div>
+</div>
+
+<!-- TO'LOV TASDIQLANDI -->
+<div id="page-payment-success" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">To'lov yuborildi</h1></div>
+<div class="p-4">
+<div class="bg-white p-8 rounded-2xl text-center border border-gray-200">
+<div class="text-6xl mb-4">⏳</div>
+<h2 class="text-xl font-bold text-gray-900 mb-2">To'lov tekshirilmoqda</h2>
+<p class="text-gray-600 mb-4">Admin 1-2 daqiqa ichida tekshiradi</p>
+<div class="bg-purple-50 p-4 rounded-xl"><p class="text-sm text-gray-600">To'lov summasi</p><p class="text-2xl font-bold text-purple-600" id="success-amount">0 so'm</p></div>
+<button onclick="navigateTo('home')" class="mt-6 w-full gradient-bg py-3 rounded-xl font-bold text-white">Bosh sahifaga qaytish</button>
+</div>
+</div>
+</div>
+
+<!-- BUYURTMALAR -->
+<div id="page-orders" class="page">
+<div class="top-header"><h1 class="text-xl font-bold text-gray-900">Buyurtmalarim</h1></div>
+<div class="p-4" id="orders-container">
+<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200">
+<p class="text-5xl mb-3">📦</p><p class="font-medium">Buyurtmalar yo'q</p><p class="text-sm mt-2">O'yin valyutasi sotib olganingizdan keyin shu yerda ko'rinadi</p>
+</div>
+</div>
+</div>
+
+<!-- PROMOKOD -->
+<div id="page-promo" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎫 Promokod</h1></div>
+<div class="p-4">
+<div class="bg-white p-6 rounded-2xl border border-gray-200">
+<div class="text-center mb-4"><div class="text-5xl mb-2">🎟️</div><h2 class="text-xl font-bold text-gray-900">Promokodni kiriting</h2><p class="text-sm text-gray-500 mt-1">Chegirma yoki bonus oling</p></div>
+<input type="text" id="promo-input" placeholder="Masalan: WELCOME10" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm mb-4 text-center text-lg font-bold uppercase">
+<button onclick="applyPromo()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Qo'llash</button>
+</div>
+<div class="mt-4 bg-white p-4 rounded-xl border border-gray-200">
+<h3 class="font-bold text-gray-900 mb-2">💡 Maslahatlar</h3>
+<ul class="text-sm text-gray-600 space-y-1"><li>• Promokodlar bir marta ishlatiladi</li><li>• Muddati tugagan kodlar ishlamaydi</li><li>• Yangi foydalanuvchilar uchun maxsus kodlar</li></ul>
+</div>
+</div>
+</div><!-- REFERAL -->
+<div id="page-referal" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">👥 Referal</h1></div>
+<div class="p-4">
+<div class="bg-gradient-to-br from-purple-500 to-pink-500 p-6 rounded-2xl text-white mb-4"><div class="text-center"><p class="text-sm opacity-80">Sizning referal kodingiz</p><p class="text-3xl font-bold mt-2" id="my-referral-code">REF000</p><button onclick="copyReferralCode()" class="mt-3 bg-white text-purple-600 px-6 py-2 rounded-xl font-bold text-sm">📋 Nusxa olish</button></div></div>
+<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4">
+<h3 class="font-bold text-gray-900 mb-2">📖 Qanday ishlaydi?</h3>
+<ul class="text-sm text-gray-600 space-y-2"><li>✅ Do'stingizga referal kodingizni yuboring</li><li>✅ U ro'yxatdan o'tganda sizga bog'lanadi</li><li>✅ U pul to'ldirganda, summaning <span class="font-bold text-purple-600">10%</span> sizga BONUS sifatida qo'shiladi</li><li>✅ Do'stingizdan hech narsa olinmaydi!</li></ul>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="flex justify-between items-center mb-2"><h3 class="font-bold text-gray-900">📊 Statistika</h3></div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-purple-50 p-3 rounded-xl"><p class="text-xs text-gray-600">Taklif qilinganlar</p><p class="text-xl font-bold text-purple-600" id="referral-count">0</p></div>
+<div class="bg-green-50 p-3 rounded-xl"><p class="text-xs text-gray-600">Jami bonus</p><p class="text-xl font-bold text-green-600" id="referral-earnings">0 so'm</p></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- KUNLIK BONUS -->
+<div id="page-daily-bonus" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎁 Kunlik bonus</h1></div>
+<div class="p-4">
+<div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-2xl text-white mb-4 text-center"><div class="text-5xl mb-2">🎁</div><h2 class="text-2xl font-bold">Kunlik bonus</h2><p class="text-sm opacity-80 mt-1">Har kuni kirib bonus oling!</p></div>
+<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4"><h3 class="font-bold text-gray-900 mb-3">📅 7 kunlik bonus jadvali</h3><div class="grid grid-cols-7 gap-2" id="daily-bonus-grid"></div></div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="text-center"><p class="text-sm text-gray-600">Bugungi bonus</p><p class="text-3xl font-bold text-purple-600 mt-1" id="today-bonus-amount">500 so'm</p><button onclick="claimDailyBonus()" id="claim-bonus-btn" class="mt-4 w-full gradient-bg py-3 rounded-xl font-bold text-white">Bonusni olish</button><p class="text-xs text-gray-500 mt-2" id="next-bonus-time"></p></div>
+</div>
+</div>
+</div>
+
+<!-- STATISTIKA -->
+<div id="page-stats" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">📊 Statistikam</h1></div>
+<div class="p-4">
+<div class="grid grid-cols-2 gap-3 mb-4">
+<div class="stat-card"><p class="text-xs text-gray-500">Jami buyurtmalar</p><p class="text-2xl font-bold text-gray-900" id="stat-orders">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Jami sarflangan</p><p class="text-2xl font-bold text-gray-900" id="stat-spent">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Tejalgan summa</p><p class="text-2xl font-bold text-green-600" id="stat-saved">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Referal bonus</p><p class="text-2xl font-bold text-purple-600" id="stat-referral">0</p></div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<h3 class="font-bold text-gray-900 mb-2"> VIP Darajangiz</h3>
+<div id="vip-status-display" class="text-center py-4 rounded-xl text-white font-bold"></div>
+<p class="text-sm text-gray-600 mt-2 text-center" id="vip-next-level"></p>
+</div>
+</div>
+</div>
+
+<!-- VIP -->
+<div id="page-vip" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('stats')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">👑 VIP Darajalar</h1></div>
+<div class="p-4 space-y-3">
+<div class="stat-card vip-bronze text-white p-4 rounded-xl"><div class="flex justify-between items-center"><div><p class="font-bold text-lg"> Bronze</p><p class="text-sm opacity-80">0 - 50,000 so'm</p></div><p class="text-2xl font-bold">5%</p></div></div>
+<div class="stat-card vip-silver text-white p-4 rounded-xl"><div class="flex justify-between items-center"><div><p class="font-bold text-lg">🥈 Silver</p><p class="text-sm opacity-80">50,000 - 200,000 so'm</p></div><p class="text-2xl font-bold">10%</p></div></div>
+<div class="stat-card vip-gold text-white p-4 rounded-xl"><div class="flex justify-between items-center"><div><p class="font-bold text-lg">🥇 Gold</p><p class="text-sm opacity-80">200,000 - 500,000 so'm</p></div><p class="text-2xl font-bold">15%</p></div></div>
+<div class="stat-card vip-diamond text-white p-4 rounded-xl"><div class="flex justify-between items-center"><div><p class="font-bold text-lg">💎 Diamond</p><p class="text-sm opacity-80">500,000+ so'm</p></div><p class="text-2xl font-bold">20%</p></div></div>
+</div>
+</div>
+
+<!-- BILDIRISHNOMALAR -->
+<div id="page-notifications" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🔔 Bildirishnomalar</h1></div>
+<div class="p-4" id="notifications-list"></div>
+</div>
+
+<!-- TO'LOV TARIXI -->
+<div id="page-payment-history" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">💳 To'lov tarixi</h1></div>
+<div class="p-4" id="payment-history-list"></div>
+</div>
+
+<!-- FAQ -->
+<div id="page-faq" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">❓ FAQ</h1></div>
+<div class="p-4" id="faq-content">
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>To'lov qancha vaqtda tasdiqlanadi?</span><span>▼</span></div><div class="faq-answer">To'lovlar odatda 1-2 daqiqa ichida tasdiqlanadi.</div></div>
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>Narxlar qanday belgilanadi?</span><span>▼</span></div><div class="faq-answer">Narxlar API orqali olinadi va admin tomonidan foizda sozlanadi.</div></div>
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>Pulni qaytarib olsam bo'ladimi?</span><span>▼</span></div><div class="faq-answer">Ha, agar buyurtma bajarilmagan bo'lsa, pulni qaytarib olishingiz mumkin.</div></div>
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>ID'ni qayerdan topaman?</span><span>▼</span></div><div class="faq-answer">Har bir o'yinda ID o'yin ichida profil bo'limida ko'rsatiladi.</div></div>
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>Referal qanday ishlaydi?</span><span>▼</span></div><div class="faq-answer">Do'stingiz sizning referal kodingiz bilan ro'yxatdan o'tadi. U pul to'ldirganda, summaning 10% sizga BONUS sifatida qo'shiladi.</div></div>
+<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question"><span>VIP daraja nima?</span><span>▼</span></div><div class="faq-answer">Ko'p sarflagan foydalanuvchilar VIP daraja oladi. Bronze 5%, Silver 10%, Gold 15%, Diamond 20%.</div></div>
+</div>
+</div>
+
+<!-- VIDEO QO'LLANMALAR -->
+<div id="page-videos" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">📹 Video qo'llanmalar</h1></div>
+<div class="p-4 space-y-3" id="videos-list"></div>
+</div>
+
+<!-- MAVZU TANLASH -->
+<div id="page-themes" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎨 Mavzu tanlash</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4">
+<h3 class="font-bold text-gray-900 mb-3">Rangni tanlang</h3>
+<div class="grid grid-cols-5 gap-3">
+<div class="theme-option active" style="background: linear-gradient(135deg, #8b5cf6, #a855f7);" onclick="changeTheme('#8b5cf6', '#a855f7', this)"></div>
+<div class="theme-option" style="background: linear-gradient(135deg, #3b82f6, #2563eb);" onclick="changeTheme('#3b82f6', '#2563eb', this)"></div>
+<div class="theme-option" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="changeTheme('#10b981', '#059669', this)"></div>
+<div class="theme-option" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="changeTheme('#ef4444', '#dc2626', this)"></div>
+<div class="theme-option" style="background: linear-gradient(135deg, #1f2937, #111827);" onclick="changeTheme('#1f2937', '#111827', this)"></div>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<h3 class="font-bold text-gray-900 mb-3">Rejim</h3>
+<div class="flex gap-3">
+<button onclick="toggleDarkMode()" class="flex-1 bg-gray-100 p-3 rounded-xl font-bold">🌙 Qorong'u</button>
+<button onclick="toggleDarkMode()" class="flex-1 bg-gray-100 p-3 rounded-xl font-bold">☀️ Yorug'</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- QO'LLAB-QUVVATLASH -->
+<div id="page-support" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">💬 Qo'llab-quvvatlash</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4"><p class="text-sm text-gray-600 mb-2">Admin bilan gaplashing. Javob 1-2 soat ichida beriladi.</p></div>
+<div id="chat-messages" class="space-y-2 mb-4" style="max-height: 400px; overflow-y: auto;"></div>
+<div class="flex gap-2"><input type="text" id="chat-input" placeholder="Xabaringizni yozing..." class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm"><button onclick="sendChatMessage()" class="gradient-bg text-white px-6 py-3 rounded-xl font-bold">Yuborish</button></div>
+</div>
+</div>
+
+<!-- TANLOVLAR -->
+<div id="page-contests" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900"> Tanlovlar</h1></div>
+<div class="p-4" id="contests-list"></div>
+</div>
+
+<!-- TIL TANLASH -->
+<div id="page-language" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('home')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🌐 Til tanlash</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+<button onclick="changeLanguage('uz')" class="w-full p-4 rounded-xl border-2 border-purple-500 bg-purple-50 font-bold text-lg">🇺🇿 O'zbekcha</button>
+<button onclick="changeLanguage('ru')" class="w-full p-4 rounded-xl border-2 border-gray-200 font-bold text-lg">🇷🇺 Русский</button>
+</div>
+</div>
+</div><!-- ADMIN PANEL -->
+<div id="page-admin" class="page">
+<div class="top-header"><h1 class="text-xl font-bold text-gray-900">🛠️ Admin panel</h1></div>
+<div class="p-4 pf">
+  <div class="ad-stats">
+    <div class="ad-stat"><span>👥</span><p id="admin-users-count">0</p><small>Foydalanuvchilar</small></div>
+    <div class="ad-stat"><span>🧾</span><p id="admin-orders-count">0</p><small>To'lovlar</small></div>
+    <div class="ad-stat"><span>💵</span><p id="admin-revenue">0</p><small>Daromad</small></div>
+    <div class="ad-stat"><span>👛</span><p id="admin-total-balance">0</p><small>Balanslar</small></div>
+  </div>
+  <div id="admin-menu"></div>
+  <div style="height:110px"></div>
+</div>
+</div>
+
+<!-- ADMIN: To'lov cheklari -->
+<div id="page-payment-checks" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">To'lov cheklari</h1></div>
+<div class="p-4">
+<div class="flex gap-2 mb-4 overflow-x-auto">
+<button onclick="filterChecks('all')" class="tab-btn active" id="filter-all">Barchasi</button>
+<button onclick="filterChecks('pending')" class="tab-btn" id="filter-pending">Kutilmoqda</button>
+<button onclick="filterChecks('approved')" class="tab-btn" id="filter-approved">Tasdiqlangan</button>
+<button onclick="filterChecks('rejected')" class="tab-btn" id="filter-rejected">Rad etilgan</button>
+</div>
+<div id="checks-container" class="space-y-3"></div>
+</div>
+</div>
+
+<!-- ADMIN: O'yin buyurtmalari -->
+<div id="page-game-orders" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎮 O'yin buyurtmalari</h1></div>
+<div class="p-4" id="game-orders-container"></div>
+</div>
+
+<!-- ADMIN: Karta sozlamalari -->
+<div id="page-card-settings" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Karta sozlamalari</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Karta turi</label><select id="admin-card-type" class="admin-input"><option value="HUMO">HUMO</option><option value="Uzcard">Uzcard</option><option value="Visa">Visa</option><option value="Mastercard">Mastercard</option></select></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Karta raqami</label><input type="text" id="admin-card-number" placeholder="5614 6846 0411 5244" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Karta egasi</label><input type="text" id="admin-card-holder" placeholder="Saidov Shoqosim" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Taymer (daqiqa)</label><input type="number" id="admin-card-timer" placeholder="5" class="admin-input" value="5"></div>
+<button onclick="saveCardSettings()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Saqlash</button>
+</div>
+</div>
+</div>
+
+<!-- ADMIN: Narxlarni boshqarish -->
+<div id="page-price-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Narxlarni boshqarish</h1></div>
+<div class="p-4 space-y-4">
+<div><label class="block text-sm font-medium text-gray-700">O'yinni tanlang</label><select id="admin-game-select" class="admin-input" onchange="loadAdminPackages()"><option value="1">PUBG Mobile (UC)</option><option value="1_prime">PUBG Mobile (Prime)</option><option value="2">Free Fire (Diamonds)</option><option value="2_pacs">Free Fire (Pacs)</option><option value="8">Brawl Stars</option><option value="3">Mobile Legends</option><option value="4">Honor of Kings</option><option value="11">Roblox</option></select></div>
+<div><label class="block text-sm font-medium text-gray-700">Paketni tanlang</label><select id="admin-package-select" class="admin-input" onchange="updatePricePreview()"></select></div>
+<div class="grid grid-cols-2 gap-3">
+<div><label class="block text-sm font-medium text-gray-700">API Narxi</label><input type="number" id="admin-base-price" class="admin-input bg-gray-100" readonly></div>
+<div><label class="block text-sm font-medium text-gray-700">Foiz (%)</label><input type="number" id="admin-markup" class="admin-input" placeholder="10 yoki -5" oninput="updatePricePreview()"><p class="text-xs text-gray-500 mt-1">+ qimmat, - arzon</p></div>
+</div>
+<div class="bg-purple-50 p-4 rounded-xl border border-purple-200"><p class="text-sm text-gray-600">Yangi narx:</p><p class="text-2xl font-bold text-purple-600" id="admin-final-price">0 so'm</p></div>
+<button onclick="savePriceMarkup()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Saqlash</button>
+</div>
+</div>
+
+<!-- ADMIN: VIP Menejer -->
+<div id="page-vip-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">👑 VIP Darajalar</h1></div>
+<div class="p-4">
+<div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mb-4"><p class="text-sm text-yellow-800 font-medium">💡 VIP darajalar foydalanuvchilarga avtomatik chegirma beradi.</p></div>
+<div class="space-y-3">
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: linear-gradient(135deg, #cd7f32, #8b4513);">🥉</div><div class="flex-1"><p class="font-bold text-gray-900">Bronze</p><p class="text-xs text-gray-500">Boshlang'ich daraja</p></div></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-600 mb-1">Chegirma (%)</label><input type="number" id="vip-bronze-discount" class="admin-input" value="5"></div><div><label class="block text-xs text-gray-600 mb-1">Maks sarf (so'm)</label><input type="number" id="vip-bronze-max" class="admin-input" value="50000"></div></div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: linear-gradient(135deg, #c0c0c0, #808080);">🥈</div><div class="flex-1"><p class="font-bold text-gray-900">Silver</p><p class="text-xs text-gray-500">O'rta daraja</p></div></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-600 mb-1">Chegirma (%)</label><input type="number" id="vip-silver-discount" class="admin-input" value="10"></div><div><label class="block text-xs text-gray-600 mb-1">Maks sarf (so'm)</label><input type="number" id="vip-silver-max" class="admin-input" value="200000"></div></div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: linear-gradient(135deg, #ffd700, #ffaa00);">🥇</div><div class="flex-1"><p class="font-bold text-gray-900">Gold</p><p class="text-xs text-gray-500">Yuqori daraja</p></div></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-600 mb-1">Chegirma (%)</label><input type="number" id="vip-gold-discount" class="admin-input" value="15"></div><div><label class="block text-xs text-gray-600 mb-1">Maks sarf (so'm)</label><input type="number" id="vip-gold-max" class="admin-input" value="500000"></div></div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: linear-gradient(135deg, #b9f2ff, #00bfff);">💎</div><div class="flex-1"><p class="font-bold text-gray-900">Diamond</p><p class="text-xs text-gray-500">Eng yuqori daraja</p></div></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-600 mb-1">Chegirma (%)</label><input type="number" id="vip-diamond-discount" class="admin-input" value="20"></div><div><label class="block text-xs text-gray-600 mb-1">Min sarf (so'm)</label><input type="number" id="vip-diamond-min" class="admin-input" value="500000"></div></div>
+</div>
+<button onclick="saveVipSettings()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">💾 Saqlash</button>
+</div>
+</div>
+</div>
+
+<!-- ADMIN: Video Menejer -->
+<div id="page-video-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">📹 Video Qo'llanmalar</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
+<h3 class="font-bold text-gray-900">➕ Yangi video qo'shish</h3>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Video sarlavhasi</label><input type="text" id="new-video-title" placeholder="Masalan: Balansni qanday to'ldirish kerak?" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Davomiylik (ixtiyoriy)</label><input type="text" id="new-video-duration" placeholder="Masalan: 2:30 daqiqa" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Video havolasi (bosilganda shu ochiladi)</label><input type="text" id="new-video-url" placeholder="https://youtube.com/..." class="admin-input"></div>
+<button onclick="addNewVideo()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Video qo'shish</button>
+</div>
+<h3 class="font-bold text-gray-900 mb-3">📋 Mavjud videolar</h3>
+<div id="video-list" class="space-y-2"></div>
+</div>
+</div>
+
+<!-- ADMIN: FAQ Menejer -->
+<div id="page-faq-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">❓ FAQ Boshqaruvi</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
+<h3 class="font-bold text-gray-900">➕ Yangi savol-javob qo'shish</h3>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Savol</label><input type="text" id="new-faq-question" placeholder="Masalan: To'lov qancha vaqtda tasdiqlanadi?" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Javob</label><textarea id="new-faq-answer" placeholder="Javob matni..." class="admin-input" rows="3"></textarea></div>
+<button onclick="addNewFaq()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Savol qo'shish</button>
+</div>
+<h3 class="font-bold text-gray-900 mb-3">📋 Mavjud savollar</h3>
+<div id="faq-list" class="space-y-2"></div>
+</div>
+</div>
+
+<!-- ADMIN: Referal Sozlamalari -->
+<div id="page-referral-settings" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">👥 Referal Sozlamalari</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Referal bonus foizi (%)</label><input type="number" id="referral-percent" class="admin-input" placeholder="10"><p class="text-xs text-gray-500 mt-1">Do'st pul to'ldirganda referalchiga qo'shiladigan foiz</p></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Bot username</label><input type="text" id="bot-username" class="admin-input" placeholder="your_bot"><p class="text-xs text-gray-500 mt-1">Referal link uchun bot username</p></div>
+<div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
+<p class="text-sm text-gray-600 mb-2"> Statistika</p>
+<div class="grid grid-cols-2 gap-3">
+<div><p class="text-xs text-gray-500">Jami referallar</p><p class="text-xl font-bold text-purple-600" id="total-referrals">0</p></div>
+<div><p class="text-xs text-gray-500">To'langan bonus</p><p class="text-xl font-bold text-green-600" id="total-referral-bonus">0 so'm</p></div>
+</div>
+</div>
+<button onclick="saveReferralSettings()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">💾 Saqlash</button>
+</div>
+</div>
+</div>
+
+<!-- ADMIN: Kunlik Bonus Sozlamalari -->
+<div id="page-daily-bonus-settings" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎁 Kunlik Bonus Sozlamalari</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+<h3 class="font-bold text-gray-900">7 kunlik bonus miqdorlari (so'm)</h3>
+<div class="grid grid-cols-7 gap-2">
+<label class="block text-xs text-gray-600 mb-1">1-kun</label><input type="number" id="bonus-day-1" class="admin-input text-center" value="500"></div>
+<div><label class="block text-xs text-gray-600 mb-1">2-kun</label><input type="number" id="bonus-day-2" class="admin-input text-center" value="1000"></div>
+<div><label class="block text-xs text-gray-600 mb-1">3-kun</label><input type="number" id="bonus-day-3" class="admin-input text-center" value="1500"></div>
+<div><label class="block text-xs text-gray-600 mb-1">4-kun</label><input type="number" id="bonus-day-4" class="admin-input text-center" value="2000"></div>
+<div><label class="block text-xs text-gray-600 mb-1">5-kun</label><input type="number" id="bonus-day-5" class="admin-input text-center" value="3000"></div>
+<div><label class="block text-xs text-gray-600 mb-1">6-kun</label><input type="number" id="bonus-day-6" class="admin-input text-center" value="5000"></div>
+<div><label class="block text-xs text-gray-600 mb-1">7-kun</label><input type="number" id="bonus-day-7" class="admin-input text-center" value="10000"></div>
+</div>
+<button onclick="saveDailyBonusSettings()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">💾 Saqlash</button>
+</div>
+</div>
+</div>
+
+<!-- ADMIN: Promokodlar -->
+<div id="page-promo-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Promokodlar</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
+<h3 class="font-bold text-gray-900">Yangi promokod yaratish</h3>
+<input type="text" id="new-promo-code" placeholder="Kod (masalan: WELCOME10)" class="admin-input">
+<input type="number" id="new-promo-discount" placeholder="Chegirma foizi (masalan: 10)" class="admin-input">
+<input type="number" id="new-promo-limit" placeholder="Maksimal foydalanish (0 = cheksiz)" class="admin-input" value="0">
+<button onclick="createPromoCode()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Yaratish</button>
+</div>
+<div id="promo-list" class="space-y-2"></div>
+</div>
+</div>
+
+<!-- ADMIN: Bildirishnomalar -->
+<div id="page-notification-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Bildirishnomalar</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
+<h3 class="font-bold text-gray-900">Yangi bildirishnoma</h3>
+<input type="text" id="new-notif-title" placeholder="Sarlavha" class="admin-input">
+<textarea id="new-notif-message" placeholder="Xabar matni" class="admin-input" rows="3"></textarea>
+<button onclick="sendNotification()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Yuborish</button>
+</div>
+<div id="admin-notif-list" class="space-y-2"></div>
+</div>
+</div>
+
+<!-- ADMIN: Yangi o'yin qo'shish -->
+<div id="page-add-game" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎮 Yangi o'yin qo'shish</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+<div><label class="block text-sm font-medium text-gray-700 mb-2">O'yin nomi</label><input type="text" id="new-game-name" placeholder="Masalan: Call of Duty" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Valyuta</label><input type="text" id="new-game-currency" placeholder="Masalan: CP" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Logotip URL</label><input type="text" id="new-game-icon" placeholder="https://..." class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Banner URL</label><input type="text" id="new-game-banner" placeholder="https://..." class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">ID label</label><input type="text" id="new-game-idlabel" placeholder="Masalan: Player ID" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">ID hint</label><input type="text" id="new-game-idhint" placeholder="Masalan: O'yin ichidan toping" class="admin-input"></div>
+<div class="flex items-center gap-2"><input type="checkbox" id="new-game-popular" class="w-4 h-4"><label class="text-sm text-gray-700">Ommabop o'yin</label></div>
+<button onclick="addNewGame()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Qo'shish</button>
+</div>
+</div>
+</div>
+
+<!-- ADMIN: Ommabop o'yinlar -->
+<div id="page-popular-games" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🔥 Ommabop o'yinlar</h1></div>
+<div class="p-4" id="popular-games-list"></div>
+</div>
+
+<!-- ADMIN: Tanlov menejeri -->
+<div id="page-contest-manager" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🎉 Tanlov yaratish</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 mb-4">
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Tanlov nomi</label><input type="text" id="contest-name" placeholder="Masalan: Eng ko'p buyurtma" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Sovrin</label><input type="text" id="contest-prize" placeholder="Masalan: 100,000 UC" class="admin-input"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Muddat (kun)</label><input type="number" id="contest-duration" placeholder="7" class="admin-input" value="7"></div>
+<button onclick="createContest()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Yaratish</button>
+</div>
+<div id="admin-contest-list" class="space-y-2"></div>
+</div>
+</div>
+
+<!-- ADMIN: Statistika -->
+<div id="page-admin-stats" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">📈 Statistika</h1></div>
+<div class="p-4">
+<div class="grid grid-cols-2 gap-3 mb-4">
+<div class="stat-card"><p class="text-xs text-gray-500">Bugungi daromad</p><p class="text-xl font-bold text-green-600" id="admin-today-revenue">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Bugungi to'lovlar</p><p class="text-xl font-bold text-blue-600" id="admin-today-payments">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Jami foydalanuvchilar</p><p class="text-xl font-bold text-purple-600" id="admin-total-users">0</p></div>
+<div class="stat-card"><p class="text-xs text-gray-500">Aktiv referallar</p><p class="text-xl font-bold text-orange-600" id="admin-active-referrals">0</p></div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-gray-200 mb-4"><h3 class="font-bold text-gray-900 mb-3">📊 Haftalik daromad</h3><div class="bar-chart" id="weekly-chart"></div></div>
+<div class="bg-white p-4 rounded-xl border border-gray-200"><h3 class="font-bold text-gray-900 mb-3">🏆 Top o'yinlar</h3><div id="top-games-list" class="space-y-2"></div></div>
+</div>
+</div>
+
+<!-- ADMIN: Xavfsizlik log'lari -->
+<div id="page-security-logs" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">🔒 Xavfsizlik log'lari</h1></div>
+<div class="p-4" id="security-logs-list"></div>
+</div>
+
+<!-- ADMIN: Foydalanuvchilar -->
+<div id="page-users-list" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Foydalanuvchilar</h1></div>
+<div class="p-4"><input type="text" placeholder="ID yoki ism bo'yicha qidirish..." class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm mb-4" oninput="searchUsers(this.value)"><div id="users-list-container" class="space-y-3"></div></div>
+</div>
+
+<!-- ADMIN: Balans qo'shish -->
+<div id="page-add-balance" class="page">
+<div class="top-header flex items-center gap-3"><button onclick="navigateTo('admin')" class="text-2xl text-gray-700">←</button><h1 class="text-xl font-bold text-gray-900">Balans qo'shish</h1></div>
+<div class="p-4">
+<div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Foydalanuvchi ID</label><input type="number" id="add-balance-user-id" placeholder="8467707826" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm"></div>
+<div><label class="block text-sm font-medium text-gray-700 mb-2">Summa (so'm)</label><input type="number" id="add-balance-amount" placeholder="50000" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2 text-sm"></div>
+<button onclick="addBalanceToUser()" class="w-full gradient-bg py-3 rounded-xl font-bold text-white">Qo'shish</button>
+</div>
+</div>
+</div>
+
+<!-- PROFIL -->
+<div id="page-profile" class="page">
+<div class="p-4 pf">
+
+  <div class="pf-card pf-hero">
+    <div class="pf-ring"><div class="pf-ava" id="profile-avatar">G</div></div>
+    <h2 class="pf-name" id="profile-name">Mehmon</h2>
+    <div class="pf-pill"><span id="profile-username">@username</span><span>ID: <b id="profile-id">0</b></span></div>
+    <div id="profile-vip-badge" class="mt-2 flex justify-center"></div>
+    <div class="pf-bal">
+      <div><p class="pf-lbl">BALANS</p><p class="pf-amt"><span id="profile-balance">0</span> <small>so'm</small></p></div>
+      <button class="pf-btn" onclick="navigateTo('topup')">＋ To'ldirish</button>
+    </div>
+  </div>
+
+  <div class="pf-card">
+    <div class="pf-row"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+      <div><p class="pf-t">Telefon raqami</p><p class="pf-s" id="profile-phone">Kiritilmagan</p></div></div>
+    <button class="pf-outline" onclick="updatePhone()">Raqamni yangilash</button>
+  </div>
+
+  <div class="pf-card">
+    <div class="pf-row"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 4v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-4V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M14 6v11" stroke-dasharray="2 2"/></svg>
+      <p class="pf-t">Promokodlar</p></div>
+    <div id="profile-promos"></div>
+  </div>
+
+  <div class="pf-two">
+    <button class="pf-card pf-tile" onclick="navigateTo('referal')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="12" cy="12" r="10"/></svg>
+      <p class="pf-t">Do'st taklif qiling — bonus oling</p><p class="pf-s">Do'st taklif qil, bonus ol</p></button>
+    <button class="pf-card pf-tile" onclick="showAlert('Top donaterlar tez orada qo\'shiladi!')">
+      <svg viewBox="0 0 24 24" style="color:#f59e0b"><circle cx="12" cy="9" r="6"/><path d="m8.5 14 -1.5 7 5-3 5 3-1.5-7"/></svg>
+      <p class="pf-t">Top donaterlar</p><p class="pf-s">Top 100</p></button>
+  </div>
+
+  <div class="pf-card pf-set">
+    <div class="pf-srow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.500 0 18M12 3c-3 3.500-3 14.500 0 18"/></svg><span class="pf-t">Til</span>
+      <div class="pf-seg" id="seg-lang"><button data-v="uz" onclick="changeLanguage('uz');syncSeg()">UZ</button><button data-v="ru" onclick="changeLanguage('ru');syncSeg()">RU</button></div></div>
+    <div class="pf-srow"><svg viewBox="0 0 24 24"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/></svg><span class="pf-t">Mavzu</span>
+      <div class="pf-seg" id="seg-theme"><button data-v="dark" onclick="setDark(true)"><svg viewBox="0 0 24 24"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/></svg></button><button data-v="light" onclick="setDark(false)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.500 1.500M17.500 17.500 19 19M5 19l1.500-1.500M17.500 6.500 19 5"/></svg></button></div></div>
+    <button class="pf-srow pf-go" onclick="navigateTo('stats')"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="pf-t">Statistikam</span><i>›</i></button>
+    <button class="pf-srow pf-go" onclick="navigateTo('payment-history')"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg><span class="pf-t">To'lov tarixi</span><i>›</i></button>
+    <button class="pf-srow pf-go" onclick="navigateTo('vip')"><svg viewBox="0 0 24 24"><path d="m3 8 4.500 4L12 5l4.500 7L21 8l-2 11H5z"/></svg><span class="pf-t">VIP darajalar</span><i>›</i></button>
+    <button class="pf-srow pf-go" onclick="navigateTo('faq')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.500 9.500a2.500 2.500 0 1 1 3.500 2.300c-.700.400-1 .900-1 1.700M12 17h.01"/></svg><span class="pf-t">Savol-javoblar</span><i>›</i></button>
+    <button class="pf-srow pf-go" onclick="navigateTo('support')"><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.500"/><rect x="17" y="14" width="4" height="6" rx="1.500"/></svg><span class="pf-t">Yordam markazi</span><i>›</i></button>
+  </div>
+
+  <p class="pf-lbl pf-sec" id="pf-links-lbl">HAVOLALAR</p>
+  <div id="profile-videos" class="pf-vids"></div>
+
+  <p class="pf-lbl pf-sec">BIZNING IJTIMOIY TARMOQLAR</p>
+  <button class="pf-card pf-social" onclick="openSupport()">
+    <svg viewBox="0 0 24 24" style="color:#7c3aed"><circle cx="12" cy="12" r="10"/><path d="m17 7-10.500 4.500 3.500 1.500 1.500 4 2-2.500 3 2z"/></svg>
+    <span>SUPPORT</span></button>
+  <div style="height:110px"></div>
+</div>
+</div>
+
+<!-- BOTTOM NAVIGATION (suzuvchi) -->
+<div id="nav-wrap">
+<div class="flex justify-around items-center" id="bottom-nav">
+  <button onclick="navigateTo('home')" class="nav-btn active flex flex-col items-center p-2 flex-1" data-page="home">
+    <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+    <span>Asosiy</span>
+  </button>
+  <button onclick="navigateTo('games')" class="nav-btn flex flex-col items-center p-2 flex-1" data-page="games">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="12" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="15.5" cy="12" r=".6"/><circle cx="18" cy="14.5" r=".6"/></svg>
+    <span>O'yinlar</span>
+  </button>
+  <button onclick="navigateTo('topup')" class="nav-btn flex flex-col items-center p-2 flex-1" data-page="topup">
+    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2z"/><path d="M16 14h2"/></svg>
+    <span>To'ldirish</span>
+  </button>
+  <button onclick="navigateTo('orders')" class="nav-btn flex flex-col items-center p-2 flex-1" data-page="orders">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span>Buyurtmalar</span>
+  </button>
+  <button onclick="navigateTo('profile')" class="nav-btn flex flex-col items-center p-2 flex-1" data-page="profile">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+    <span>Profil</span>
+  </button>
+</div>
+</div>
+
+<script>
+// Telegram tashqarisida (brauzer, Claude preview) ham xatosiz ishlashi uchun zaxira obyekt
+const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
+  initData: '', initDataUnsafe: { user: { id: 1, first_name: 'Mehmon' } },
+  expand() {}, ready() {}, setHeaderColor() {}, setBackgroundColor() {},
+  showAlert(msg, cb) { alert(msg); if (cb) cb(); },
+  showConfirm(msg, cb) { cb(confirm(msg)); }
+};
+if (tg.ready) tg.ready();
+tg.expand();
+tg.setHeaderColor('#ffffff');
+tg.setBackgroundColor('#f3f4f6');
+
+const user = tg.initDataUnsafe?.user;
+const startParam = tg.initDataUnsafe?.start_param || '';
+let currentUser = { id: user?.id || 0, name: user?.first_name || 'User', balance: 0, referralCode: 'REF' + (user?.id || 0), referredBy: null, totalSpent: 0, totalOrders: 0, referralEarnings: 0, lastDailyBonus: null, dailyStreak: 0, usedPromos: [] };
+let selectedGame = null;
+let selectedPackage = null;
+let currentTab = 'uc';
+let currentFFTab = 'diamonds';
+let currentGameType = 'default';
+let isAdmin = user?.id === 8467707826;
+const ADMIN_ID = 8467707826;
+
+// ============ YANGI PAKET KARTASI ============
+const IMG_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' rx='14' fill='%23ede9fe'/><text x='32' y='43' font-size='30' text-anchor='middle'>🎁</text></svg>";
+function fmtPrice(n) { return Math.round(Number(n) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+function escHtml(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function packCard(icon, name, price, onclick, old, pct) {
+  const hasImg = /^(https?:|data:|\/)/.test(icon || '');
+  const img = hasImg ? '<img src="' + escHtml(icon) + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=IMG_FALLBACK">' : '<span class="pk-emoji">' + escHtml(icon || '🎁') + '</span>';
+  const pc = Number(pct) || 0;
+  return '<div class="pack-card pk-card" title="' + escHtml(name) + '" onclick="' + onclick + '">' +
+    '<div class="pk-img">' + img + '<div class="pk-rib">-' + pc + '%</div></div>' +
+    '<div class="pk-info"><p class="pk-name">' + escHtml(name) + '</p>' +
+    (old && old > price ? '<p class="pk-old">' + fmtPrice(old) + '</p>' : '') +
+    '<p class="pk-price"><b>' + fmtPrice(price) + '</b><span>so\'m</span><em class="pk-badge">-' + pc + '%</em></p></div></div>';
+}
+
+// ============ PLAYPAY.UZ API KONFIGURATSIYASI ============
+const PLAYPAY = {
+  API_URL: 'https://playpay.uz/api/v1',
+  // API_KEY endi faqat serverda (/api/proxy ichida, env o'zgaruvchisida) saqlanadi
+  CURRENCY: 'UZS',
+  MARKUP_PCT: 15,
+  EXCHANGE_RATE: 12250
+};
+
+async function ppRequest(method, path, body = null) {
+  try {
+    const proxyUrl = `/api/proxy?path=${encodeURIComponent(path)}`;
+    const options = {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData || '' }
+    };
+    if (body && method === 'POST') {
+      options.body = JSON.stringify({ path, data: body });
+    }
+    const response = await fetch(proxyUrl, options);
+    const data = await response.json();
+    if (!response.ok) {
+      return { ok: false, error: data.error || `HTTP ${response.status}`, status: response.status };
+    }
+    return data;
+  } catch (error) {
+    console.error('Proxy API xatolik:', error);
+    return { ok: false, error: error.message };
+  }
+}
+
+async function ppGetGames() { return await ppRequest('GET', '/games'); }
+async function ppGetPackages(gameId) { return await ppRequest('GET', `/games/${gameId}/packages`); }
+async function ppCheckId(gameId, playerId, serverId = null, charname = null) {
+  const body = { game_id: gameId, player_id: playerId };
+  if (serverId) body.server_id = serverId;
+  if (charname) body.charname = charname;
+  return await ppRequest('POST', '/check_id', body);
+}
+async function ppCreateOrder(gameId, paketId, playerId, serverId = null, charname = null) {
+  const body = { game_id: gameId, paket_id: paketId, player_id: playerId };
+  if (serverId) body.server_id = serverId;
+  if (charname) body.charname = charname;
+  return await ppRequest('POST', '/order', body);
+}
+async function ppGetOrder(orderId) { return await ppRequest('GET', `/order/${orderId}`); }
+async function ppGetBalance() { return await ppRequest('GET', '/balance'); }
+
+const GAME_MAP = {
+  1: { name: 'PUBG Mobile', ppId: 141, currency: 'UC', needsServer: false, needsCharname: false, idLabel: 'Character ID', idHint: 'PUBG Mobile → Profil → Character ID' },
+  2: { name: 'Free Fire', ppId: 209, currency: 'Diamonds', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'Free Fire → Profil → Player ID' },
+  3: { name: 'Mobile Legends', ppId: 53, currency: 'Diamonds', needsServer: true, needsCharname: false, idLabel: 'User ID', idHint: 'ML → Profil → User ID', serverLabel: 'Server ID', serverHint: 'ML → Profil → Server ID' },
+  4: { name: 'Honor of Kings', ppId: 168, currency: 'Coins', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'HOK → Profil → Player ID' },
+  5: { name: 'Stand Off 2', ppId: null, currency: 'Gold', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'SO2 → Profil → Player ID' },
+  6: { name: 'Steam', ppId: null, currency: 'Wallet', needsServer: false, needsCharname: false, idLabel: 'Steam Login', idHint: 'Steam loginingizni kiriting' },
+  7: { name: 'Telegram Stars', ppId: null, currency: 'Stars', needsServer: false, needsCharname: false, idLabel: 'Telegram ID', idHint: 'Telegram ID avtomatik' },
+  8: { name: 'Brawl Stars', ppId: null, currency: 'Gems', needsServer: false, needsCharname: false, idLabel: 'Player Tag', idHint: 'BS → Profil → Player Tag' },
+  9: { name: 'Clash Royale', ppId: null, currency: 'Gems', needsServer: false, needsCharname: false, idLabel: 'Player Tag', idHint: 'CR → Profil → Player Tag' },
+10: { name: 'Genshin Impact', ppId: 204, currency: 'Primogems', needsServer: true, needsCharname: false, idLabel: 'UID', idHint: 'GI → Profil → UID', serverLabel: 'Server', serverHint: 'GI → Profil → Server' },
+  11: { name: 'Roblox', ppId: null, currency: 'Robux', needsServer: false, needsCharname: false, idLabel: 'Username', idHint: 'Roblox username' },
+  12: { name: 'Fortnite', ppId: null, currency: 'V-Bucks', needsServer: false, needsCharname: false, idLabel: 'Epic ID', idHint: 'Epic Games ID' }
+};
+
+let ppPackagesCache = {};
+let ppGamesCache = null;
+let selectedPlaypayPackage = null;
+let currentPlaypayGameId = null;
+
+let priceMarkups = JSON.parse(localStorage.getItem('priceMarkups')) || {};
+let cardSettings = JSON.parse(localStorage.getItem('cardSettings')) || { type: 'HUMO', number: '5614 6846 0411 5244', holder: 'Saidov Shoqosim', timer: 5 };
+let payments = JSON.parse(localStorage.getItem('payments')) || [];
+let promoCodes = JSON.parse(localStorage.getItem('promoCodes')) || [{ code: 'WELCOME10', discount: 10, limit: 100, used: 0 }];
+let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+let usersData = JSON.parse(localStorage.getItem('usersData')) || {};
+let darkMode = localStorage.getItem('darkMode') === 'true';
+let currentPaymentAmount = 0;
+let currentFilter = 'all';
+let timerInterval = null;
+let pendingGameOrder = null;
+let chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+let contests = JSON.parse(localStorage.getItem('contests')) || [];
+let securityLogs = JSON.parse(localStorage.getItem('securityLogs')) || [];
+let currentLang = localStorage.getItem('language') || 'uz';
+let currentTheme = JSON.parse(localStorage.getItem('theme')) || { primary: '#8b5cf6', secondary: '#a855f7' };
+
+let vipSettings = JSON.parse(localStorage.getItem('vipSettings')) || {
+  bronze: { discount: 5, max: 50000 }, silver: { discount: 10, max: 200000 },
+  gold: { discount: 15, max: 500000 }, diamond: { discount: 20, min: 500000 }
+};
+
+let videos = JSON.parse(localStorage.getItem('videos')) || [];
+
+let faqs = JSON.parse(localStorage.getItem('faqs')) || [
+  { id: 1, question: 'To\'lov qancha vaqtda tasdiqlanadi?', answer: 'To\'lovlar odatda 1-2 daqiqa ichida tasdiqlanadi.' },
+  { id: 2, question: 'Narxlar qanday belgilanadi?', answer: 'Narxlar API orqali olinadi va admin tomonidan foizda sozlanadi.' },
+  { id: 3, question: 'Pulni qaytarib olsam bo\'ladimi?', answer: 'Ha, agar buyurtma bajarilmagan bo\'lsa, pulni qaytarib olishingiz mumkin.' },
+  { id: 4, question: 'ID\'ni qayerdan topaman?', answer: 'Har bir o\'yinda ID o\'yin ichida profil bo\'limida ko\'rsatiladi.' },
+  { id: 5, question: 'Referal qanday ishlaydi?', answer: 'Do\'stingiz sizning referal kodingiz bilan ro\'yxatdan o\'tadi. U pul to\'ldirganda, summaning 10% sizga BONUS sifatida qo\'shiladi.' },
+  { id: 6, question: 'VIP daraja nima?', answer: 'Ko\'p sarflagan foydalanuvchilar VIP daraja oladi. Bronze 5%, Silver 10%, Gold 15%, Diamond 20%.' }
+];
+
+let referralSettings = JSON.parse(localStorage.getItem('referralSettings')) || { percent: 10, botUsername: 'your_bot' };
+let REFERRAL_PERCENT = referralSettings.percent;
+let dailyBonusSettings = JSON.parse(localStorage.getItem('dailyBonusSettings')) || [500, 1000, 1500, 2000, 3000, 5000, 10000];
+
+function loadUserData() {
+  if (user) {
+    const saved = usersData[user.id];
+    if (saved) { currentUser = { ...currentUser, ...saved }; }
+    else {
+      if (startParam && startParam.startsWith('ref_')) { currentUser.referredBy = parseInt(startParam.replace('ref_', '')); }
+      usersData[user.id] = currentUser;
+      saveUsersData();
+    }
+  }
+  currentUser.usedPromos = currentUser.usedPromos || [];
+  if (darkMode) document.body.classList.add('dark');
+  applyTheme();
+}
+
+function saveUsersData() { localStorage.setItem('usersData', JSON.stringify(usersData)); }
+function saveCurrentUser() { usersData[currentUser.id] = currentUser; saveUsersData(); updateBalanceUI(); }
+function logSecurity(action) { securityLogs.push({ action, user: user?.id, time: new Date().toLocaleString('uz-UZ') }); if (securityLogs.length > 100) securityLogs.shift(); localStorage.setItem('securityLogs', JSON.stringify(securityLogs)); }
+
+function getVipLevel(spent) {
+  if (spent >= vipSettings.diamond.min) return { name: 'Diamond', class: 'vip-diamond', discount: vipSettings.diamond.discount, emoji: '💎' };
+  if (spent >= vipSettings.gold.max) return { name: 'Gold', class: 'vip-gold', discount: vipSettings.gold.discount, emoji: '' };
+  if (spent >= vipSettings.silver.max) return { name: 'Silver', class: 'vip-silver', discount: vipSettings.silver.discount, emoji: '🥈' };
+  return { name: 'Bronze', class: 'vip-bronze', discount: vipSettings.bronze.discount, emoji: '🥉' };
+}
+
+function getFinalPrice(gameId, packIndex, basePrice) {
+  const key = `${gameId}-${packIndex}`;
+  const markup = priceMarkups[key] || 0;
+  const vip = getVipLevel(currentUser.totalSpent);
+  return Math.round(basePrice * (1 + markup / 100) * (1 - vip.discount / 100));
+}
+
+const games = [
+  { id: 1, name: 'PUBG Mobile', currency: 'UC', popular: true, icon: 'https://i.postimg.cc/Sx9hsSKf/d700358872ea04fd5639226cd072d148.jpg', color: 'from-yellow-500 to-orange-600', banner: 'https://i.postimg.cc/Sx9hsSKf/d700358872ea04fd5639226cd072d148.jpg', rating: '5 · 1020', idLabel: 'Character ID', idHint: 'PUBG Mobile → Profil → Character ID' },
+  { id: 2, name: 'Free Fire', currency: 'Diamonds', popular: true, icon: 'https://i.postimg.cc/25YPSnJJ/a2dda96c1e4be54f64f71f7c9e7aff51.jpg', color: 'from-red-500 to-orange-500', banner: 'https://i.postimg.cc/DycRCxzs/1790853172720.jpg', rating: '4.9 · 856', idLabel: 'Player ID', idHint: 'Free Fire → Profil → Player ID' },
+  { id: 3, name: 'Mobile Legends', currency: 'Diamonds', popular: true, icon: 'https://i.postimg.cc/HLLFMTWD/unnamed.png', color: 'from-blue-500 to-purple-600', banner: 'https://i.postimg.cc/L8YBqsGm/1790853414646.jpg', rating: '4.8 · 720', idLabel: 'User ID + Server', idHint: 'ML → Profil → User ID va Server ID' },
+  { id: 4, name: 'Honor of Kings', currency: 'Coins', popular: true, icon: 'https://i.postimg.cc/Fs9pzDsP/images-(4).jpg', color: 'from-yellow-400 to-red-500', banner: 'https://i.postimg.cc/D065cYcz/1790853424658.jpg', rating: '4.7 · 650', idLabel: 'Player ID', idHint: 'HOK → Profil → Player ID' },
+  { id: 5, name: 'Stand Off 2', currency: 'Gold', popular: true, icon: 'https://i.postimg.cc/Zq0DRjjq/unnamed.jpg', color: 'from-gray-600 to-gray-800', banner: 'https://i.postimg.cc/XJcgVDm1/1790853409588.jpg', rating: '4.9 · 540', idLabel: 'Player ID', idHint: 'SO2 → Profil → Player ID' },
+  { id: 6, name: 'Steam', currency: 'Wallet', popular: true, icon: 'https://i.postimg.cc/wTcrb132/c9ea553f8efcd2ffb43f305d29f4c843a85e0c944c72d49f2c18a630d2585805-600.jpg', color: 'from-blue-600 to-indigo-700', banner: 'https://i.postimg.cc/d0G2BxsV/1790853405201.jpg', rating: '5 · 2100', idLabel: 'Steam Login', idHint: 'Steam loginingizni kiriting' },
+  { id: 7, name: 'Telegram Stars', currency: 'Stars', popular: false, icon: 'https://i.postimg.cc/tRcwVK8y/images-(7).jpg', color: 'from-yellow-400 to-yellow-600', banner: 'https://i.postimg.cc/W3Wh6GkD/1790853712181.jpg', rating: '5 · 3200', idLabel: 'Telegram ID', idHint: 'Telegram ID avtomatik aniqlanadi' },
+  { id: 8, name: 'Brawl Stars', currency: 'Gems', popular: false, icon: 'https://i.postimg.cc/MGRVdQpT/images-(8).jpg', color: 'from-purple-500 to-pink-500', banner: 'https://i.postimg.cc/CKC8Dn7w/1790853610531.jpg', rating: '4.8 · 980', idLabel: 'Player Tag', idHint: 'BS → Profil → Player Tag (#...)' },
+  { id: 9, name: 'Clash Royale', currency: 'Gems', popular: false, icon: 'https://i.postimg.cc/FRRCYpZf/3bd24a94f7a3aaa9b9e02ff15ee37bed57f51e784b1e6b9cdfaf5c0eb4b50c39-600.jpg', color: 'from-blue-500 to-blue-700', banner: 'https://i.postimg.cc/Gp90TvdG/1790853220765.jpg', rating: '4.7 · 1500', idLabel: 'Player Tag', idHint: 'CR → Profil → Player Tag' },
+  { id: 10, name: 'Genshin Impact', currency: 'Primogems', popular: false, icon: 'https://i.postimg.cc/nVqSCXKJ/images-(3).jpg', color: 'from-cyan-400 to-blue-500', banner: 'https://i.postimg.cc/tJvWJ05D/1790853398684.jpg', rating: '4.9 · 2400', idLabel: 'UID + Server', idHint: 'GI → Profil → UID va Server' },
+  { id: 11, name: 'Roblox', currency: 'Robux', popular: false, icon: 'https://i.postimg.cc/q7bVDzbY/images-(5).jpg', color: 'from-red-600 to-red-800', banner: 'https://i.postimg.cc/j2HBYX4D/1790853211312.jpg', rating: '4.6 · 1800', idLabel: 'Username', idHint: 'Roblox username' },
+  { id: 12, name: 'Fortnite', currency: 'V-Bucks', popular: false, icon: 'https://i.postimg.cc/nzcgvpHL/images-(6).jpg', color: 'from-purple-600 to-blue-600', banner: 'https://i.postimg.cc/nzcgvpHL/images-(6).jpg', rating: '4.8 · 3100', idLabel: 'Epic Games ID', idHint: 'Epic Games ID yoki email' }
+];
+
+const gamePackages = {
+  // ===== PUBG Mobile =====
+  1: {
+    uc: [
+      { amount: 60, price: 11700, icon: 'https://i.postimg.cc/CxMhxZ2v/7b65d0a87b5c1386232dfd337015feca.jpg' },
+      { amount: 325, price: 59000, icon: 'https://i.postimg.cc/fLdZrY3m/images-(10).jpg' },
+      { amount: 660, price: 115000, icon: 'https://i.postimg.cc/mrvWChdc/images-(13).jpg' },
+      { amount: 1800, price: 290000, icon: 'https://i.postimg.cc/rFf6gfnp/images-(12).jpg' },
+      { amount: 3850, price: 575000, icon: 'https://i.postimg.cc/mrvWChdc/images-(13).jpg' },
+      { amount: 8100, price: 1165000, icon: 'https://i.postimg.cc/0j930S7m/images-(14).jpg' }
+    ],
+    prime: [
+      { amount: 'Prime (1 Month)', price: 12500, icon: 'https://i.postimg.cc/HLG6t5gW/51fa5596-7e74-412a-9219-72613969b914.webp' },
+      { amount: 'Prime (3 Months)', price: 37000, icon: 'https://i.postimg.cc/TwBjRvYt/e4a47383-21ce-488f-ab75-20478a28b4f6.webp' },
+      { amount: 'Prime (6 Months)', price: 71000, icon: 'https://i.postimg.cc/7YfX8XHc/577e0d5e-80d8-48e8-8bc3-3e4ffea00843.webp' },
+      { amount: 'Prime (12 Months)', price: 138000, icon: 'https://i.postimg.cc/7Zq3PVwh/9a088030-50e8-4628-938a-70985fbcb24b.webp' },
+      { amount: 'Prime Plus (1 Month)', price: 114000, icon: 'https://i.postimg.cc/BvcBcVpH/4e41b4f4-b0ed-44d0-8b76-30b66e138e03.webp' },
+      { amount: 'Prime Plus (3 Months)', price: 340000, icon: 'https://i.postimg.cc/Tw5mNNq7/2b30c42e-f142-4ae6-821c-6b714743d5b8.webp' },
+      { amount: 'Prime Plus (6 Months)', price: 685000, icon: 'https://i.postimg.cc/4ynvGNgL/98e5d702-f0f0-45ec-9e67-b0d4b80d7cc5.webp' },
+      { amount: 'Prime Plus (12 Months)', price: 1340000, icon: 'https://i.postimg.cc/bN9n5tkJ/6173a69b-e2dc-46eb-a14d-8dbb791ca9ff.webp' },
+      { amount: 'First Purchase Pack', price: 14000, icon: 'https://i.postimg.cc/MKC0kSrf/67dd49eb-f726-4603-93e1-7888d085da7d.webp' },
+      { amount: 'Weekly Deal Pack 1', price: 14000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
+      { amount: 'Weekly Mythic Emblem', price: 34000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
+      { amount: 'Upgradable Firearm', price: 38000, icon: 'https://i.postimg.cc/wxc3xdvL/7c346d4d-2b2e-42b1-9483-fc35824aa5d6.webp' },
+      { amount: 'Mythic Emblem Pack', price: 60000, icon: 'https://i.postimg.cc/XXSrPV7G/dea6e57d-9982-46a2-a210-05fc407a1b90.webp' },
+      { amount: 'Elite Pass LV1-50', price: 72000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
+      { amount: 'Elite Pass LV1-100', price: 140000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' }
+    ]
+  },
+  // ===== Free Fire =====
+  2: {
+    diamonds: [
+      { amount: 100, price: 10000, icon: '💎' },
+      { amount: 310, price: 30000, icon: '💎' },
+      { amount: 520, price: 50000, icon: '💎' },
+      { amount: 1060, price: 100000, icon: '💎' },
+      { amount: 2180, price: 200000, icon: '💎' }
+    ],
+    pacs: [
+      { amount: 'Level Up Package 6', price: 4200, icon: 'https://i.postimg.cc/jjNzqkm8/images-(9).jpg' },
+      { amount: 'Level Up Package 10', price: 6800, icon: 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg' },
+      { amount: 'Level Up Package 15', price: 6800, icon: 'https://i.postimg.cc/HnW52WnG/1790855523904.jpg' },
+      { amount: 'Level Up Package 20', price: 6800, icon: 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg' },
+      { amount: 'Level Up Package 25', price: 6800, icon: 'https://i.postimg.cc/J42JNLLz/1790855507616.jpg' },
+      { amount: 'Level Up Package 30', price: 9900, icon: 'https://i.postimg.cc/Gtp8DMg4/1790855593969.jpg' },
+      { amount: 'Weekly Lite', price: 5200, icon: 'https://i.postimg.cc/Fs8dfVy1/IMG-20261001-165506-460.jpg' },
+      { amount: 'Weekly Membership', price: 20000, icon: 'https://i.postimg.cc/HL4VhGfM/IMG-20261001-165507-767.jpg' },
+      { amount: 'Monthly Membership', price: 74000, icon: 'https://i.postimg.cc/J0gnkRBX/IMG-20261001-165508-955.jpg' }
+    ]
+  },
+  // ===== Brawl Stars =====
+  8: {
+    default: [
+      { amount: 'Brawl Pass', price: 73000, icon: 'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp' },
+      { amount: 'Brawl Pass Plus', price: 95000, icon: 'https://i.postimg.cc/zHDwRWBs/01KYBN16Q7JNANPYYS92NJ3AZG.webp' },
+      { amount: 'Brawl Pass Pro', price: 194000, icon: 'https://i.postimg.cc/CnMCfD1m/01KYBN1G4DF57TPEX693M4NKJJ.webp' },
+      { amount: '80 Gems', price: 38000, icon: 'https://i.postimg.cc/30rjDpRV/01KYBN1SQ59X8CK3NT6Z1NP642.webp' },
+      { amount: '170 Gems', price: 73000, icon: 'https://i.postimg.cc/YL2Nmg9y/01KYBN27ZZEHQ0RJ0KM33Z4WP4.webp' },
+      { amount: '360 Gems', price: 144000, icon: 'https://i.postimg.cc/WqpmJr39/01KYBN2VZWV2PSVSP3B7CTM114.webp' },
+      { amount: '950 Gems', price: 354000, icon: 'https://i.postimg.cc/V0s9bM6V/01KYBN367ARKZ46GTXP5G477HK.webp' },
+      { amount: '2000 Gems', price: 699000, icon: 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png' },
+      { amount: '4000 Gems', price: 1394000, icon: 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png' }
+    ]
+  },
+  // ===== Steam =====
+    6: { steam: true },
+  // ===== Mobile Legends =====
+  3: {
+    default: [
+      { amount: 5, price: 5000, icon: 'https://i.postimg.cc/64vSgrWx/01KWCQS0MKMM5ZPYJE3YKNYT7G.png' },
+      { amount: 12, price: 12000, icon: 'https://i.postimg.cc/WtFQdvMt/01KWCQX8HE5QJ4463F7YQBCPS0.png' },
+      { amount: 50, price: 50000, icon: 'https://i.postimg.cc/rz0vDkSK/06316848-beb3-4f8b-8399-8427f23bc4ce.webp' },
+      { amount: 72, price: 70000, icon: 'https://i.postimg.cc/23bP1D4q/0a79095a-0e53-429f-879b-c01e1b3d4fe0.webp' },
+      { amount: 145, price: 140000, icon: 'https://i.postimg.cc/7bGp5kgG/1985f989-ae7c-47b4-a52e-44531ab279a2.webp' }
+    ]
+  },
+  // ===== Honor of Kings (o'zgarmadi) =====
+    4: { default: [{ amount: 100, price: 15000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 300, price: 40000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 500, price: 65000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 1000, price: 120000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }] },
+  // ===== Roblox =====
+  11: {
+    default: [
+      { amount: 80, price: 10000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
+      { amount: 400, price: 48000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
+      { amount: 800, price: 95000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
+      { amount: 1700, price: 195000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' }
+    ]
+  }
+};
+
+function navigateTo(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageName).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('.nav-btn[data-page="' + ({'game-detail':'games','game-id':'games'}[pageName] || pageName) + '"]')?.classList.add('active');
+  if (pageName === 'profile') loadProfile();
+  if (pageName === 'home') updateBalanceUI();
+  if (pageName === 'topup') updateTopupDisplay();
+  if (pageName === 'admin') updateAdminStats();
+  if (pageName === 'referal') loadReferalPage();
+  if (pageName === 'daily-bonus') loadDailyBonus();
+  if (pageName === 'stats') loadStats();
+  if (pageName === 'notifications') loadNotifications();
+  if (pageName === 'payment-history') loadPaymentHistory();
+  if (pageName === 'promo-manager') loadPromoList();
+  if (pageName === 'notification-manager') loadAdminNotifList();
+  if (pageName === 'support') loadChat();
+  if (pageName === 'contests') loadContests();
+  if (pageName === 'popular-games') loadPopularGamesManager();
+  if (pageName === 'contest-manager') loadAdminContestList();
+  if (pageName === 'security-logs') loadSecurityLogs();
+  if (pageName === 'videos') loadVideos();
+  if (pageName === 'faq') loadFaqs();
+  if (pageName === 'orders') loadOrders();
+  if (pageName === 'game-orders') loadGameOrdersAdmin();
+  window.scrollTo(0, 0);
+}
+
+function renderGames() {
+  const popularContainer = document.getElementById('popular-games');
+  const allContainer = document.getElementById('all-games');
+  popularContainer.innerHTML = ''; allContainer.innerHTML = '';
+  games.filter(g => g.popular).forEach(game => { popularContainer.innerHTML += createGameCard(game); });
+  games.forEach(game => { allContainer.innerHTML += createGameCard(game); });
+}
+
+function createGameCard(game) {
+  return '<div class="game-card cursor-pointer" onclick="openGame(' + game.id + ')"><div class="game-logo bg-gradient-to-br ' + game.color + '"><img src="' + game.icon + '" alt="' + game.name + '" onerror="this.style.display=\'none\'"></div><div class="p-3 text-center bg-white"><span class="text-xs font-bold text-gray-800 leading-tight block">' + game.name + '</span></div></div>';
+}
+
+async function openGame(gameId) {
+  selectedGame = games.find(g => g.id === gameId);
+  selectedPackage = null; selectedPlaypayPackage = null;
+  gd = { tab: 'cur', cur: [], pacs: [], selected: null };
+  document.getElementById('detail-name').textContent = selectedGame.name;
+  document.getElementById('detail-rating').textContent = selectedGame.rating || '5 · 1020';
+  document.getElementById('game-banner').style.backgroundImage = 'url("' + selectedGame.banner + '"), linear-gradient(135deg, #8b5cf6, #ec4899)';
+  const isSteam = !!(gamePackages[gameId] && gamePackages[gameId].steam);
+  document.getElementById('steam-form').classList.toggle('hidden', !isSteam);
+  document.getElementById('gd-main').classList.toggle('hidden', isSteam);
+  currentGameType = isSteam ? 'steam' : 'local';
+  navigateTo('game-detail');
+  if (isSteam) return;
+
+  document.getElementById('gd-tabs').innerHTML =
+    '<button class="tab-btn" data-k="cur" onclick="switchGD(\'cur\')"><i class="gd-dot"></i>' + escHtml(selectedGame.currency) + '</button>' +
+    '<button class="tab-btn" data-k="pacs" onclick="switchGD(\'pacs\')"><i class="gd-dot"></i>Pacs</button>';
+  document.getElementById('gd-list').innerHTML = '<p class="gd-empty">Yuklanmoqda...</p>';
+
+  let built = null;
+  const info = GAME_MAP[gameId];
+  if (info && info.ppId) {
+    const r = await loadPackagesFromAPI(gameId);
+    if (selectedGame.id !== gameId) return;
+    if (r.ok && r.packages && r.packages.length) { built = buildPlaypayGD(gameId, r.packages); currentGameType = 'playpay'; currentPlaypayGameId = gameId; }
+    else console.warn('PlayPay API xatosi, lokal paketlar ko\'rsatildi:', r.error);
+  }
+  if (!built) built = buildLocalGD(gameId);
+  gd.cur = built.cur; gd.pacs = built.pacs;
+  gd.tab = (gd.cur.length || !gd.pacs.length) ? 'cur' : 'pacs';
+  renderGD();
+}
+
+async function loadPackagesFromAPI(gameId) {
+  const gameInfo = GAME_MAP[gameId];
+  if (!gameInfo || !gameInfo.ppId) return { ok: false, error: 'Bu o\'yin PlayPay\'da mavjud emas' };
+  const result = await ppGetPackages(gameInfo.ppId);
+  if (!result.ok) return { ok: false, error: result.error };
+  ppPackagesCache[gameId] = result.packages || [];
+  return { ok: true, packages: result.packages };
+}
+
+
+// PlayPay paket nomiga mos lokal rasmni topish (gamePackages ichidagi icon)
+function normName(t) { return String(t).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+function findLocalIcon(gameId, apiName) {
+  const g = gamePackages[gameId];
+  if (!g) return null;
+  const raw = String(apiName).trim();
+  const n = normName(raw);
+  const strip = t => t.replace(/[0-9]+$/, '');
+  let best = null, bestLen = 0;
+  Object.values(g).forEach(list => {
+    if (!Array.isArray(list)) return;
+    list.forEach(p => {
+      let score = 0;
+      if (typeof p.amount === 'number') {
+        if (new RegExp('^' + p.amount + '(\\D|$)').test(raw)) score = 3;
+      } else {
+        const a = normName(p.amount);
+        if (n === a) score = a.length + 100;
+        else if (a.length >= 5 && (n.startsWith(a) || a.startsWith(n))) score = Math.min(a.length, n.length);
+        else if (a.length > 8 && strip(a) === strip(n)) score = 1;
+      }
+      if (score > bestLen) { bestLen = score; best = p.icon; }
+    });
+  });
+  return best;
+}
+
+// ============ UMUMIY PAKET TIZIMI: har bir o'yinda 2 tab (valyuta / Pacs) ============
+let gd = { tab: 'cur', cur: [], pacs: [], selected: null };
+
+function isCurName(n) { return /^[\d\s.,]+\s*(uc|diamonds?|dm|gems?|robux|coins?|gold|primogems?|v-?bucks|stars?)?$/i.test(String(n).trim()); }
+
+function buildLocalGD(gameId) {
+  const out = { cur: [], pacs: [] };
+  const g = gamePackages[gameId];
+  if (!g) return out;
+  const cur = selectedGame.currency;
+  const vip = getVipLevel(currentUser.totalSpent);
+  const add = (tab, p, kb, i) => {
+    const m = priceMarkups[kb + '-' + i] || 0;
+    out[tab].push({
+      name: typeof p.amount === 'number' ? p.amount + ' ' + cur : String(p.amount),
+      icon: p.icon, old: Math.round(p.price * (1 + m / 100)), price: getFinalPrice(kb, i, p.price), pct: vip.discount, pack: p
+    });
+  };
+  if (gameId === 1) { g.uc.forEach((p, i) => add('cur', p, 1, i)); g.prime.forEach((p, i) => add('pacs', p, '1_prime', i)); }
+  else if (gameId === 2) { g.diamonds.forEach((p, i) => add('cur', p, 2, i)); g.pacs.forEach((p, i) => add('pacs', p, '2_pacs', i)); }
+  else (g.default || []).forEach((p, i) => add(isCurName(p.amount) ? 'cur' : 'pacs', p, gameId, i));
+  return out;
+}
+
+function buildPlaypayGD(gameId, packages) {
+  const out = { cur: [], pacs: [] };
+  packages.forEach(pk => {
+    const price = pk.price && pk.price.amount ? Math.round(pk.price.amount) : 0;
+    out[isCurName(pk.name) ? 'cur' : 'pacs'].push({ name: pk.name, icon: findLocalIcon(gameId, pk.name), old: price, price: price, pct: 0, paketId: pk.id });
+  });
+  return out;
+}
+
+function renderGD() {
+  const list = gd[gd.tab] || [];
+  gd.selected = null;
+  document.getElementById('gd-list').innerHTML = list.length
+    ? list.map((e, i) => packCard(e.icon, e.name, e.price, 'selectGD(' + i + ', this)', e.old, e.pct)).join('')
+    : '<p class="gd-empty">Paketlar tez orada qo\'shiladi</p>';
+  document.querySelectorAll('#gd-tabs .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.k === gd.tab));
+}
+function switchGD(k) { gd.tab = k; renderGD(); }
+function selectGD(i, el) {
+  document.querySelectorAll('#gd-list .pk-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  gd.selected = (gd[gd.tab] || [])[i] || null;
+}
+
+async function showGameIdInput() {
+  const e = gd.selected;
+  if (!e) { showAlert('Paketni tanlang!'); return; }
+  const gameInfo = GAME_MAP[selectedGame.id];
+  if (!gameInfo) { showAlert('O\'yin ma\'lumotlari topilmadi!'); return; }
+  if (e.paketId) pendingGameOrder = { game: selectedGame, gameInfo: gameInfo, paketId: e.paketId, paketName: e.name, price: e.price, type: 'playpay' };
+  else pendingGameOrder = { game: selectedGame, gameInfo: gameInfo, pack: e.pack, paketName: e.name, price: e.price, type: 'local' };
+
+  document.getElementById('game-id-icon').textContent = '🎮';
+  document.getElementById('game-id-name').textContent = selectedGame.name;
+  document.getElementById('game-id-package').textContent = pendingGameOrder.paketName || pendingGameOrder.pack.amount + ' ' + selectedGame.currency;
+  document.getElementById('game-id-price').textContent = pendingGameOrder.price.toLocaleString() + ' so\'m';
+  document.getElementById('game-id-label').textContent = gameInfo.idLabel;
+  document.getElementById('game-id-hint').textContent = gameInfo.idHint;
+  document.getElementById('game-id-input').value = '';
+
+  const serverContainer = document.getElementById('server-id-container');
+  if (gameInfo.needsServer) {
+    serverContainer.classList.remove('hidden');
+    document.getElementById('server-id-label').textContent = gameInfo.serverLabel || 'Server ID';
+    document.getElementById('server-id-hint').textContent = gameInfo.serverHint || '';
+    document.getElementById('server-id-input').value = '';
+  } else {
+    serverContainer.classList.add('hidden');
+  }
+  navigateTo('game-id');
+}
+
+async function confirmGameId() {
+  const playerId = document.getElementById('game-id-input').value.trim();
+  if (!playerId) { showAlert('O\'yin ID ni kiriting!'); return; }
+  const serverIdInput = document.getElementById('server-id-input');
+  const serverId = serverIdInput && !serverIdInput.parentElement.classList.contains('hidden') ? serverIdInput.value.trim() : null;
+
+  if (currentUser.balance < pendingGameOrder.price) {
+    showAlert('⚠️ Balansingiz yetarli emas!\n\nKerak: ' + pendingGameOrder.price.toLocaleString() + ' so\'m\nBalans: ' + currentUser.balance.toLocaleString() + ' so\'m\n\nIltimos, avval balansni to\'ldiring.');
+    return;
+  }
+
+  if (pendingGameOrder.type === 'playpay') {
+    showAlert('🔍 ID tekshirilmoqda... Kuting!');
+    const checkResult = await ppCheckId(pendingGameOrder.gameInfo.ppId, playerId, serverId);
+    if (!checkResult.ok) { showAlert('❌ Xatolik: ' + checkResult.error); return; }
+    if (!checkResult.valid) { showAlert('❌ ID noto\'g\'ri! Iltimos, qaytadan kiriting.'); return; }
+
+    const playerName = checkResult.player_name || 'Noma\'lum';
+    const confirm = await new Promise(resolve => {
+      tg.showConfirm(`✅ ID to'g'ri!\n\nO'yinchi: ${playerName}\nPaket: ${pendingGameOrder.paketName}\nNarx: ${pendingGameOrder.price.toLocaleString()} so'm\n\nBuyurtma berilsinmi?`, resolve);
+    });
+    if (!confirm) return;
+
+    showAlert('⏳ Buyurtma yaratilmoqda...');
+    const orderResult = await ppCreateOrder(pendingGameOrder.gameInfo.ppId, pendingGameOrder.paketId, playerId, serverId);
+    if (!orderResult.ok) {
+      if (orderResult.error === 'insufficient_balance') showAlert('⚠️ PlayPay balansida mablag\' yetarli emas!\n\nAdmin bilan bog\'laning.');
+      else showAlert('❌ Xatolik: ' + orderResult.error);
+      return;
+    }
+
+    const orderId = orderResult.order_id;
+    const chargedUsd = orderResult.charged?.usd || 0;
+    const chargedUzs = Math.round(chargedUsd * PLAYPAY.EXCHANGE_RATE);
+    const profit = pendingGameOrder.price - chargedUzs;
+
+    currentUser.balance -= pendingGameOrder.price;
+    currentUser.totalSpent += pendingGameOrder.price;
+    currentUser.totalOrders += 1;
+    saveCurrentUser();
+
+    const order = { id: orderId, userId: currentUser.id, game: pendingGameOrder.game.name, package: pendingGameOrder.paketName, playerId: playerId, serverId: serverId, playerName: playerName, price: pendingGameOrder.price, charged: chargedUzs, profit: profit, status: orderResult.status || 'processing', date: new Date().toLocaleString('uz-UZ') };
+    const orders = JSON.parse(localStorage.getItem('gameOrders') || '[]');
+    orders.push(order);
+    localStorage.setItem('gameOrders', JSON.stringify(orders));
+    logSecurity('PlayPay buyurtma: ' + pendingGameOrder.game.name + ' - ' + pendingGameOrder.paketName + ' - ID: ' + playerId);
+
+    showAlert(`✅ Buyurtma qabul qilindi!\n\n ${pendingGameOrder.game.name}\n📦 ${pendingGameOrder.paketName}\n👤 ${playerName}\n🆔 ${playerId}${serverId ? '\n🌐 Server: ' + serverId : ''}\n💰 Narx: ${pendingGameOrder.price.toLocaleString()} so'm\n Holat: ${orderResult.status}\n\n️ 1-5 daqiqa ichida yetkaziladi!`);
+    pendingGameOrder = null;
+    selectedPlaypayPackage = null;
+    navigateTo('orders');
+  } else {
+    currentUser.balance -= pendingGameOrder.price;
+    currentUser.totalSpent += pendingGameOrder.price;
+    currentUser.totalOrders += 1;
+    saveCurrentUser();
+    logSecurity('Buyurtma: ' + pendingGameOrder.game.name + ' - ' + pendingGameOrder.pack.amount);
+    showAlert('✅ Buyurtma qabul qilindi!\n' + pendingGameOrder.game.name + ' - ' + pendingGameOrder.pack.amount + '\nID: ' + playerId + '\nNarx: ' + pendingGameOrder.price.toLocaleString() + ' so\'m');
+    pendingGameOrder = null;
+    navigateTo('orders');
+  }
+}
+
+function calculateSteamPrice() { const amount = parseFloat(document.getElementById('steam-amount').value) || 0; document.getElementById('steam-total').textContent = (amount * 12250).toLocaleString() + ' so\'m'; }
+function buySteam() {
+  const login = document.getElementById('steam-login').value.trim();
+  const amount = parseFloat(document.getElementById('steam-amount').value);
+  if (!login) { showAlert('Steam loginingizni kiriting!'); return; }
+  if (!amount || amount <= 0) { showAlert('Summani kiriting!'); return; }
+  const totalPrice = amount * 12250;
+  if (currentUser.balance < totalPrice) { showAlert('⚠️ Balansingiz yetarli emas!\n\nKerak: ' + totalPrice.toLocaleString() + ' so\'m\nBalans: ' + currentUser.balance.toLocaleString() + ' so\'m'); return; }
+  currentUser.balance -= totalPrice; currentUser.totalSpent += totalPrice; currentUser.totalOrders += 1; saveCurrentUser();
+  logSecurity('Steam buyurtma: ' + amount + '$ (' + totalPrice.toLocaleString() + ' so\'m)');
+  showAlert('✅ Steam buyurtma qilindi!\n\nLogin: ' + login + '\nSumma: ' + amount + '$\nTo\'langan: ' + totalPrice.toLocaleString() + ' so\'m');
+  document.getElementById('steam-login').value = ''; document.getElementById('steam-amount').value = ''; document.getElementById('steam-total').textContent = '0 so\'m';
+  navigateTo('orders');
+}
+
+function searchGames(query) { const c = document.getElementById('all-games'); c.innerHTML = ''; games.filter(g => g.name.toLowerCase().includes(query.toLowerCase())).forEach(game => { c.innerHTML += createGameCard(game); }); }
+
+function loadProfile() {
+  if (user) {
+    const letter = (user.first_name || 'U')[0].toUpperCase();
+    document.getElementById('profile-name').textContent = user.first_name || 'User';
+    document.getElementById('profile-username').textContent = user.username ? '@' + user.username : 'Telegram';
+    document.getElementById('profile-id').textContent = user.id;
+    const un = document.getElementById('username'); if (un) un.textContent = user.first_name;
+    const av = document.getElementById('avatar'); if (av) av.textContent = letter;
+    const pa = document.getElementById('profile-avatar');
+    pa.textContent = letter;
+    if (user.photo_url) { const im = document.createElement('img'); im.src = user.photo_url; im.alt = ''; im.onerror = () => im.remove(); pa.appendChild(im); }
+    const vip = getVipLevel(currentUser.totalSpent);
+    const vipBadge = document.getElementById('profile-vip-badge');
+    if (vipBadge) vipBadge.innerHTML = '<span class="' + vip.class + ' text-white px-3 py-1 rounded-full text-sm font-bold">' + vip.emoji + ' ' + vip.name + ' (' + vip.discount + '% chegirma)</span>';
+  }
+  updateBalanceUI();
+  const ph = currentUser.phone;
+  document.getElementById('profile-phone').textContent = ph ? '•••• ' + String(ph).slice(-4) + ' · Saqlangan' : 'Kiritilmagan';
+  renderProfileExtras();
+  syncSeg();
+}
+
+function renderProfileExtras() {
+  const used = currentUser.usedPromos || [];
+  const usedHtml = promoCodes.filter(p => used.includes(p.code)).map(p =>
+    '<div class="pf-promo on"><div><b>' + escHtml(p.code) + '</b><span>ishlatilgan</span></div></div>').join('');
+  const availList = promoCodes.filter(p => !used.includes(p.code) && !(p.limit > 0 && p.used >= p.limit));
+  const availHtml = availList.length ? '<p class="pf-lbl" style="margin-top:14px">' + T('MAVJUD PROMOKODLAR') + '</p>' + availList.map(p =>
+    '<div class="pf-promo"><div><b>' + escHtml(p.code) + '</b><span>' + p.discount + '% ' + T('bonus — olish tugmasini bosing') + '</span></div><button onclick="claimPromo(\'' + escHtml(p.code) + '\')">Olish</button></div>').join('') : '';
+  document.getElementById('profile-promos').innerHTML = (usedHtml + availHtml) || '<p class="pf-s">' + T('Hozircha promokodlar yo\'q') + '</p>';
+  const yt = '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9.500 5 2.500-5 2.500z"/></svg>';
+  const hasV = videos.length > 0;
+  ['pf-links-lbl', 'profile-videos'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = hasV ? '' : 'none'; });
+  document.getElementById('profile-videos').innerHTML = videos.map((v, i) =>
+    '<button class="pf-card pf-link" onclick="openVideo(' + i + ')"><span class="pf-yt">' + yt + '</span><div><p class="pf-t">' + escHtml(v.title) + '</p><p class="pf-s">Video qo\'llanma — ko\'rish</p></div><i>›</i></button>').join('');
+}
+
+function claimPromo(code) {
+  const inp = document.getElementById('promo-input');
+  if (!inp) return;
+  inp.value = code; applyPromo(); loadProfile();
+}
+function openVideo(i) {
+  const v = videos[i];
+  if (v && v.url) { (tg.openLink ? tg.openLink(v.url) : window.open(v.url, '_blank')); } else showAlert('Video tez orada qo\'shiladi!');
+}
+function openSupport() {
+  const u = 'https://t.me/PayerSub';
+  if (tg.openTelegramLink) tg.openTelegramLink(u); else window.open(u, '_blank');
+}
+function updatePhone() {
+  const v = prompt('Telefon raqamingizni kiriting (masalan +998901234567):', currentUser.phone || '+998');
+  if (v === null) return;
+  const clean = v.replace(/[\s()-]/g, '');
+  if (!/^\+?\d{9,15}$/.test(clean)) { showAlert('Raqam noto\'g\'ri formatda!'); return; }
+  currentUser.phone = clean; saveCurrentUser(); loadProfile();
+}
+function setDark(v) {
+  darkMode = v; document.body.classList.toggle('dark', v); localStorage.setItem('darkMode', v); syncSeg();
+}
+function syncSeg() {
+  document.querySelectorAll('#seg-lang button').forEach(b => b.classList.toggle('on', b.dataset.v === currentLang));
+  document.querySelectorAll('#seg-theme button').forEach(b => b.classList.toggle('on', (b.dataset.v === 'dark') === darkMode));
+}
+
+function showAlert(msg) { tg.showAlert(T(msg)); }
+function showGameOrders() { navigateTo('game-orders'); }
+
+function updateTopupDisplay() { document.getElementById('topup-balance-display').textContent = currentUser.balance.toLocaleString(); document.getElementById('topup-card-name').textContent = cardSettings.type; }
+function setTopupAmount(amount) { document.getElementById('topup-amount').value = amount; updateTopupButton(); }
+function updateTopupButton() {
+  const amount = parseInt(document.getElementById('topup-amount').value) || 0;
+  const btn = document.getElementById('topup-next-btn');
+  if (amount >= 1000) { btn.disabled = false; btn.classList.remove('bg-gray-200', 'text-gray-400'); btn.classList.add('gradient-bg', 'text-white'); btn.textContent = 'Davom etish'; }
+  else { btn.disabled = true; btn.classList.add('bg-gray-200', 'text-gray-400'); btn.classList.remove('gradient-bg', 'text-white'); btn.textContent = 'Summani kiriting'; }
+}
+
+function goToPayment() {
+  const amount = parseInt(document.getElementById('topup-amount').value) || 0;
+  if (amount < 1000) { showAlert('Eng kam 1 000 so\'m!'); return; }
+  currentPaymentAmount = amount;
+  document.getElementById('payment-amount-display').textContent = amount.toLocaleString();
+  document.getElementById('payment-card-number').textContent = cardSettings.number;
+  document.getElementById('payment-card-holder').textContent = cardSettings.holder;
+  document.getElementById('payment-card-type').textContent = cardSettings.type;
+  startPaymentTimer();
+  navigateTo('payment');
+}
+
+function startPaymentTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  let totalSeconds = cardSettings.timer * 60;
+  let remaining = totalSeconds;
+  const timerEl = document.getElementById('payment-timer');
+  const fillEl = document.getElementById('timer-fill');
+  timerInterval = setInterval(() => {
+    remaining--;
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+    timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    fillEl.style.width = ((remaining / totalSeconds) * 100) + '%';
+    if (remaining <= 0) { clearInterval(timerInterval); showAlert('Karta muddati tugadi!'); navigateTo('topup'); }
+  }, 1000);
+}
+
+function copyAmount() { navigator.clipboard.writeText(currentPaymentAmount.toString()); showAlert('Summa nusxalandi!'); }
+function copyCardNumber() { navigator.clipboard.writeText(cardSettings.number.replace(/\s/g, '')); showAlert('Karta raqami nusxalandi!'); }
+
+function confirmPayment() {
+  if (timerInterval) clearInterval(timerInterval);
+  const payment = { id: Date.now(), userId: user?.id || 0, userName: user?.first_name || 'Noma\'lum', username: user?.username || 'username', amount: currentPaymentAmount, cardNumber: cardSettings.number, cardType: cardSettings.type, status: 'pending', date: new Date().toLocaleString('uz-UZ') };
+  payments.push(payment);
+  localStorage.setItem('payments', JSON.stringify(payments));
+  logSecurity('To\'lov yaratildi: ' + currentPaymentAmount + ' so\'m');
+  document.getElementById('success-amount').textContent = currentPaymentAmount.toLocaleString() + ' so\'m';
+  navigateTo('payment-success');
+}
+
+function showCardOptions() { showAlert('Karta: ' + cardSettings.type + '\n' + cardSettings.number); }
+
+function loadReferalPage() {
+  document.getElementById('my-referral-code').textContent = currentUser.referralCode;
+  const referrals = Object.values(usersData).filter(u => u.referredBy === currentUser.id);
+  document.getElementById('referral-count').textContent = referrals.length;
+  document.getElementById('referral-earnings').textContent = currentUser.referralEarnings.toLocaleString() + ' so\'m';
+}
+
+function copyReferralCode() {
+  const link = 'https://t.me/' + referralSettings.botUsername + '?start=ref_' + currentUser.id;
+  navigator.clipboard.writeText(link);
+  showAlert('Referal link nusxalandi!\n' + link);
+}
+
+function loadDailyBonus() {
+  const grid = document.getElementById('daily-bonus-grid');
+  grid.innerHTML = '';
+  const today = new Date().toDateString();
+  const lastBonus = currentUser.lastDailyBonus ? new Date(currentUser.lastDailyBonus).toDateString() : null;
+  const canClaim = lastBonus !== today;
+  dailyBonusSettings.forEach((amount, idx) => {
+    const dayNum = idx + 1;
+    const isToday = currentUser.dailyStreak === idx;
+    const isClaimed = currentUser.dailyStreak > idx;
+    grid.innerHTML += '<div class="p-2 rounded-lg text-center ' + (isToday ? 'bg-purple-500 text-white' : isClaimed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600') + '"><p class="text-xs font-bold">' + dayNum + '-kun</p><p class="text-xs font-bold">' + amount + '</p></div>';
+  });
+  const todayIdx = Math.min(currentUser.dailyStreak, 6);
+  document.getElementById('today-bonus-amount').textContent = dailyBonusSettings[todayIdx].toLocaleString() + ' so\'m';
+  const btn = document.getElementById('claim-bonus-btn');
+  if (canClaim) { btn.disabled = false; btn.textContent = 'Bonusni olish'; btn.classList.remove('bg-gray-300'); }
+  else { btn.disabled = true; btn.textContent = 'Ertaga qaytib keling'; btn.classList.add('bg-gray-300'); }
+}
+
+function claimDailyBonus() {
+  const today = new Date().toDateString();
+  const lastBonus = currentUser.lastDailyBonus ? new Date(currentUser.lastDailyBonus).toDateString() : null;
+if (lastBonus === today) { showAlert('Bugun bonus oldingiz!'); return; }
+  const todayIdx = Math.min(currentUser.dailyStreak, 6);
+  const bonus = dailyBonusSettings[todayIdx];
+  currentUser.balance += bonus;
+  currentUser.lastDailyBonus = new Date().toISOString();
+  if (currentUser.dailyStreak < 6) currentUser.dailyStreak++; else currentUser.dailyStreak = 0;
+  saveCurrentUser();
+  showAlert(' Tabriklaymiz!\n' + bonus.toLocaleString() + ' so\'m bonus qo\'shildi!');
+  loadDailyBonus();
+}
+
+function applyPromo() {
+  const code = document.getElementById('promo-input').value.trim().toUpperCase();
+  if (!code) { showAlert('Promokod kiriting!'); return; }
+  if (currentUser.usedPromos.includes(code)) { showAlert('Bu promokodni allaqachon ishlatgansiz!'); return; }
+  const promo = promoCodes.find(p => p.code === code);
+  if (!promo) { showAlert('Promokod topilmadi!'); return; }
+  if (promo.limit > 0 && promo.used >= promo.limit) { showAlert('Promokod muddati tugagan!'); return; }
+  const bonusAmount = Math.round(10000 * promo.discount / 100);
+  currentUser.balance += bonusAmount; currentUser.usedPromos.push(code); promo.used++;
+  saveCurrentUser(); localStorage.setItem('promoCodes', JSON.stringify(promoCodes));
+  showAlert('🎉 Promokod qo\'llandi!\nKod: ' + code + '\nBonus: ' + bonusAmount.toLocaleString() + ' so\'m');
+  document.getElementById('promo-input').value = '';
+}
+
+function loadStats() {
+  document.getElementById('stat-orders').textContent = currentUser.totalOrders;
+  document.getElementById('stat-spent').textContent = currentUser.totalSpent.toLocaleString() + ' so\'m';
+  document.getElementById('stat-saved').textContent = Math.round(currentUser.totalSpent * 0.1).toLocaleString() + ' so\'m';
+  document.getElementById('stat-referral').textContent = currentUser.referralEarnings.toLocaleString() + ' so\'m';
+  const vip = getVipLevel(currentUser.totalSpent);
+  const vipDisplay = document.getElementById('vip-status-display');
+  vipDisplay.className = 'text-center py-4 rounded-xl text-white font-bold ' + vip.class;
+  vipDisplay.innerHTML = vip.emoji + ' ' + vip.name + '<br><span class="text-sm">' + vip.discount + '% chegirma</span>';
+  const nextLevels = [{ name: 'Silver', min: vipSettings.bronze.max }, { name: 'Gold', min: vipSettings.silver.max }, { name: 'Diamond', min: vipSettings.gold.max }];
+  const nextLevel = nextLevels.find(l => currentUser.totalSpent < l.min);
+  document.getElementById('vip-next-level').textContent = nextLevel ? 'Keyingi daraja: ' + nextLevel.name + ' (' + (nextLevel.min - currentUser.totalSpent).toLocaleString() + ' so\'m qoldi)' : 'Maksimal darajaga yetdingiz!';
+}
+
+function loadNotifications() {
+  const container = document.getElementById('notifications-list'); container.innerHTML = '';
+  if (notifications.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">🔔</p><p class="font-medium">Bildirishnomalar yo\'q</p></div>'; return; }
+  notifications.slice().reverse().forEach(n => { container.innerHTML += '<div class="notif-card"><p class="font-bold text-gray-900">' + n.title + '</p><p class="text-sm text-gray-600 mt-1">' + n.message + '</p><p class="text-xs text-gray-400 mt-2">' + n.date + '</p></div>'; });
+}
+
+function loadNotificationsHome() {
+  const container = document.getElementById('notifications-container'); container.innerHTML = '';
+  const recent = notifications.slice(-2).reverse();
+  recent.forEach(n => { container.innerHTML += '<div class="notif-card"><p class="font-bold text-gray-900 text-sm">' + n.title + '</p><p class="text-xs text-gray-600 mt-1">' + n.message + '</p></div>'; });
+}
+
+function loadPaymentHistory() {
+  const container = document.getElementById('payment-history-list'); container.innerHTML = '';
+  const userPayments = payments.filter(p => p.userId === currentUser.id);
+  if (userPayments.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">💳</p><p class="font-medium">To\'lovlar yo\'q</p></div>'; return; }
+  userPayments.slice().reverse().forEach(p => {
+    const statusColor = p.status === 'approved' ? 'bg-green-100 text-green-600' : p.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600';
+    const statusText = p.status === 'approved' ? 'Tasdiqlangan' : p.status === 'rejected' ? 'Rad etilgan' : 'Kutilmoqda';
+    container.innerHTML += '<div class="payment-card"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + p.amount.toLocaleString() + ' so\'m</p><p class="text-xs text-gray-500">' + p.date + '</p></div><span class="' + statusColor + ' px-2 py-1 rounded-lg text-xs font-bold">' + statusText + '</span></div><p class="text-xs text-gray-500">' + p.cardType + ' · ' + p.cardNumber + '</p></div>';
+  });
+}
+
+function loadOrders() {
+  const container = document.getElementById('orders-container');
+  if (!container) return;
+  const orders = JSON.parse(localStorage.getItem('gameOrders') || '[]');
+  if (orders.length === 0) {
+    container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">📦</p><p class="font-medium">Buyurtmalar yo\'q</p><p class="text-sm mt-2">O\'yin valyutasi sotib olganingizdan keyin shu yerda ko\'rinadi</p></div>';
+    return;
+  }
+  container.innerHTML = '';
+  orders.slice().reverse().forEach(order => {
+    const statusColors = { 'processing': 'bg-yellow-100 text-yellow-600', 'delivered': 'bg-green-100 text-green-600', 'failed': 'bg-red-100 text-red-600', 'pending': 'bg-blue-100 text-blue-600', 'refunded': 'bg-gray-100 text-gray-600' };
+    const statusTexts = { 'processing': 'Jarayonda ⏳', 'delivered': 'Yetkazildi ✅', 'failed': 'Bekor qilindi ❌', 'pending': 'Kutilmoqda', 'refunded': 'Qaytarildi' };
+    const statusColor = statusColors[order.status] || 'bg-gray-100 text-gray-600';
+    const statusText = statusTexts[order.status] || order.status;
+    container.innerHTML += '<div class="payment-card"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + order.game + '</p><p class="text-xs text-gray-500">📦 ' + order.package + '</p><p class="text-xs text-gray-500"> ' + order.playerId + (order.serverId ? ' | 🌐 ' + order.serverId : '') + '</p>' + (order.playerName ? '<p class="text-xs text-green-600">👤 ' + order.playerName + '</p>' : '') + '<p class="text-xs text-gray-400">📅 ' + order.date + '</p><p class="text-xs text-gray-400">🔖 Order #' + order.id + '</p></div><span class="' + statusColor + ' px-2 py-1 rounded-lg text-xs font-bold">' + statusText + '</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">To\'langan</p><p class="font-bold text-gray-900">' + order.price.toLocaleString() + ' so\'m</p></div>' + (order.profit ? '<div class="flex justify-between items-center pt-1"><p class="text-xs text-gray-500">Foyda</p><p class="text-xs font-bold text-green-600">+' + order.profit.toLocaleString() + ' so\'m</p></div>' : '') + '<button onclick="checkOrderStatus(' + order.id + ')" class="mt-2 w-full bg-purple-100 text-purple-600 py-2 rounded-lg text-sm font-medium">🔄 Holatni yangilash</button></div>';
+  });
+}
+
+async function checkOrderStatus(orderId) {
+  showAlert('🔄 Holat tekshirilmoqda...');
+  const result = await ppGetOrder(orderId);
+  if (!result.ok) { showAlert('❌ Xatolik: ' + result.error); return; }
+  const order = result.order;
+  showAlert('📊 Buyurtma holati:\n\n🆔 #' + order.id + '\n ' + order.game + '\n📦 ' + order.package + '\n👤 ' + order.player_name + '\n📅 ' + order.created_at + '\n\n✅ Holat: ' + order.status);
+  const orders = JSON.parse(localStorage.getItem('gameOrders') || '[]');
+  const idx = orders.findIndex(o => o.id === orderId);
+  if (idx !== -1) { orders[idx].status = order.status; localStorage.setItem('gameOrders', JSON.stringify(orders)); loadOrders(); }
+}
+
+function loadGameOrdersAdmin() {
+  const container = document.getElementById('game-orders-container');
+  if (!container) return;
+  const orders = JSON.parse(localStorage.getItem('gameOrders') || '[]');
+  if (orders.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">📦</p><p class="font-medium">Buyurtmalar yo\'q</p></div>'; return; }
+  container.innerHTML = '';
+  orders.slice().reverse().forEach(order => {
+    container.innerHTML += '<div class="payment-card"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + order.game + '</p><p class="text-xs text-gray-500">📦 ' + order.package + '</p><p class="text-xs text-gray-500">🆔 ' + order.playerId + '</p><p class="text-xs text-gray-400">📅 ' + order.date + '</p></div><span class="bg-green-100 text-green-600 px-2 py-1 rounded-lg text-xs font-bold">' + order.status + '</span></div><div class="grid grid-cols-2 gap-2 mt-2 text-xs"><div class="bg-purple-50 p-2 rounded"><p class="text-gray-500">To\'langan</p><p class="font-bold text-purple-600">' + order.price.toLocaleString() + ' so\'m</p></div><div class="bg-green-50 p-2 rounded"><p class="text-gray-500">Yechilgan</p><p class="font-bold text-green-600">' + (order.charged || 0).toLocaleString() + ' so\'m</p></div><div class="bg-yellow-50 p-2 rounded col-span-2"><p class="text-gray-500">Foyda</p><p class="font-bold text-yellow-600">+' + (order.profit || 0).toLocaleString() + ' so\'m</p></div></div><button onclick="checkOrderStatus(' + order.id + ')" class="mt-2 w-full bg-blue-100 text-blue-600 py-2 rounded-lg text-sm font-medium">🔄 Holatni tekshirish</button></div>';
+  });
+}
+
+async function showPlaypayBalance() {
+  showAlert('💰 Balans tekshirilmoqda...');
+  const result = await ppGetBalance();
+  if (!result.ok) { showAlert('❌ Xatolik: ' + result.error); return; }
+  const balanceUsd = result.balance?.usd || 0;
+  const balanceUzs = Math.round(balanceUsd * PLAYPAY.EXCHANGE_RATE);
+  const discount = result.discount_pct || 0;
+  const markup = result.markup_pct || 0;
+  showAlert(' PlayPay Balansi:\n\n💵 USD: $' + balanceUsd + '\n🇺🇿 UZS: ' + balanceUzs.toLocaleString() + ' so\'m\n\n Chegirma: ' + discount + '%\n Ustama: ' + markup + '%');
+}
+
+function toggleDarkMode() { darkMode = !darkMode; document.body.classList.toggle('dark', darkMode); localStorage.setItem('darkMode', darkMode); document.getElementById('theme-btn').textContent = darkMode ? '️' : '🌙'; }
+
+function changeTheme(primary, secondary, element) {
+  currentTheme = { primary, secondary };
+  localStorage.setItem('theme', JSON.stringify(currentTheme));
+  document.querySelectorAll('.theme-option').forEach(t => t.classList.remove('active'));
+  element.classList.add('active');
+  applyTheme();
+  showAlert('Mavzu o\'zgartirildi!');
+}
+
+function applyTheme() {
+  document.documentElement.style.setProperty('--p', currentTheme.primary);
+  document.documentElement.style.setProperty('--s', currentTheme.secondary);
+  let st = document.getElementById('theme-style');
+  if (!st) { st = document.createElement('style'); st.id = 'theme-style'; document.head.appendChild(st); }
+  st.textContent = `.gradient-bg { background: linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.secondary} 100%) !important; }`;
+}
+
+function loadChat() {
+  const container = document.getElementById('chat-messages'); container.innerHTML = '';
+  if (chatMessages.length === 0) { container.innerHTML = '<div class="chat-message admin"><p class="font-bold text-sm">Admin</p><p class="text-sm mt-1">Salom! Sizga qanday yordam bera olaman?</p></div>'; }
+  chatMessages.forEach(m => { container.innerHTML += '<div class="chat-message ' + m.sender + '"><p class="font-bold text-sm">' + (m.sender === 'user' ? 'Siz' : 'Admin') + '</p><p class="text-sm mt-1">' + m.message + '</p><p class="text-xs opacity-60 mt-1">' + m.time + '</p></div>'; });
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message) return;
+  chatMessages.push({ sender: 'user', message, time: new Date().toLocaleString('uz-UZ') });
+  localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+  input.value = ''; loadChat();
+  setTimeout(() => { chatMessages.push({ sender: 'admin', message: 'Xabaringiz qabul qilindi. Admin tez orada javob beradi.', time: new Date().toLocaleString('uz-UZ') }); localStorage.setItem('chatMessages', JSON.stringify(chatMessages)); loadChat(); }, 1000);
+}
+
+function loadContests() {
+  const container = document.getElementById('contests-list'); container.innerHTML = '';
+  if (contests.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3"></p><p class="font-medium">Hozircha tanlovlar yo\'q</p></div>'; return; }
+  contests.forEach(c => { container.innerHTML += '<div class="contest-card"><h3 class="text-xl font-bold mb-2">' + c.name + '</h3><p class="text-sm opacity-90 mb-2">Sovrin: ' + c.prize + '</p><p class="text-xs opacity-75">Muddat: ' + c.daysLeft + ' kun qoldi</p><button class="mt-3 bg-white text-orange-600 px-4 py-2 rounded-lg font-bold text-sm">Qatnashish</button></div>'; });
+}
+
+function changeLanguage(lang) { currentLang = lang; localStorage.setItem('language', lang); document.documentElement.lang = lang; i18nApply(); loadProfile(); }
+
+function loadAdminPanel() {
+  if (user && user.id === ADMIN_ID) {
+    isAdmin = true;
+    const navContainer = document.getElementById('bottom-nav');
+    const adminBtn = document.createElement('button');
+    adminBtn.className = 'nav-btn flex flex-col items-center p-2 flex-1';
+    adminBtn.setAttribute('data-page', 'admin');
+    adminBtn.onclick = () => navigateTo('admin');
+    adminBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.400 15a1.700 1.700 0 0 0 .3 1.800l.1.1a2 2 0 1 1-2.800 2.800l-.1-.1a1.700 1.700 0 0 0-1.800-.3 1.700 1.700 0 0 0-1 1.500V21a2 2 0 1 1-4 0v-.1a1.700 1.700 0 0 0-1.100-1.500 1.700 1.700 0 0 0-1.800.3l-.1.1a2 2 0 1 1-2.800-2.800l.1-.1a1.700 1.700 0 0 0 .3-1.800 1.700 1.700 0 0 0-1.500-1H3a2 2 0 1 1 0-4h.1a1.700 1.700 0 0 0 1.500-1.100 1.700 1.700 0 0 0-.3-1.800l-.1-.1a2 2 0 1 1 2.800-2.800l.1.1a1.700 1.700 0 0 0 1.800.3H9a1.700 1.700 0 0 0 1-1.500V3a2 2 0 1 1 4 0v.1a1.700 1.700 0 0 0 1 1.500 1.700 1.700 0 0 0 1.800-.3l.1-.1a2 2 0 1 1 2.800 2.800l-.1.1a1.700 1.700 0 0 0-.3 1.800V9a1.700 1.700 0 0 0 1.500 1H21a2 2 0 1 1 0 4h-.1a1.700 1.700 0 0 0-1.500 1z"/></svg><span>Admin</span>';
+    navContainer.appendChild(adminBtn);
+    renderAdminMenu();
+  }
+}
+
+function updateAdminStats() {
+  if (!isAdmin) return;
+  document.getElementById('admin-users-count').textContent = Object.keys(usersData).length;
+  document.getElementById('admin-orders-count').textContent = payments.length;
+  document.getElementById('admin-revenue').textContent = payments.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0).toLocaleString() + ' so\'m';
+  document.getElementById('admin-total-balance').textContent = Object.values(usersData).reduce((sum, u) => sum + u.balance, 0).toLocaleString() + ' so\'m';
+  { const pc = document.getElementById('pending-count'); if (pc) pc.textContent = payments.filter(p => p.status === 'pending').length; }
+}
+
+function showPaymentChecks() { navigateTo('payment-checks'); filterChecks('all'); }
+
+function filterChecks(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('#page-payment-checks .tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + filter).classList.add('active');
+  const container = document.getElementById('checks-container'); container.innerHTML = '';
+  const filtered = filter === 'all' ? payments : payments.filter(p => p.status === filter);
+  if (filtered.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3"></p><p class="font-medium">To\'lovlar yo\'q</p></div>'; return; }
+  filtered.slice().reverse().forEach(p => {
+    const statusColor = p.status === 'approved' ? 'bg-green-100 text-green-600' : p.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600';
+    const statusText = p.status === 'approved' ? 'Tasdiqlangan' : p.status === 'rejected' ? 'Rad etilgan' : 'Kutilmoqda';
+    const statusBtn = p.status === 'pending' ? '<button onclick="approvePayment(' + p.id + ')" class="btn-approve">Tasdiqlash</button> <button onclick="rejectPayment(' + p.id + ')" class="btn-reject">Rad etish</button>' : '';
+    container.innerHTML += '<div class="payment-card"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + p.userName + '</p><p class="text-xs text-gray-500">@' + p.username + ' · ID: ' + p.userId + '</p><p class="text-xs text-gray-400">' + p.date + '</p></div><span class="' + statusColor + ' px-2 py-1 rounded-lg text-xs font-bold">' + statusText + '</span></div><div class="bg-purple-50 p-3 rounded-lg mb-3"><p class="text-xs text-gray-600">Summa</p><p class="text-xl font-bold text-purple-600">' + p.amount.toLocaleString() + ' so\'m</p><p class="text-xs text-gray-500 mt-1">' + p.cardType + ' · ' + p.cardNumber + '</p></div><div class="flex gap-2">' + statusBtn + '</div></div>';
+  });
+}
+
+function approvePayment(paymentId) {
+  const p = payments.find(x => x.id === paymentId);
+  if (!p) return;
+  p.status = 'approved';
+  if (!usersData[p.userId]) { usersData[p.userId] = { id: p.userId, name: p.userName, username: p.username, balance: 0, referralCode: 'REF' + p.userId, referredBy: null, totalSpent: 0, totalOrders: 0, referralEarnings: 0, lastDailyBonus: null, dailyStreak: 0, usedPromos: [] }; }
+  usersData[p.userId].balance += p.amount;
+  if (usersData[p.userId].referredBy) {
+    const referrerId = usersData[p.userId].referredBy;
+    if (usersData[referrerId]) {
+      const bonus = Math.round(p.amount * REFERRAL_PERCENT / 100);
+      usersData[referrerId].balance += bonus; usersData[referrerId].referralEarnings += bonus;
+      notifications.push({ title: 'Referal bonus!', message: usersData[referrerId].name + ' ga ' + bonus.toLocaleString() + ' so\'m referal bonus qo\'shildi', date: new Date().toLocaleString('uz-UZ') });
+    }
+  }
+  saveUsersData(); localStorage.setItem('payments', JSON.stringify(payments)); cfgSet('notifications', JSON.stringify(notifications));
+  logSecurity('To\'lov tasdiqlandi: ' + p.amount + ' so\'m');
+  showAlert('To\'lov tasdiqlandi! ' + p.amount.toLocaleString() + ' so\'m qo\'shildi.');
+  filterChecks(currentFilter); updateAdminStats();
+}
+
+function rejectPayment(paymentId) {
+  const p = payments.find(x => x.id === paymentId);
+  if (!p) return;
+  p.status = 'rejected';
+  localStorage.setItem('payments', JSON.stringify(payments));
+  logSecurity('To\'lov rad etildi: ' + p.amount + ' so\'m');
+  showAlert('To\'lov rad etildi.');
+  filterChecks(currentFilter); updateAdminStats();
+}
+
+function showCardSettings() { navigateTo('card-settings'); document.getElementById('admin-card-type').value = cardSettings.type; document.getElementById('admin-card-number').value = cardSettings.number; document.getElementById('admin-card-holder').value = cardSettings.holder; document.getElementById('admin-card-timer').value = cardSettings.timer; }
+function saveCardSettings() { cardSettings = { type: document.getElementById('admin-card-type').value, number: document.getElementById('admin-card-number').value, holder: document.getElementById('admin-card-holder').value, timer: parseInt(document.getElementById('admin-card-timer').value) || 5 }; cfgSet('cardSettings', JSON.stringify(cardSettings)); showAlert('Karta ma\'lumotlari saqlandi!'); logSecurity('Karta o\'zgartirildi'); }
+
+function showPriceManager() { navigateTo('price-manager'); loadAdminPackages(); }
+function loadAdminPackages() {
+  const gameVal = document.getElementById('admin-game-select').value;
+  const packSelect = document.getElementById('admin-package-select');
+  packSelect.innerHTML = '';
+  let packs = []; let gameIdForCalc = gameVal;
+  if (gameVal === '1') packs = gamePackages[1].uc;
+  else if (gameVal === '1_prime') { packs = gamePackages[1].prime; gameIdForCalc = '1_prime'; }
+  else if (gameVal === '2') packs = gamePackages[2].diamonds;
+  else if (gameVal === '2_pacs') { packs = gamePackages[2].pacs; gameIdForCalc = '2_pacs'; }
+  else if (gameVal === '8') packs = gamePackages[8].default;
+  else if (gamePackages[gameVal]) packs = gamePackages[gameVal].default;
+  packs.forEach((pack, idx) => {
+    const opt = document.createElement('option');
+    opt.value = idx; opt.textContent = pack.amount + ' - ' + pack.price.toLocaleString() + ' so\'m (API)';
+    opt.dataset.price = pack.price; opt.dataset.gameId = gameIdForCalc; opt.dataset.index = idx;
+    packSelect.appendChild(opt);
+  });
+  updatePricePreview();
+}
+
+function updatePricePreview() {
+  const packSelect = document.getElementById('admin-package-select');
+  const selectedOpt = packSelect.options[packSelect.selectedIndex];
+  if (!selectedOpt) return;
+  const basePrice = parseInt(selectedOpt.dataset.price);
+  const markup = parseInt(document.getElementById('admin-markup').value) || 0;
+  document.getElementById('admin-base-price').value = basePrice;
+  document.getElementById('admin-final-price').textContent = Math.round(basePrice * (1 + markup / 100)).toLocaleString() + ' so\'m';
+}
+
+function savePriceMarkup() {
+  const packSelect = document.getElementById('admin-package-select');
+  const selectedOpt = packSelect.options[packSelect.selectedIndex];
+  if (!selectedOpt) { showAlert('Paketni tanlang!'); return; }
+  const key = `${selectedOpt.dataset.gameId}-${selectedOpt.dataset.index}`;
+  const markup = parseInt(document.getElementById('admin-markup').value) || 0;
+  priceMarkups[key] = markup;
+  cfgSet('priceMarkups', JSON.stringify(priceMarkups));
+  showAlert('Narx saqlandi! Foiz: ' + markup + '%');
+  logSecurity('Narx o\'zgartirildi: ' + key);
+}
+
+function showVipManager() {
+  navigateTo('vip-manager');
+  document.getElementById('vip-bronze-discount').value = vipSettings.bronze.discount;
+  document.getElementById('vip-bronze-max').value = vipSettings.bronze.max;
+  document.getElementById('vip-silver-discount').value = vipSettings.silver.discount;
+  document.getElementById('vip-silver-max').value = vipSettings.silver.max;
+  document.getElementById('vip-gold-discount').value = vipSettings.gold.discount;
+  document.getElementById('vip-gold-max').value = vipSettings.gold.max;
+  document.getElementById('vip-diamond-discount').value = vipSettings.diamond.discount;
+  document.getElementById('vip-diamond-min').value = vipSettings.diamond.min;
+}
+
+function saveVipSettings() {
+  vipSettings = {
+    bronze: { discount: parseInt(document.getElementById('vip-bronze-discount').value) || 5, max: parseInt(document.getElementById('vip-bronze-max').value) || 50000 },
+    silver: { discount: parseInt(document.getElementById('vip-silver-discount').value) || 10, max: parseInt(document.getElementById('vip-silver-max').value) || 200000 },
+    gold: { discount: parseInt(document.getElementById('vip-gold-discount').value) || 15, max: parseInt(document.getElementById('vip-gold-max').value) || 500000 },
+    diamond: { discount: parseInt(document.getElementById('vip-diamond-discount').value) || 20, min: parseInt(document.getElementById('vip-diamond-min').value) || 500000 }
+  };
+  cfgSet('vipSettings', JSON.stringify(vipSettings));
+  showAlert('✅ VIP darajalar saqlandi!');
+  logSecurity('VIP darajalar yangilandi');
+}
+
+function showVideoManager() { navigateTo('video-manager'); loadVideoList(); }
+function loadVideoList() {
+  const container = document.getElementById('video-list'); container.innerHTML = '';
+  if (videos.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">📹</p><p class="font-medium">Videolar yo\'q</p></div>'; return; }
+  videos.forEach((v, idx) => { container.innerHTML += '<div class="payment-card flex justify-between items-center"><div class="flex-1"><p class="font-bold text-gray-900">' + v.title + '</p><p class="text-xs text-gray-500">' + v.duration + '</p></div><button onclick="deleteVideo(' + idx + ')" class="btn-reject text-sm ml-2">O\'chirish</button></div>'; });
+}
+
+function addNewVideo() {
+  const title = document.getElementById('new-video-title').value.trim();
+  const duration = document.getElementById('new-video-duration').value.trim();
+  const url = document.getElementById('new-video-url').value.trim();
+  if (!title || !/^https?:\/\//i.test(url)) { showAlert('Sarlavha va to\'g\'ri video havolasini (https://...) kiriting!'); return; }
+  videos.push({ id: Date.now(), title, duration, url });
+  cfgSet('videos', JSON.stringify(videos));
+  showAlert('✅ Video qo\'shildi: ' + title);
+  document.getElementById('new-video-title').value = ''; document.getElementById('new-video-duration').value = ''; document.getElementById('new-video-url').value = '';
+  loadVideoList(); logSecurity('Video qo\'shildi: ' + title);
+}
+
+function deleteVideo(idx) {
+  if (confirm('Haqiqatan ham o\'chirmoqchimisiz?')) {
+    const title = videos[idx].title;
+    videos.splice(idx, 1); cfgSet('videos', JSON.stringify(videos));
+    showAlert('Video o\'chirildi: ' + title); loadVideoList(); logSecurity('Video o\'chirildi: ' + title);
+  }
+}
+
+function loadVideos() {
+  const c = document.getElementById('videos-list');
+  if (!c) return;
+  c.innerHTML = videos.length ? videos.map((v, i) => '<div class="bg-white p-4 rounded-xl border border-gray-200 cursor-pointer" onclick="openVideo(' + i + ')"><p class="font-bold text-gray-900">' + escHtml(v.title) + '</p><p class="text-xs text-gray-500 mt-1">' + escHtml(v.duration || '') + '</p></div>').join('')
+    : '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">📹</p><p class="font-medium">Videolar yo\'q</p></div>';
+}
+
+function showFaqManager() { navigateTo('faq-manager'); loadFaqList(); }
+function loadFaqList() {
+  const container = document.getElementById('faq-list'); container.innerHTML = '';
+  if (faqs.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">❓</p><p class="font-medium">FAQ yo\'q</p></div>'; return; }
+  faqs.forEach((f, idx) => { container.innerHTML += '<div class="payment-card"><div class="mb-2"><p class="font-bold text-gray-900">❓ ' + f.question + '</p><p class="text-sm text-gray-600 mt-1">' + f.answer + '</p></div><div class="flex gap-2"><button onclick="editFaq(' + idx + ')" class="btn-approve text-sm">Tahrirlash</button><button onclick="deleteFaq(' + idx + ')" class="btn-reject text-sm">O\'chirish</button></div></div>'; });
+}
+
+function addNewFaq() {
+  const question = document.getElementById('new-faq-question').value.trim();
+  const answer = document.getElementById('new-faq-answer').value.trim();
+  if (!question || !answer) { showAlert('Savol va javobni kiriting!'); return; }
+  faqs.push({ id: Date.now(), question, answer });
+  cfgSet('faqs', JSON.stringify(faqs));
+  showAlert('✅ Savol qo\'shildi!');
+  document.getElementById('new-faq-question').value = ''; document.getElementById('new-faq-answer').value = '';
+  loadFaqList(); logSecurity('FAQ qo\'shildi: ' + question);
+}
+
+function editFaq(idx) {
+  const newQuestion = prompt('Yangi savol:', faqs[idx].question);
+  if (newQuestion === null) return;
+  const newAnswer = prompt('Yangi javob:', faqs[idx].answer);
+  if (newAnswer === null) return;
+  faqs[idx].question = newQuestion; faqs[idx].answer = newAnswer;
+  cfgSet('faqs', JSON.stringify(faqs));
+  showAlert('✅ FAQ yangilandi!'); loadFaqList(); logSecurity('FAQ tahrirlandi: ' + newQuestion);
+}
+
+function deleteFaq(idx) {
+  if (confirm('Haqiqatan ham o\'chirmoqchimisiz?')) {
+    const question = faqs[idx].question;
+    faqs.splice(idx, 1); cfgSet('faqs', JSON.stringify(faqs));
+    showAlert('FAQ o\'chirildi: ' + question); loadFaqList(); logSecurity('FAQ o\'chirildi: ' + question);
+  }
+}
+
+function loadFaqs() {
+  const container = document.getElementById('faq-content');
+  if (!container) return;
+  container.innerHTML = '';
+  if (faqs.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3"></p><p class="font-medium">FAQ yo\'q</p></div>'; return; }
+  faqs.forEach(f => { container.innerHTML += '<div class="faq-item" onclick="this.classList.toggle(\'open\')"><div class="faq-question"><span>' + f.question + '</span><span>▼</span></div><div class="faq-answer">' + f.answer + '</div></div>'; });
+}
+
+function showReferralSettings() {
+  navigateTo('referral-settings');
+  document.getElementById('referral-percent').value = referralSettings.percent;
+  document.getElementById('bot-username').value = referralSettings.botUsername;
+  const totalReferrals = Object.values(usersData).filter(u => u.referredBy).length;
+  const totalBonus = Object.values(usersData).reduce((sum, u) => sum + (u.referralEarnings || 0), 0);
+  document.getElementById('total-referrals').textContent = totalReferrals;
+  document.getElementById('total-referral-bonus').textContent = totalBonus.toLocaleString() + ' so\'m';
+}
+
+function saveReferralSettings() {
+  referralSettings = { percent: parseInt(document.getElementById('referral-percent').value) || 10, botUsername: document.getElementById('bot-username').value.trim() || 'your_bot' };
+  REFERRAL_PERCENT = referralSettings.percent;
+  cfgSet('referralSettings', JSON.stringify(referralSettings));
+  showAlert('✅ Referal sozlamalari saqlandi!\nFoiz: ' + referralSettings.percent + '%\nBot: @' + referralSettings.botUsername);
+  logSecurity('Referal sozlamalari yangilandi');
+}
+
+function showDailyBonusSettings() {
+  navigateTo('daily-bonus-settings');
+  for (let i = 0; i < 7; i++) { document.getElementById('bonus-day-' + (i + 1)).value = dailyBonusSettings[i] || 0; }
+}
+
+function saveDailyBonusSettings() {
+  dailyBonusSettings = [];
+  for (let i = 1; i <= 7; i++) { dailyBonusSettings.push(parseInt(document.getElementById('bonus-day-' + i).value) || 0); }
+  cfgSet('dailyBonusSettings', JSON.stringify(dailyBonusSettings));
+  showAlert('✅ Kunlik bonus sozlamalari saqlandi!');
+  logSecurity('Kunlik bonus yangilandi');
+}
+
+function showPromoManager() { navigateTo('promo-manager'); loadPromoList(); }
+function loadPromoList() {
+  const container = document.getElementById('promo-list'); container.innerHTML = '';
+  promoCodes.forEach((p, idx) => { container.innerHTML += '<div class="payment-card flex justify-between items-center"><div><p class="font-bold text-gray-900">' + p.code + '</p><p class="text-xs text-gray-500">' + p.discount + '% chegirma · ' + p.used + '/' + (p.limit || '∞') + '</p></div><button onclick="deletePromo(' + idx + ')" class="btn-reject text-sm">O\'chirish</button></div>'; });
+}
+
+function createPromoCode() {
+  const code = document.getElementById('new-promo-code').value.trim().toUpperCase();
+  const discount = parseInt(document.getElementById('new-promo-discount').value);
+  const limit = parseInt(document.getElementById('new-promo-limit').value) || 0;
+  if (!code || !discount) { showAlert('Kod va chegirma kiriting!'); return; }
+  promoCodes.push({ code, discount, limit, used: 0 });
+  localStorage.setItem('promoCodes', JSON.stringify(promoCodes));
+  showAlert('Promokod yaratildi: ' + code);
+  document.getElementById('new-promo-code').value = ''; document.getElementById('new-promo-discount').value = '';
+  loadPromoList(); logSecurity('Promokod yaratildi: ' + code);
+}
+
+function deletePromo(idx) { promoCodes.splice(idx, 1); localStorage.setItem('promoCodes', JSON.stringify(promoCodes)); loadPromoList(); }
+
+function showNotificationManager() { navigateTo('notification-manager'); loadAdminNotifList(); }
+function loadAdminNotifList() {
+  const container = document.getElementById('admin-notif-list'); container.innerHTML = '';
+  notifications.slice().reverse().forEach(n => { container.innerHTML += '<div class="payment-card"><p class="font-bold text-gray-900">' + n.title + '</p><p class="text-sm text-gray-600">' + n.message + '</p><p class="text-xs text-gray-400 mt-1">' + n.date + '</p></div>'; });
+}
+
+function sendNotification() {
+  const title = document.getElementById('new-notif-title').value.trim();
+  const message = document.getElementById('new-notif-message').value.trim();
+  if (!title || !message) { showAlert('Sarlavha va matn kiriting!'); return; }
+  notifications.push({ title, message, date: new Date().toLocaleString('uz-UZ') });
+  cfgSet('notifications', JSON.stringify(notifications));
+  showAlert('Bildirishnoma yuborildi!');
+  document.getElementById('new-notif-title').value = ''; document.getElementById('new-notif-message').value = '';
+  loadAdminNotifList(); logSecurity('Bildirishnoma yuborildi: ' + title);
+}
+
+function showAddGameForm() { navigateTo('add-game'); }
+function addNewGame() {
+  const name = document.getElementById('new-game-name').value.trim();
+  const currency = document.getElementById('new-game-currency').value.trim();
+  const icon = document.getElementById('new-game-icon').value.trim();
+  const banner = document.getElementById('new-game-banner').value.trim();
+  const idLabel = document.getElementById('new-game-idlabel').value.trim();
+  const idHint = document.getElementById('new-game-idhint').value.trim();
+  const popular = document.getElementById('new-game-popular').checked;
+  if (!name || !currency) { showAlert('Nomi va valyutani kiriting!'); return; }
+  const newId = Math.max(...games.map(g => g.id)) + 1;
+  games.push({ id: newId, name, currency, popular, icon: icon || '', color: 'from-gray-500 to-gray-700', banner: banner || icon || '', rating: '5 · 0', idLabel: idLabel || 'ID', idHint: idHint || 'O\'yin ichidan toping' });
+  showAlert('O\'yin qo\'shildi: ' + name);
+  logSecurity('Yangi o\'yin qo\'shildi: ' + name);
+  document.getElementById('new-game-name').value = ''; document.getElementById('new-game-currency').value = ''; document.getElementById('new-game-icon').value = ''; document.getElementById('new-game-banner').value = ''; document.getElementById('new-game-idlabel').value = ''; document.getElementById('new-game-idhint').value = ''; document.getElementById('new-game-popular').checked = false;
+  renderGames();
+}
+
+function showPopularGamesManager() { navigateTo('popular-games'); loadPopularGamesManager(); }
+function loadPopularGamesManager() {
+  const container = document.getElementById('popular-games-list'); container.innerHTML = '';
+  games.forEach(g => { container.innerHTML += '<div class="payment-card flex justify-between items-center"><div><p class="font-bold text-gray-900">' + g.name + '</p><p class="text-xs text-gray-500">' + (g.popular ? 'Ommabop' : 'Oddiy') + '</p></div><button onclick="togglePopular(' + g.id + ')" class="' + (g.popular ? 'btn-reject' : 'btn-approve') + '">' + (g.popular ? 'O\'chirish' : 'Qo\'shish') + '</button></div>'; });
+}
+
+function togglePopular(gameId) {
+  const game = games.find(g => g.id === gameId);
+  if (game) { game.popular = !game.popular; showAlert(game.name + ' ' + (game.popular ? 'ommabop qilindi' : 'oddiy qilindi')); loadPopularGamesManager(); renderGames(); logSecurity('Ommabop o\'yin o\'zgartirildi: ' + game.name); }
+}
+
+function showContestManager() { navigateTo('contest-manager'); loadAdminContestList(); }
+function createContest() {
+  const name = document.getElementById('contest-name').value.trim();
+  const prize = document.getElementById('contest-prize').value.trim();
+  const duration = parseInt(document.getElementById('contest-duration').value) || 7;
+  if (!name || !prize) { showAlert('Nomi va sovrinni kiriting!'); return; }
+  contests.push({ id: Date.now(), name, prize, daysLeft: duration });
+  cfgSet('contests', JSON.stringify(contests));
+  showAlert('Tanlov yaratildi: ' + name);
+  document.getElementById('contest-name').value = ''; document.getElementById('contest-prize').value = '';
+  loadAdminContestList(); logSecurity('Tanlov yaratildi: ' + name);
+}
+
+function loadAdminContestList() {
+  const container = document.getElementById('admin-contest-list'); container.innerHTML = '';
+  contests.forEach((c, idx) => { container.innerHTML += '<div class="payment-card flex justify-between items-center"><div><p class="font-bold text-gray-900">' + c.name + '</p><p class="text-xs text-gray-500">Sovrin: ' + c.prize + ' · ' + c.daysLeft + ' kun</p></div><button onclick="deleteContest(' + idx + ')" class="btn-reject text-sm">O\'chirish</button></div>'; });
+}
+
+function deleteContest(idx) { contests.splice(idx, 1); cfgSet('contests', JSON.stringify(contests)); loadAdminContestList(); }
+
+function showAdminStats() { navigateTo('admin-stats'); loadAdminStats(); }
+function loadAdminStats() {
+  const today = new Date().toDateString();
+  const todayPayments = payments.filter(p => new Date(p.date).toDateString() === today && p.status === 'approved');
+  document.getElementById('admin-today-revenue').textContent = todayPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString() + ' so\'m';
+  document.getElementById('admin-today-payments').textContent = todayPayments.length;
+  document.getElementById('admin-total-users').textContent = Object.keys(usersData).length;
+  document.getElementById('admin-active-referrals').textContent = Object.values(usersData).filter(u => u.referredBy).length;
+  const chart = document.getElementById('weekly-chart'); chart.innerHTML = '';
+  const days = ['Du', 'Se', 'Chor', 'Pay', 'Ju', 'Shan', 'Yak'];
+  days.forEach((day, idx) => { const height = Math.random() * 100 + 20; chart.innerHTML += '<div class="bar" style="height: ' + height + '%"><span class="bar-label">' + day + '</span></div>'; });
+  const topGames = document.getElementById('top-games-list'); topGames.innerHTML = '';
+  games.slice(0, 5).forEach(g => { topGames.innerHTML += '<div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg"><span class="font-medium text-gray-900">' + g.name + '</span><span class="text-sm text-gray-600">0 buyurtma</span></div>'; });
+}
+
+function exportData() {
+  if (!isAdmin) { showAlert('Faqat admin!'); return; }
+  let csv = 'ID,Ism,Username,Balans,Jami sarflangan,Buyurtmalar\n';
+  Object.values(usersData).forEach(u => { csv += u.id + ',' + u.name + ',' + u.username + ',' + u.balance + ',' + u.totalSpent + ',' + u.totalOrders + '\n'; });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'users_' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
+  showAlert('Ma\'lumotlar export qilindi!'); logSecurity('Export qilindi');
+}
+
+function showSecurityLogs() { navigateTo('security-logs'); loadSecurityLogs(); }
+function loadSecurityLogs() {
+  const container = document.getElementById('security-logs-list'); container.innerHTML = '';
+  if (securityLogs.length === 0) { container.innerHTML = '<div class="bg-white p-6 rounded-xl text-center text-gray-500 border border-gray-200"><p class="text-5xl mb-3">🔒</p><p class="font-medium">Log\'lar yo\'q</p></div>'; return; }
+  securityLogs.slice().reverse().forEach(log => { container.innerHTML += '<div class="payment-card"><p class="font-bold text-gray-900">' + log.action + '</p><p class="text-xs text-gray-500">User: ' + log.user + ' · ' + log.time + '</p></div>'; });
+}
+
+function showUsersList() {
+  const container = document.getElementById('users-list-container'); container.innerHTML = '';
+Object.values(usersData).forEach(u => {
+    const vip = getVipLevel(u.totalSpent);
+    container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + u.name + '</p><p class="text-sm text-gray-500">@' + u.username + ' · ID: ' + u.id + '</p><p class="text-xs ' + vip.class + ' text-white px-2 py-0.5 rounded inline-block mt-1">' + vip.emoji + ' ' + vip.name + '</p></div><span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-xs font-bold">' + u.totalOrders + ' buyurtma</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">Balans: <span class="font-bold text-purple-600">' + u.balance.toLocaleString() + ' so\'m</span></p><button onclick="editUserBalance(' + u.id + ')" class="text-sm text-blue-600 font-medium">O\'zgartirish</button></div></div>';
+  });
+  navigateTo('users-list');
+}
+
+function showAddBalanceForm() { navigateTo('add-balance'); }
+function addBalanceToUser() {
+  const userId = document.getElementById('add-balance-user-id').value; const amount = document.getElementById('add-balance-amount').value;
+  if (!userId || !amount) { showAlert('ID va summani kiriting!'); return; }
+  if (!usersData[userId]) { showAlert('Foydalanuvchi topilmadi!'); return; }
+  usersData[userId].balance += parseInt(amount);
+  saveUsersData();
+  showAlert('Muvaffaqiyatli! ' + usersData[userId].name + ' ga ' + parseInt(amount).toLocaleString() + ' so\'m qo\'shildi.');
+  document.getElementById('add-balance-user-id').value = ''; document.getElementById('add-balance-amount').value = '';
+  logSecurity('Balans qo\'shildi: ' + userId + ' - ' + amount);
+}
+
+function searchUsers(query) {
+  const container = document.getElementById('users-list-container'); container.innerHTML = '';
+  Object.values(usersData).filter(u => u.name.toLowerCase().includes(query.toLowerCase()) || u.id.toString().includes(query)).forEach(u => {
+    container.innerHTML += '<div class="bg-white p-4 rounded-xl border border-gray-200"><div class="flex justify-between items-start mb-2"><div><p class="font-bold text-gray-900">' + u.name + '</p><p class="text-sm text-gray-500">@' + u.username + ' · ID: ' + u.id + '</p></div><span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-xs font-bold">' + u.totalOrders + ' buyurtma</span></div><div class="flex justify-between items-center pt-2 border-t border-gray-100"><p class="text-sm text-gray-600">Balans: <span class="font-bold text-purple-600">' + u.balance.toLocaleString() + ' so\'m</span></p><button onclick="editUserBalance(' + u.id + ')" class="text-sm text-blue-600 font-medium">O\'zgartirish</button></div></div>';
+  });
+}
+function selectPaymentMethod(method, element) {
+  if (method === 'visa') {
+    showAlert('🔧 Visa orqali to\'lov hozircha texnik ishlar tufayli ishlamaydi.');
+    return;
+  }
+  const allCards = document.querySelectorAll('.payment-method-card');
+  allCards.forEach(m => {
+    m.classList.remove('active-method');
+    m.style.borderColor = '#e5e7eb';
+  });
+  if (element) {
+    element.classList.add('active-method');
+    element.style.borderColor = '#8b5cf6';
+  }
+  cardSettings.type = method.toUpperCase();
+  cfgSet('cardSettings', JSON.stringify(cardSettings));
+  updateTopupDisplay();
+  }
+function editUserBalance(userId) { const newBalance = prompt('Yangi balansni kiriting (so\'m):'); if (newBalance) { if (usersData[userId]) { usersData[userId].balance = parseInt(newBalance); saveUsersData(); showAlert('Balans o\'zgartirildi!'); showUsersList(); logSecurity('Balans o\'zgartirildi: ' + userId); } } }
+
+
+// ============ BALANS KO'RINISHI (asosiy, profil, to'ldirish) ============
+function updateBalanceUI() {
+  const b = fmtPrice(currentUser.balance);
+  const h = document.getElementById('user-balance');
+  if (h) h.innerHTML = b + ' <span class="text-lg text-purple-200">so\'m</span>';
+  const pb = document.getElementById('profile-balance'); if (pb) pb.textContent = b;
+  const tb = document.getElementById('topup-balance-display'); if (tb) tb.textContent = b;
+  const vb = document.getElementById('vip-badge');
+  if (vb) { const v = getVipLevel(currentUser.totalSpent); vb.textContent = v.emoji + ' ' + v.name; }
+}
+
+// ============ ADMIN MENYU ============
+function renderAdminMenu() {
+  const groups = [
+    ['💰 Moliya', [['🧾', "To'lov cheklari", 'showPaymentChecks()', 'pending'], ['💰', "Balans qo'shish", 'showAddBalanceForm()'], ['🏦', 'PlayPay balansi', 'showPlaypayBalance()'], ['💳', 'Karta sozlamalari', 'showCardSettings()'], ['🏷️', 'Narxlar (ustama)', 'showPriceManager()']]],
+    ['📦 Buyurtma va foydalanuvchilar', [['🛒', "O'yin buyurtmalari", 'showGameOrders()'], ['👥', 'Foydalanuvchilar', 'showUsersList()'], ['📈', 'Statistika', 'showAdminStats()']]],
+    ['🎮 Kontent', [['🎮', "Yangi o'yin qo'shish", 'showAddGameForm()'], ['🔥', "Ommabop o'yinlar", 'showPopularGamesManager()'], ['📹', "Video qo'llanmalar", 'showVideoManager()'], ['❓', 'FAQ', 'showFaqManager()'], ['🔔', 'Bildirishnomalar', 'showNotificationManager()'], ['🎉', 'Tanlovlar', 'showContestManager()']]],
+    ['🎁 Marketing', [['👑', 'VIP darajalar', 'showVipManager()'], ['👥', 'Referal sozlamalari', 'showReferralSettings()'], ['📅', 'Kunlik bonus', 'showDailyBonusSettings()'], ['🎫', 'Promokodlar', 'showPromoManager()']]],
+    ['⚙️ Tizim', [['📤', 'Export (CSV)', 'exportData()'], ['🔒', "Xavfsizlik log'lari", 'showSecurityLogs()']]]
+  ];
+  document.getElementById('admin-menu').innerHTML = groups.map(g =>
+    '<p class="pf-lbl pf-sec" style="margin-top:6px">' + g[0] + '</p><div class="pf-card pf-set">' +
+    g[1].map(r => '<button class="pf-srow pf-go" onclick="' + r[2] + '"><span class="ad-chip">' + r[0] + '</span><span class="pf-t">' + r[1] + '</span>' +
+      (r[3] ? '<span class="ad-badge" id="pending-count">0</span>' : '') + '<i>›</i></button>').join('') + '</div>').join('');
+  updateAdminStats();
+}
+
+// ============ UMUMIY SOZLAMALAR (server: /api/config) ============
+const CFG_KEYS = ['videos', 'faqs', 'cardSettings', 'priceMarkups', 'vipSettings', 'referralSettings', 'dailyBonusSettings', 'notifications', 'contests'];
+function cfgGet(k) { return ({ videos, faqs, cardSettings, priceMarkups, vipSettings, referralSettings, dailyBonusSettings, notifications, contests })[k]; }
+let cfgTimer = null;
+function cfgSet(key, val) {
+  localStorage.setItem(key, val);
+  if (isAdmin && CFG_KEYS.includes(key)) { clearTimeout(cfgTimer); cfgTimer = setTimeout(cfgPush, 700); }
+}
+async function cfgPush() {
+  if (!isAdmin) return;
+  if (!tg.initData) { showAlert('⚠️ Hamma foydalanuvchilarga ko\'rinishi uchun admin panelni Telegram ichida oching.'); return; }
+  const data = {}; CFG_KEYS.forEach(k => data[k] = cfgGet(k));
+  try {
+    const r = await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData }, body: JSON.stringify(data) });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      const hint = r.status === 404 ? 'api/config.js Vercel\'ga yuklanmagan' : r.status === 403 ? 'ADMIN_ID yoki BOT_TOKEN noto\'g\'ri' : r.status === 500 ? 'MONGO_URL tekshiring' : (e.error || '');
+      showAlert('❌ Serverga saqlanmadi (' + r.status + '): ' + hint);
+    }
+  } catch (e) { showAlert('❌ Serverga ulanib bo\'lmadi'); }
+}
+async function cfgLoad() {
+  try {
+    const r = await fetch('/api/config');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || typeof d !== 'object') return;
+    const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    if (Array.isArray(d.videos)) { videos = d.videos; save('videos', videos); }
+    if (Array.isArray(d.faqs)) { faqs = d.faqs; save('faqs', faqs); }
+    if (d.cardSettings && d.cardSettings.number) { cardSettings = d.cardSettings; save('cardSettings', cardSettings); }
+    if (d.priceMarkups && typeof d.priceMarkups === 'object') { priceMarkups = d.priceMarkups; save('priceMarkups', priceMarkups); }
+    if (d.vipSettings && d.vipSettings.bronze) { vipSettings = d.vipSettings; save('vipSettings', vipSettings); }
+    if (d.referralSettings && d.referralSettings.percent) { referralSettings = d.referralSettings; REFERRAL_PERCENT = referralSettings.percent; save('referralSettings', referralSettings); }
+    if (Array.isArray(d.dailyBonusSettings)) { dailyBonusSettings = d.dailyBonusSettings; save('dailyBonusSettings', dailyBonusSettings); }
+    if (Array.isArray(d.notifications)) { notifications = d.notifications; save('notifications', notifications); }
+    if (Array.isArray(d.contests)) { contests = d.contests; save('contests', contests); }
+    renderProfileExtras(); loadVideos(); loadFaqs(); loadNotificationsHome(); updateTopupDisplay(); updateBalanceUI();
+  } catch (e) { console.warn('Config yuklanmadi:', e.message); }
+}
+
+// ============ TIL (UZ / RU) ============
+const RU = {"Paketlar tez orada qo'shiladi": "Пакеты скоро появятся", "Pacs": "Паки", "Admin": "Админ", "Salom": "Привет", "Yuklanmoqda...": "Загрузка...", "UMUMIY BALANS": "ОБЩИЙ БАЛАНС", "so'm": "сум", "💳 To'ldirish": "💳 Пополнить", "🎫 Promo": "🎫 Промо", "Kunlik bonus": "Ежедневный бонус", "Referal": "Рефералы", "ENG TEZ": "САМЫЙ БЫСТРЫЙ", "ARZON UC": "ДЕШЁВЫЙ UC", "XIZMATIMIZ": "НАШ СЕРВИС", "🔥 Ommabop o'yinlar": "🔥 Популярные игры", "Barchasi →": "Все →", "Barcha o'yinlar": "Все игры", "PH:O'yin qidirish...": "Поиск игры...", "O'yin": "Игра", "Paketni tanlang": "Выберите пакет", "Sotib olish": "Купить", "Steam hamyonini to'ldiring": "Пополните кошелёк Steam", "Steam loginingiz": "Ваш логин Steam", "Joriy kurs": "Текущий курс", "1$ = 12 250 so'm": "1$ = 12 250 сум", "Summa ($)": "Сумма ($)", "To'lov summasi:": "Сумма оплаты:", "0 so'm": "0 сум", "Keyingisi": "Далее", "PH:Steam login": "Логин Steam", "O'yin ID kiriting": "Введите ID игры", "Paket": "Пакет", "Tanlangan paket": "Выбранный пакет", "O'yin ID raqamingiz": "Ваш игровой ID", "ID'ni o'yin ichidan topishingiz mumkin": "ID можно найти внутри игры", "Davom etish": "Продолжить", "PH:Masalan: 5123456789": "Например: 5123456789", "PH:Server ID kiriting": "Введите Server ID", "Balansni to'ldirish": "Пополнение баланса", "Balans": "Баланс", "To'lov usuli": "Способ оплаты", "Kartaga o'tkazma": "Перевод на карту", "Terminal orqali": "Через терминал", "🔧 Texnik ishlar": "🔧 Технические работы", "Eng kam:": "Минимум:", "1 000 so'm": "1 000 сум", "Qanday to'ldirish?": "Как пополнить?", "Havolalar": "Ссылки", "Balansni qanday to'ldirish?": "Как пополнить баланс?", "Video qo'llanma – ko'rish": "Видеоинструкция – смотреть", "Video qo'llanma — ko'rish": "Видеоинструкция — смотреть", "Summani kiriting": "Введите сумму", "To'lov": "Оплата", "Aynan": "Ровно", "o'tkazing": "переведите", "Faqat BIR o'tkazma": "Только ОДИН перевод", "Aynan shu summani BIR MARTA yuboring": "Отправьте именно эту сумму ОДИН РАЗ", "Karta amal qiladi": "Карта действует", "Karta raqami": "Номер карты", "Nusxa olish": "Копировать", "📋 To'lov qoidalari": "📋 Правила оплаты", "Summani 1 so'mga ham o'zgartirmang": "Не меняйте сумму даже на 1 сум", "5 daqiqa ichida to'lang": "Оплатите в течение 5 минут", "Boshqa summa yubormang": "Не отправляйте другую сумму", "Summani bo'lib yubormang": "Не делите сумму на части", "Bankomat orqali tashlamang": "Не вносите через банкомат", "To'lovni amalga oshirdim": "Я оплатил(а)", "To'lov yuborildi": "Платёж отправлен", "To'lov tekshirilmoqda": "Платёж проверяется", "Admin 1-2 daqiqa ichida tekshiradi": "Админ проверит в течение 1–2 минут", "To'lov summasi": "Сумма платежа", "Bosh sahifaga qaytish": "Вернуться на главную", "Buyurtmalarim": "Мои заказы", "Buyurtmalar yo'q": "Заказов нет", "O'yin valyutasi sotib olganingizdan keyin shu yerda ko'rinadi": "После покупки игровой валюты заказ появится здесь", "🎫 Promokod": "🎫 Промокод", "Promokodni kiriting": "Введите промокод", "Chegirma yoki bonus oling": "Получите скидку или бонус", "Qo'llash": "Применить", "💡 Maslahatlar": "💡 Советы", "• Promokodlar bir marta ishlatiladi": "• Промокод можно использовать один раз", "• Muddati tugagan kodlar ishlamaydi": "• Просроченные коды не работают", "• Yangi foydalanuvchilar uchun maxsus kodlar": "• Специальные коды для новых пользователей", "PH:Masalan: WELCOME10": "Например: WELCOME10", "👥 Referal": "👥 Рефералы", "Sizning referal kodingiz": "Ваш реферальный код", "📋 Nusxa olish": "📋 Копировать", "📖 Qanday ishlaydi?": "📖 Как это работает?", "✅ Do'stingizga referal kodingizni yuboring": "✅ Отправьте другу свой реферальный код", "✅ U ro'yxatdan o'tganda sizga bog'lanadi": "✅ Когда он зарегистрируется, он будет привязан к вам", "✅ U pul to'ldirganda, summaning": "✅ Когда он пополнит баланс, часть суммы", "sizga BONUS sifatida qo'shiladi": "будет начислена вам как БОНУС", "✅ Do'stingizdan hech narsa olinmaydi!": "✅ С друга ничего не списывается!", "📊 Statistika": "📊 Статистика", "Taklif qilinganlar": "Приглашённые", "Jami bonus": "Всего бонусов", "🎁 Kunlik bonus": "🎁 Ежедневный бонус", "Har kuni kirib bonus oling!": "Заходите каждый день и получайте бонус!", "📅 7 kunlik bonus jadvali": "📅 График бонусов на 7 дней", "Bugungi bonus": "Бонус на сегодня", "Bonusni olish": "Получить бонус", "Ertaga qaytib keling": "Возвращайтесь завтра", "📊 Statistikam": "📊 Моя статистика", "Jami buyurtmalar": "Всего заказов", "Jami sarflangan": "Всего потрачено", "Tejalgan summa": "Сэкономлено", "Referal bonus": "Реферальный бонус", "VIP Darajangiz": "Ваш VIP-уровень", "👑 VIP Darajalar": "👑 VIP-уровни", "0 - 50,000 so'm": "0 – 50 000 сум", "50,000 - 200,000 so'm": "50 000 – 200 000 сум", "200,000 - 500,000 so'm": "200 000 – 500 000 сум", "500,000+ so'm": "500 000+ сум", "🔔 Bildirishnomalar": "🔔 Уведомления", "Bildirishnomalar yo'q": "Уведомлений нет", "💳 To'lov tarixi": "💳 История платежей", "To'lovlar yo'q": "Платежей нет", "❓ FAQ": "❓ Вопросы и ответы", "To'lov qancha vaqtda tasdiqlanadi?": "Как быстро подтверждается платёж?", "To'lovlar odatda 1-2 daqiqa ichida tasdiqlanadi.": "Платежи обычно подтверждаются в течение 1–2 минут.", "Narxlar qanday belgilanadi?": "Как формируются цены?", "Narxlar API orqali olinadi va admin tomonidan foizda sozlanadi.": "Цены берутся через API и настраиваются администратором в процентах.", "Narxlar API orqali olinadi va admin tomonidan foizda sozlanadi": "Цены берутся через API и настраиваются администратором", "Pulni qaytarib olsam bo'ladimi?": "Можно ли вернуть деньги?", "Ha, agar buyurtma bajarilmagan bo'lsa, pulni qaytarib olishingiz mumkin.": "Да, если заказ не выполнен, деньги можно вернуть.", "ID'ni qayerdan topaman?": "Где найти ID?", "Har bir o'yinda ID o'yin ichida profil bo'limida ko'rsatiladi.": "В каждой игре ID указан в разделе профиля внутри игры.", "Referal qanday ishlaydi?": "Как работает реферальная система?", "Do'stingiz sizning referal kodingiz bilan ro'yxatdan o'tadi. U pul to'ldirganda, summaning 10% sizga BONUS sifatida qo'shiladi.": "Друг регистрируется по вашему реферальному коду. Когда он пополнит баланс, 10% от суммы будут начислены вам как БОНУС.", "VIP daraja nima?": "Что такое VIP-уровень?", "Ko'p sarflagan foydalanuvchilar VIP daraja oladi. Bronze 5%, Silver 10%, Gold 15%, Diamond 20%.": "Пользователи, потратившие больше, получают VIP-уровень. Bronze 5%, Silver 10%, Gold 15%, Diamond 20%.", "📹 Video qo'llanmalar": "📹 Видеоинструкции", "Videolar yo'q": "Видео пока нет", "🎨 Mavzu tanlash": "🎨 Выбор темы", "Rangni tanlang": "Выберите цвет", "Rejim": "Режим", "🌙 Qorong'u": "🌙 Тёмная", "☀️ Yorug'": "☀️ Светлая", "💬 Qo'llab-quvvatlash": "💬 Поддержка", "Admin bilan gaplashing. Javob 1-2 soat ichida beriladi.": "Напишите администратору. Ответ в течение 1–2 часов.", "Yuborish": "Отправить", "PH:Xabaringizni yozing...": "Напишите сообщение...", "Tanlovlar": "Конкурсы", "Hozircha tanlovlar yo'q": "Пока нет конкурсов", "🌐 Til tanlash": "🌐 Выбор языка", "Mehmon": "Гость", "Telefon raqami": "Номер телефона", "Kiritilmagan": "Не указан", "Raqamni yangilash": "Обновить номер", "Promokodlar": "Промокоды", "Do'st taklif qiling — bonus oling": "Пригласите друга — получите бонус", "Do'st taklif qil, bonus ol": "Пригласи друга, получи бонус", "Top donaterlar": "Топ донатеров", "Top 100": "Топ 100", "Til": "Язык", "Mavzu": "Тема", "Statistikam": "Моя статистика", "To'lov tarixi": "История платежей", "VIP darajalar": "VIP-уровни", "Savol-javoblar": "Вопросы и ответы", "Yordam markazi": "Центр помощи", "HAVOLALAR": "ССЫЛКИ", "BIZNING IJTIMOIY TARMOQLAR": "НАШИ СОЦСЕТИ", "BALANS": "БАЛАНС", "＋ To'ldirish": "＋ Пополнить", "MAVJUD PROMOKODLAR": "ДОСТУПНЫЕ ПРОМОКОДЫ", "ishlatilgan": "использован", "Hozircha promokodlar yo'q": "Пока нет промокодов", "bonus — olish tugmasini bosing": "бонус — нажмите «Получить»", "Olish": "Получить", "Asosiy": "Главная", "O'yinlar": "Игры", "To'ldirish": "Пополнить", "Buyurtmalar": "Заказы", "Profil": "Профиль", "Paketni tanlang!": "Выберите пакет!", "Balansingiz yetarli emas!": "Недостаточно средств на балансе!", "Telefon raqamingizni kiriting": "Введите номер телефона", "Video tez orada qo'shiladi!": "Видео скоро появится!", "Top donaterlar tez orada qo'shiladi!": "Топ донатеров скоро появится!", "Raqam noto'g'ri formatda!": "Неверный формат номера!", "Promokod kiriting!": "Введите промокод!", "Promokod topilmadi!": "Промокод не найден!", "Bu promokodni allaqachon ishlatgansiz!": "Вы уже использовали этот промокод!", "Bugun bonus oldingiz!": "Сегодня бонус уже получен!", "Summa nusxalandi!": "Сумма скопирована!", "Karta raqami nusxalandi!": "Номер карты скопирован!", "Eng kam 1 000 so'm!": "Минимум 1 000 сум!", "O'yin ID ni kiriting!": "Введите ID игры!", "Karta muddati tugadi!": "Время действия карты истекло!"};
+const T = s => (currentLang === 'ru' && RU[s]) ? RU[s] : s;
+function i18nApply(root) {
+  root = root || document.body;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = []; let n;
+  while ((n = w.nextNode())) nodes.push(n);
+  nodes.forEach(n => {
+    const raw = n.nodeValue, t = raw.trim();
+    if (!t) return;
+    if (n.__uz === undefined) { if (!(t in RU)) return; n.__uz = t; }
+    const want = currentLang === 'ru' ? RU[n.__uz] : n.__uz;
+    const lead = raw.match(/^\s*/)[0], trail = raw.match(/\s*$/)[0];
+    if (raw !== lead + want + trail) n.nodeValue = lead + want + trail;
+  });
+  root.querySelectorAll('[placeholder]').forEach(el => {
+    if (el.__ph === undefined) { const k = 'PH:' + el.getAttribute('placeholder'); if (!(k in RU)) return; el.__ph = k; }
+    el.setAttribute('placeholder', currentLang === 'ru' ? RU[el.__ph] : el.__ph.slice(3));
+  });
+}
+let i18nQueued = false;
+new MutationObserver(() => { if (i18nQueued) return; i18nQueued = true; requestAnimationFrame(() => { i18nQueued = false; i18nApply(); }); })
+  .observe(document.body, { childList: true, subtree: true });
+
+loadUserData();
+renderGames();
+loadProfile();
+loadAdminPanel();
+loadNotificationsHome();
+loadVideos();
+loadFaqs();
+updateBalanceUI();
+i18nApply();
+cfgLoad();
+
+if (contests.length > 0) {
+  const activeContest = contests[0];
+  document.getElementById('active-contest').innerHTML = '<div class="contest-card cursor-pointer" onclick="navigateTo(\'contests\')"><h3 class="text-xl font-bold mb-2">' + activeContest.name + '</h3><p class="text-sm opacity-90">Sovrin: ' + activeContest.prize + '</p><p class="text-xs opacity-75 mt-1">' + activeContest.daysLeft + ' kun qoldi →</p></div>';
+}
+
+if (isAdmin) {
+  ppGetBalance().then(result => {
+    if (result.ok) { console.log('PlayPay balans: $' + result.balance.usd); }
+  });
+}
+</script>
+</body>
+</html>
