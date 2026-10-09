@@ -7,7 +7,7 @@ const FALLBACK = {
   BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',          // @BotFather bergan token
   MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw',          // mongodb+srv://...
   ADMIN_ID: '8467707826', // sizning Telegram ID
-  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a'     // PlayPay'dan olingan YANGI kalit
+  PLAYPAY_API_KEY: '8467707826'     // PlayPay'dan olingan YANGI kalit
 };
 
 import crypto from 'crypto';
@@ -47,10 +47,12 @@ function verifyInitData(initData) { return checkInitData(initData).user || null;
 
 async function getCol() {
   if (!global._cfgMongo) {
+    if (!env('MONGO_URL')) throw new Error('MONGO_URL kiritilmagan');
     const { MongoClient } = await import('mongodb');   // faqat kerak bo'lganda yuklanadi
-    global._cfgMongo = new MongoClient(env('MONGO_URL')).connect();
+    global._cfgMongo = new MongoClient(env('MONGO_URL').trim(), { serverSelectionTimeoutMS: 6000 }).connect();
   }
-  const c = await global._cfgMongo;
+  let c;
+  try { c = await global._cfgMongo; } catch (e) { global._cfgMongo = null; throw e; }  // xato keshda qolib ketmasin
   return c.db('payersub').collection('config');
 }
 
@@ -95,7 +97,9 @@ async function handleConfig(req, res, auth) {
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: 'Baza xatosi: MONGO_URL yoki mongodb paketi' });
+    // Faqat admin (POST) uchun aniq sabab ko'rsatiladi; parolli qismlar yashiriladi
+    const detail = req.method === 'POST' ? ': ' + String(e && e.message || e).replace(/mongodb(\+srv)?:\/\/\S+/gi, '[url]').slice(0, 140) : '';
+    return res.status(500).json({ error: 'Baza xatosi' + detail });
   }
 }
 
