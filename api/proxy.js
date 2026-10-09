@@ -22,20 +22,26 @@ const POST_USER = ['/check_id', '/order'];
 const CFG_KEYS = ['videos', 'faqs', 'cardSettings', 'priceMarkups', 'vipSettings',
   'referralSettings', 'dailyBonusSettings', 'notifications', 'contests'];
 
-function verifyInitData(initData) {
+function checkInitData(initData) {
   const botToken = env('BOT_TOKEN');
-  if (!initData || !botToken) return null;
+  if (!botToken) return { reason: "Serverda BOT_TOKEN yo'q (api/proxy.js yoki Vercel)" };
+  if (!initData) return { reason: "Telegram ma'lumoti kelmadi: ilovani bot ichidan oching" };
   const p = new URLSearchParams(initData);
   const hash = p.get('hash');
-  if (!hash) return null;
+  if (!hash) return { reason: "Telegram imzosi yo'q" };
   p.delete('hash');
   const check = [...p.entries()].map(([k, v]) => `${k}=${v}`).sort().join('\n');
-  const secret = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(botToken.trim()).digest();
   const calc = crypto.createHmac('sha256', secret).update(check).digest('hex');
-  if (calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) return null;
-  if (Date.now() / 1000 - Number(p.get('auth_date') || 0) > 86400) return null;
-  try { return JSON.parse(p.get('user')); } catch { return null; }
+  if (calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) {
+    return { reason: "BOT_TOKEN shu botniki emas (Vercel'dagi BOT_TOKEN ni tekshiring)" };
+  }
+  if (Date.now() / 1000 - Number(p.get('auth_date') || 0) > 86400) {
+    return { reason: 'Sessiya eskirgan: ilovani yopib qayta oching' };
+  }
+  try { return { user: JSON.parse(p.get('user')) }; } catch { return { reason: "Foydalanuvchi ma'lumoti buzuq" }; }
 }
+function verifyInitData(initData) { return checkInitData(initData).user || null; }
 
 async function getCol() {
   if (!global._cfgMongo) {
@@ -56,16 +62,20 @@ function cleanVideos(v) {
   }));
 }
 
-async function handleConfig(req, res, user) {
+async function handleConfig(req, res, auth) {
   try {
+    if (req.method === 'POST') {
+      const user = auth.user;
+      if (!user) return res.status(403).json({ error: auth.reason });
+      if (String(user.id) !== String(env('ADMIN_ID')).trim()) {
+        return res.status(403).json({ error: `Sizning ID (${user.id}) serverdagi ADMIN_ID ga mos emas` });
+      }
+    }
     const col = await getCol();
     if (req.method === 'GET') {
       const doc = (await col.findOne({ _id: 'app' })) || {};
       delete doc._id;
       return res.status(200).json(doc);
-    }
-    if (!user || String(user.id) !== String(env('ADMIN_ID'))) {
-      return res.status(403).json({ error: "Ruxsat yo'q (ADMIN_ID yoki BOT_TOKEN noto'g'ri)" });
     }
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const set = {};
@@ -98,10 +108,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "Noto'g'ri path" });
     }
 
-    const user = verifyInitData(req.headers['x-telegram-init-data']);
-    const isAdmin = user && String(user.id) === String(env('ADMIN_ID'));
+    const auth = checkInitData(req.headers['x-telegram-init-data']);
+    const user = auth.user || null;
+    const isAdmin = user && String(user.id) === String(env('ADMIN_ID')).trim();
 
-    if (path === '/_config') return handleConfig(req, res, user);
+    if (path === '/_config') return handleConfig(req, res, auth);
 
     const apiKey = env('PLAYPAY_API_KEY');
     if (!apiKey) return res.status(500).json({ ok: false, error: 'PLAYPAY_API_KEY kiritilmagan (api/proxy.js)' });
@@ -126,4 +137,4 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ ok: false, error: 'Server xatosi' });
   }
-}
+  }
