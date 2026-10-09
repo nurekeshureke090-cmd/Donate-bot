@@ -1,8 +1,5 @@
 {
   "name": "payersub-miniapp",
   "private": true,
-  "type": "module",
-  "dependencies": {
-    "mongodb": "^6.8.0"
-  }
+  "dependencies": { "mongodb": "^6.8.0" }
 }
