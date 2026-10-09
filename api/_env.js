@@ -4,10 +4,10 @@
 //  Vercel Environment Variables'da bor qiymat shu yerdagidan ustun turadi.
 // ============================================================
 const FALLBACK = {
-  BOT_TOKEN: '',          // @BotFather bergan token
-  MONGO_URL: '',          // mongodb+srv://...
+  BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',          // @BotFather bergan token
+  MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw.mongodb.net/payersub?retryWrites=true&w=mwardjority',          // mongodb+srv://...
   ADMIN_ID: '8467707826', // sizning Telegram ID
-  PLAYPAY_API_KEY: ''     // PlayPay'dan olingan YANGI kalit
+  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a'     // PlayPay'dan olingan YANGI kalit
 };
 
 import crypto from 'crypto';
