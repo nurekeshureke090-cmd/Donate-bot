@@ -22,7 +22,7 @@ const GET_USER = [/^\/order\/[\w-]+$/];
 const POST_USER = ['/check_id', '/order'];
 
 const CFG_KEYS = ['videos', 'faqs', 'cardSettings', 'priceMarkups', 'vipSettings',
-  'referralSettings', 'dailyBonusSettings', 'notifications', 'contests'];
+  'referralSettings', 'dailyBonusSettings', 'notifications', 'contests', 'banners'];
 
 function checkInitData(initData) {
   const botToken = env('BOT_TOKEN');
@@ -73,6 +73,15 @@ function cleanVideos(v) {
   }));
 }
 
+function cleanBanners(v) {
+  if (!Array.isArray(v) || v.length > 10) return null;
+  return v.map(x => ({
+    id: Number(x.id) || Date.now(),
+    image: /^https?:\/\//i.test(String(x.image || '')) ? String(x.image).slice(0, 500) : '',
+    link: /^(https?:\/\/|page:)/i.test(String(x.link || '')) ? String(x.link).slice(0, 500) : ''
+  })).filter(x => x.image);
+}
+
 async function handleConfig(req, res, auth) {
   try {
     if (req.method === 'POST') {
@@ -96,6 +105,10 @@ async function handleConfig(req, res, auth) {
         const v = cleanVideos(body.videos);
         if (!v) return res.status(400).json({ error: "videos noto'g'ri" });
         set.videos = v;
+      } else if (k === 'banners') {
+        const b = cleanBanners(body.banners);
+        if (!b) return res.status(400).json({ error: "banners noto'g'ri" });
+        set.banners = b;
       } else if (JSON.stringify(body[k]).length < 200000) {
         set[k] = body[k];
       }
@@ -150,5 +163,6 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ ok: false, error: 'Server xatosi' });
   }
-  }
+}
+
           
