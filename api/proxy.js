@@ -140,6 +140,40 @@ export default async function handler(req, res) {
 
     if (path === '/_config') return handleConfig(req, res, auth);
 
+    if (path === '/order-stars' && method === 'POST') {
+      const bData = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body)?.data || req.body?.data || {};
+      const istarRes = await fetch('https://istar.tg/api/v1/order', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer tXBme6Udy--FXr7UUWpN0boGIlOHZhotvvXweCxOCQY=',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          quantity: bData.quantity,
+          username: (bData.username ? String(bData.username).replace('@', '') : '')
+        })
+      });
+      const text = await istarRes.text();
+      let istarData;
+      try { istarData = JSON.parse(text); } catch { istarData = { ok: false, error: text || `HTTP ${istarRes.status}` }; }
+      return res.status(istarRes.status).json(istarData);
+    }
+
+    if (path === '/istar-balance' && method === 'GET') {
+      if (!isAdmin) return res.status(403).json({ ok: false, error: "Ruxsat yo'q" });
+      const istarRes = await fetch('https://istar.tg/api/v1/balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer tXBme6Udy--FXr7UUWpN0boGIlOHZhotvvXweCxOCQY=',
+          'Content-Type': 'application/json'
+        }
+      });
+      const text = await istarRes.text();
+      let istarData;
+      try { istarData = JSON.parse(text); } catch { istarData = { ok: false, error: text || `HTTP ${istarRes.status}` }; }
+      return res.status(istarRes.status).json(istarData);
+    }
+
     const apiKey = env('PLAYPAY_API_KEY');
     if (!apiKey) return res.status(500).json({ ok: false, error: 'PLAYPAY_API_KEY kiritilmagan (api/proxy.js)' });
 
