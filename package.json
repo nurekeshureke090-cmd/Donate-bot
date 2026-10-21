@@ -1,6 +1,5 @@
 {
   "name": "payersub-miniapp",
   "private": true,
-  "dependencies": { "mongodb": "^6.8.0", "@ton/ton": "^1.0.0", "@ton/crypto": "^1.0.0" }
   "dependencies": { "mongodb": "^6.8.0", "@ton/ton": "latest", "@ton/crypto": "latest" }
 }
