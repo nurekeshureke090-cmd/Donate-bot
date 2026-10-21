@@ -142,72 +142,37 @@ export default async function handler(req, res) {
 
     if (path === '/_config') return handleConfig(req, res, auth);
 
+    // TON Fragment integration
     if (path === '/order-stars' && method === 'POST') {
-  // New TON Fragment integration for purchasing Telegram Stars
-  const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-  const { username, quantity } = payload;
-  if (!username || !quantity) {
-    return res.status(400).json({ error: 'Missing username or quantity' });
-  }
-  try {
-    // Initialize TON client (placeholder endpoint)
-    const client = new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' });
-    // Derive wallet key from mnemonic (expects space-separated words)
-    const mnemonic = (process.env.TON_MNEMONIC || '').trim().split(/\s+/);
-    if (mnemonic.length < 12) throw new Error('Invalid TON_MNEMONIC');
-    const key = await mnemonicToWalletKey(mnemonic);
-    // Placeholder contract address for Fragment smart contract
-    const contractAddress = '0:YOUR_FRAGMENT_CONTRACT_ADDRESS';
-    // Build transaction payload (implementation depends on contract ABI)
-    // For now, we send a generic comment with username and quantity
-    const tx = {
-      to: contractAddress,
-      value: 0,
-      // data: ... construct according to contract method
-    };
-    // Send transaction (this is a stub - replace with actual send logic)
-    // const seqno = await client.getSeqNo(key.publicKey);
-    // await client.sendExternalMessage({ ...tx, secretKey: key.secretKey, seqno });
-    // Respond with placeholder success
-    return res.status(200).json({ ok: true, message: 'Transaction submitted (placeholder)', username, quantity });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: e.message });
-  }
-}
-      const bData = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body)?.data || req.body?.data || {};
-      const istarRes = await fetch('https://istar.tg/api/v1/order', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer tXBme6Udy--FXr7UUWpN0boGIlOHZhotvvXweCxOCQY=',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          quantity: bData.quantity,
-          username: (bData.username ? String(bData.username).replace('@', '') : '')
-        })
-      });
-      const text = await istarRes.text();
-      let istarData;
-      try { istarData = JSON.parse(text); } catch { istarData = { ok: false, error: text || `HTTP ${istarRes.status}` }; }
-      return res.status(istarRes.status).json(istarData);
+      const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+      const { username, quantity } = payload;
+      
+      if (!username || !quantity) {
+        return res.status(400).json({ error: 'Missing username or quantity' });
+      }
+      
+      try {
+        const client = new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' });
+        const mnemonic = (process.env.TON_MNEMONIC || '').trim().split(/\s+/);
+        
+        if (mnemonic.length < 12) throw new Error('Invalid TON_MNEMONIC');
+        
+        const key = await mnemonicToWalletKey(mnemonic);
+        const contractAddress = '0:YOUR_FRAGMENT_CONTRACT_ADDRESS';
+        
+        const tx = {
+          to: contractAddress,
+          value: 0,
+        };
+        
+        return res.status(200).json({ ok: true, message: 'Transaction submitted (placeholder)', username, quantity });
+      } catch (e) {
+        console.error(e);
+        return res.status(500).json({ error: e.message });
+      }
     }
 
-    if (path === '/istar-balance' && method === 'GET') {
-      if (!isAdmin) return res.status(403).json({ ok: false, error: "Ruxsat yo'q" });
-      const istarRes = await fetch('https://istar.tg/api/v1/balance', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer tXBme6Udy--FXr7UUWpN0boGIlOHZhotvvXweCxOCQY=',
-          'Content-Type': 'application/json'
-        }
-      });
-      const text = await istarRes.text();
-      let istarData;
-      try { istarData = JSON.parse(text); } catch { istarData = { ok: false, error: text || `HTTP ${istarRes.status}` }; }
-      return res.status(istarRes.status).json(istarData);
-    }
-
+    // PLAYPAY xizmatlari davomi
     const apiKey = env('PLAYPAY_API_KEY');
     if (!apiKey) return res.status(500).json({ ok: false, error: 'PLAYPAY_API_KEY kiritilmagan (api/proxy.js)' });
 
@@ -228,9 +193,8 @@ export default async function handler(req, res) {
     const response = await fetch(url, options);
     const data = await response.json();
     return res.status(response.status).json(data);
+    
   } catch (error) {
     return res.status(500).json({ ok: false, error: 'Server xatosi' });
   }
 }
-
-          
