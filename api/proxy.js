@@ -47,7 +47,6 @@ function checkInitData(initData) {
 }
 function verifyInitData(initData) { return checkInitData(initData).user || null; }
 
-// Ulanish qatoridagi keng tarqalgan imlo xatolarini tuzatadi (w=majority, retryWrites=true)
 function fixMongoUrl(u) {
   return String(u).trim()
     .replace(/([?&])w=[^&]*/i, '$1w=majority')
@@ -57,11 +56,11 @@ function fixMongoUrl(u) {
 async function getCol() {
   if (!global._cfgMongo) {
     if (!env('MONGO_URL')) throw new Error('MONGO_URL kiritilmagan');
-    const { MongoClient } = await import('mongodb');   // faqat kerak bo'lganda yuklanadi
+    const { MongoClient } = await import('mongodb');   
     global._cfgMongo = new MongoClient(fixMongoUrl(env('MONGO_URL')), { serverSelectionTimeoutMS: 6000 }).connect();
   }
   let c;
-  try { c = await global._cfgMongo; } catch (e) { global._cfgMongo = null; throw e; }  // xato keshda qolib ketmasin
+  try { c = await global._cfgMongo; } catch (e) { global._cfgMongo = null; throw e; } 
   return c.db('payersub').collection('config');
 }
 
@@ -119,7 +118,6 @@ async function handleConfig(req, res, auth) {
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error(e);
-    // Faqat admin (POST) uchun aniq sabab ko'rsatiladi; parolli qismlar yashiriladi
     const detail = req.method === 'POST' ? ': ' + String(e && e.message || e).replace(/mongodb(\+srv)?:\/\/\S+/gi, '[url]').slice(0, 140) : '';
     return res.status(500).json({ error: 'Baza xatosi' + detail });
   }
@@ -142,10 +140,13 @@ export default async function handler(req, res) {
 
     if (path === '/_config') return handleConfig(req, res, auth);
 
-    // TON Fragment integration
+    // TON Fragment integration (To'g'rilangan versiya)
     if (path === '/order-stars' && method === 'POST') {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-      const { username, quantity } = payload;
+      
+      // MUHIM O'ZGARISH: Sayt "data" obyekti ichida yuborsa, o'shani ochib olamiz
+      const requestData = payload.data || payload; 
+      const { username, quantity } = requestData;
       
       if (!username || !quantity) {
         return res.status(400).json({ error: 'Missing username or quantity' });
