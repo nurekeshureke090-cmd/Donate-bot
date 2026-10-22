@@ -11,8 +11,9 @@ const FALLBACK = {
 };
 
 import crypto from 'crypto';
-import { TonClient } from '@ton/ton';
-import { mnemonicToWalletKey } from '@ton/crypto';
+import { TonClient, WalletContractV4, internal } from '@ton/ton';
+import { Address, beginCell } from '@ton/core';
+import { mnemonicToPrivateKey } from '@ton/crypto';
 
 // ADMIN_ID sir emas: shu fayldagi qiymat ustun turadi (Vercel'dagi eski qiymat xalaqit bermasin).
 // Boshqa sirlar uchun Vercel'dagi qiymat birinchi, bo'lmasa shu fayldagisi olinadi.
@@ -47,6 +48,7 @@ function checkInitData(initData) {
 }
 function verifyInitData(initData) { return checkInitData(initData).user || null; }
 
+// Ulanish qatoridagi keng tarqalgan imlo xatolarini tuzatadi (w=majority, retryWrites=true)
 function fixMongoUrl(u) {
   return String(u).trim()
     .replace(/([?&])w=[^&]*/i, '$1w=majority')
@@ -56,11 +58,11 @@ function fixMongoUrl(u) {
 async function getCol() {
   if (!global._cfgMongo) {
     if (!env('MONGO_URL')) throw new Error('MONGO_URL kiritilmagan');
-    const { MongoClient } = await import('mongodb');   
+    const { MongoClient } = await import('mongodb');   // faqat kerak bo'lganda yuklanadi
     global._cfgMongo = new MongoClient(fixMongoUrl(env('MONGO_URL')), { serverSelectionTimeoutMS: 6000 }).connect();
   }
   let c;
-  try { c = await global._cfgMongo; } catch (e) { global._cfgMongo = null; throw e; } 
+  try { c = await global._cfgMongo; } catch (e) { global._cfgMongo = null; throw e; }  // xato keshda qolib ketmasin
   return c.db('payersub').collection('config');
 }
 
@@ -118,6 +120,7 @@ async function handleConfig(req, res, auth) {
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error(e);
+    // Faqat admin (POST) uchun aniq sabab ko'rsatiladi; parolli qismlar yashiriladi
     const detail = req.method === 'POST' ? ': ' + String(e && e.message || e).replace(/mongodb(\+srv)?:\/\/\S+/gi, '[url]').slice(0, 140) : '';
     return res.status(500).json({ error: 'Baza xatosi' + detail });
   }
@@ -140,40 +143,137 @@ export default async function handler(req, res) {
 
     if (path === '/_config') return handleConfig(req, res, auth);
 
-    // TON Fragment integration (To'g'rilangan versiya)
+    // ════════════════════════════════════════════════════════════
+    //  /order-stars — Fragment + TON Blockchain Integration
+    //  Purchases Telegram Stars via Fragment's API, then signs
+    //  and broadcasts the TON payment transaction on-chain.
+    //
+    //  Required Vercel Environment Variables:
+    //    TON_MNEMONIC        — 24-word wallet seed phrase (space-separated)
+    //    FRAGMENT_API_HASH   — the ?hash= value from fragment.com/api
+    //    FRAGMENT_COOKIE     — your stel_token=... session cookie
+    //    TONCENTER_API_KEY   — (optional) toncenter.com API key for higher rate limits
+    // ════════════════════════════════════════════════════════════
     if (path === '/order-stars' && method === 'POST') {
       const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-      
-      // MUHIM O'ZGARISH: Sayt "data" obyekti ichida yuborsa, o'shani ochib olamiz
-      const requestData = payload.data || payload; 
-      const { username, quantity } = requestData;
-      
+      const { username, quantity } = payload;
       if (!username || !quantity) {
-        return res.status(400).json({ error: 'Missing username or quantity' });
+        return res.status(400).json({ ok: false, error: 'username va quantity majburiy' });
       }
-      
+
       try {
-        const client = new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' });
+        // ── Validate environment variables ──
         const mnemonic = (process.env.TON_MNEMONIC || '').trim().split(/\s+/);
-        
-        if (mnemonic.length < 12) throw new Error('Invalid TON_MNEMONIC');
-        
-        const key = await mnemonicToWalletKey(mnemonic);
-        const contractAddress = '0:YOUR_FRAGMENT_CONTRACT_ADDRESS';
-        
-        const tx = {
-          to: contractAddress,
-          value: 0,
+        if (mnemonic.length < 12) throw new Error("TON_MNEMONIC sozlanmagan yoki noto'g'ri");
+
+        const fragmentHash = (process.env.FRAGMENT_API_HASH || '').trim();
+        const fragmentCookie = (process.env.FRAGMENT_COOKIE || '').trim();
+        if (!fragmentHash || !fragmentCookie) {
+          throw new Error('FRAGMENT_API_HASH va FRAGMENT_COOKIE sozlanmagan');
+        }
+
+        const FRAGMENT_API_URL = `https://fragment.com/api?hash=${fragmentHash}`;
+        const FRAGMENT_HEADERS = {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Cookie': fragmentCookie,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Origin': 'https://fragment.com',
+          'Referer': 'https://fragment.com/stars'
         };
-        
-        return res.status(200).json({ ok: true, message: 'Transaction submitted (placeholder)', username, quantity });
+
+        // Helper: call Fragment API methods
+        async function callFragment(apiMethod, data) {
+          const params = new URLSearchParams();
+          params.append('method', apiMethod);
+          for (const [k, v] of Object.entries(data)) {
+            params.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+          }
+          const resp = await fetch(FRAGMENT_API_URL, {
+            method: 'POST',
+            headers: FRAGMENT_HEADERS,
+            body: params
+          });
+          if (!resp.ok) throw new Error(`Fragment HTTP ${resp.status}`);
+          const json = await resp.json();
+          if (json.error) throw new Error(`Fragment ${apiMethod}: ${json.error}`);
+          return json;
+        }
+
+        // ── Step 1: Resolve Telegram username on Fragment ──
+        const cleanUsername = String(username).replace(/^@/, '');
+        const recipientRes = await callFragment('searchStarsRecipient', { query: cleanUsername });
+        const recipientToken = recipientRes?.found?.recipient;
+        if (!recipientToken) throw new Error(`Fragment'da foydalanuvchi topilmadi: @${cleanUsername}`);
+
+        // ── Step 2: Initialize purchase request ──
+        const initRes = await callFragment('initBuyStarsRequest', {
+          recipient: recipientToken,
+          quantity: String(quantity),
+          payment_method: 'ton'
+        });
+        const requestId = initRes.req_id || initRes.request_id || initRes.id;
+        if (!requestId) throw new Error('Fragment buyurtmani yaratib bermadi');
+
+        // ── Step 3: Derive wallet & get payment details from Fragment ──
+        const keyPair = await mnemonicToPrivateKey(mnemonic);
+        const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+        const walletAddr = wallet.address.toString();
+
+        const linkRes = await callFragment('getBuyStarsLink', {
+          request_id: requestId,
+          address: walletAddr
+        });
+
+        const destAddress = linkRes.address || linkRes.destination;
+        const amountNano = linkRes.amount;  // nanotons as string
+        const payloadComment = linkRes.payload || linkRes.comment || '';
+        if (!destAddress || !amountNano) {
+          throw new Error("Fragment to'lov parametrlarini bermadi");
+        }
+
+        // ── Step 4: Sign & broadcast TON transaction ──
+        const tonClient = new TonClient({
+          endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+          apiKey: process.env.TONCENTER_API_KEY || undefined
+        });
+        const walletContract = tonClient.open(wallet);
+        const seqno = await walletContract.getSeqno();
+
+        // Build comment payload (0x00000000 opcode = text comment per TON spec)
+        const body = beginCell()
+          .storeUint(0, 32)
+          .storeStringTail(payloadComment)
+          .endCell();
+
+        await walletContract.sendTransfer({
+          seqno,
+          secretKey: keyPair.secretKey,
+          messages: [
+            internal({
+              to: Address.parse(destAddress),
+              value: BigInt(amountNano),
+              bounce: true,
+              body
+            })
+          ]
+        });
+
+        return res.status(200).json({
+          ok: true,
+          message: 'Telegram Stars xaridi muvaffaqiyatli yuborildi',
+          username: cleanUsername,
+          quantity: Number(quantity),
+          txSeqno: seqno
+        });
+
       } catch (e) {
-        console.error(e);
-        return res.status(500).json({ error: e.message });
+        console.error('order-stars error:', e);
+        return res.status(500).json({ ok: false, error: e.message || "Noma'lum xato" });
       }
     }
 
-    // PLAYPAY xizmatlari davomi
     const apiKey = env('PLAYPAY_API_KEY');
     if (!apiKey) return res.status(500).json({ ok: false, error: 'PLAYPAY_API_KEY kiritilmagan (api/proxy.js)' });
 
@@ -194,7 +294,6 @@ export default async function handler(req, res) {
     const response = await fetch(url, options);
     const data = await response.json();
     return res.status(response.status).json(data);
-    
   } catch (error) {
     return res.status(500).json({ ok: false, error: 'Server xatosi' });
   }
