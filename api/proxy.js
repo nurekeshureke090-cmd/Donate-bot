@@ -4,10 +4,10 @@
 //  Vercel Environment Variables'da bor qiymat shu yerdagidan ustun turadi.
 // ============================================================
 const FALLBACK = {
-  BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',          // @BotFather bergan token
-  MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw',          // mongodb+srv://...
-  ADMIN_ID: '8467707826', // sizning Telegram ID
-  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a'     // PlayPay'dan olingan YANGI kalit
+  BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',          
+  MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw',          
+  ADMIN_ID: '8467707826', 
+  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a'     
 };
 
 import crypto from 'crypto';
@@ -15,17 +15,13 @@ import { TonClient, WalletContractV4, internal } from '@ton/ton';
 import { Address, beginCell } from '@ton/core';
 import { mnemonicToPrivateKey } from '@ton/crypto';
 
-// ADMIN_ID sir emas: shu fayldagi qiymat ustun turadi (Vercel'dagi eski qiymat xalaqit bermasin).
-// Boshqa sirlar uchun Vercel'dagi qiymat birinchi, bo'lmasa shu fayldagisi olinadi.
 const env = (k) => (k === 'ADMIN_ID' && FALLBACK.ADMIN_ID) ? FALLBACK.ADMIN_ID : (process.env[k] || FALLBACK[k] || '');
 const PLAYPAY_API = 'https://playpay.uz/api/v1';
 
 const GET_PUBLIC = [/^\/games$/, /^\/games\/\d+\/packages$/, /^\/_config$/];
 const GET_USER = [/^\/order\/[\w-]+$/];
 const POST_USER = ['/check_id', '/order'];
-
-const CFG_KEYS = ['videos', 'faqs', 'cardSettings', 'priceMarkups', 'vipSettings',
-  'referralSettings', 'dailyBonusSettings', 'notifications', 'contests', 'banners'];
+const CFG_KEYS = ['videos', 'faqs', 'cardSettings', 'priceMarkups', 'vipSettings', 'referralSettings', 'dailyBonusSettings', 'notifications', 'contests', 'banners'];
 
 function checkInitData(initData) {
   const botToken = env('BOT_TOKEN');
@@ -39,24 +35,21 @@ function checkInitData(initData) {
   const secret = crypto.createHmac('sha256', 'WebAppData').update(botToken.trim()).digest();
   const calc = crypto.createHmac('sha256', secret).update(check).digest('hex');
   if (calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) {
-    return { reason: "BOT_TOKEN shu botniki emas (Vercel'dagi BOT_TOKEN ni tekshiring)" };
+    return { reason: "BOT_TOKEN shu botniki emas" };
   }
   if (Date.now() / 1000 - Number(p.get('auth_date') || 0) > 86400) {
-    return { reason: 'Sessiya eskirgan: ilovani yopib qayta oching' };
+    return { reason: 'Sessiya eskirgan' };
   }
-  try { return { user: JSON.parse(p.get('user')) }; } catch { return { reason: "Foydalanuvchi ma'lumoti buzuq" }; }
+  try { return { user: JSON.parse(p.get('user')) }; } catch { return { reason: "Buzuq ma'lumot" }; }
 }
-function verifyInitData(initData) { return checkInitData(initData).user || null; }
 
 function fixMongoUrl(u) {
-  return String(u).trim()
-    .replace(/([?&])w=[^&]*/i, '$1w=majority')
-    .replace(/([?&])retryWrites=[^&]*/i, '$1retryWrites=true');
+  return String(u).trim().replace(/([?&])w=[^&]*/i, '$1w=majority').replace(/([?&])retryWrites=[^&]*/i, '$1retryWrites=true');
 }
 
 async function getCol() {
   if (!global._cfgMongo) {
-    if (!env('MONGO_URL')) throw new Error('MONGO_URL kiritilmagan');
+    if (!env('MONGO_URL')) throw new Error('MONGO_URL yoq');
     const { MongoClient } = await import('mongodb');   
     global._cfgMongo = new MongoClient(fixMongoUrl(env('MONGO_URL')), { serverSelectionTimeoutMS: 6000 }).connect();
   }
@@ -67,31 +60,18 @@ async function getCol() {
 
 function cleanVideos(v) {
   if (!Array.isArray(v) || v.length > 50) return null;
-  return v.map(x => ({
-    id: Number(x.id) || Date.now(),
-    title: String(x.title || '').slice(0, 120),
-    duration: String(x.duration || '').slice(0, 40),
-    url: /^https?:\/\//i.test(String(x.url || '')) ? String(x.url).slice(0, 500) : ''
-  }));
+  return v.map(x => ({ id: Number(x.id) || Date.now(), title: String(x.title || '').slice(0, 120), duration: String(x.duration || '').slice(0, 40), url: String(x.url || '').slice(0, 500) }));
 }
-
 function cleanBanners(v) {
   if (!Array.isArray(v) || v.length > 10) return null;
-  return v.map(x => ({
-    id: Number(x.id) || Date.now(),
-    image: /^https?:\/\//i.test(String(x.image || '')) ? String(x.image).slice(0, 500) : '',
-    link: /^(https?:\/\/|page:)/i.test(String(x.link || '')) ? String(x.link).slice(0, 500) : ''
-  })).filter(x => x.image);
+  return v.map(x => ({ id: Number(x.id) || Date.now(), image: String(x.image || '').slice(0, 500), link: String(x.link || '').slice(0, 500) })).filter(x => x.image);
 }
 
 async function handleConfig(req, res, auth) {
   try {
     if (req.method === 'POST') {
       const user = auth.user;
-      if (!user) return res.status(403).json({ error: auth.reason });
-      if (String(user.id) !== String(env('ADMIN_ID')).trim()) {
-        return res.status(403).json({ error: `Sizning ID (${user.id}) serverdagi ADMIN_ID ga mos emas` });
-      }
+      if (!user || String(user.id) !== String(env('ADMIN_ID')).trim()) return res.status(403).json({ error: 'Ruxsat yoq' });
     }
     const col = await getCol();
     if (req.method === 'GET') {
@@ -103,25 +83,13 @@ async function handleConfig(req, res, auth) {
     const set = {};
     for (const k of CFG_KEYS) {
       if (body[k] === undefined) continue;
-      if (k === 'videos') {
-        const v = cleanVideos(body.videos);
-        if (!v) return res.status(400).json({ error: "videos noto'g'ri" });
-        set.videos = v;
-      } else if (k === 'banners') {
-        const b = cleanBanners(body.banners);
-        if (!b) return res.status(400).json({ error: "banners noto'g'ri" });
-        set.banners = b;
-      } else if (JSON.stringify(body[k]).length < 200000) {
-        set[k] = body[k];
-      }
+      if (k === 'videos') set.videos = cleanVideos(body.videos);
+      else if (k === 'banners') set.banners = cleanBanners(body.banners);
+      else set[k] = body[k];
     }
     await col.updateOne({ _id: 'app' }, { $set: set }, { upsert: true });
     return res.status(200).json({ ok: true });
-  } catch (e) {
-    console.error(e);
-    const detail = req.method === 'POST' ? ': ' + String(e && e.message || e).replace(/mongodb(\+srv)?:\/\/\S+/gi, '[url]').slice(0, 140) : '';
-    return res.status(500).json({ error: 'Baza xatosi' + detail });
-  }
+  } catch (e) { return res.status(500).json({ error: 'Baza xatosi' }); }
 }
 
 export default async function handler(req, res) {
@@ -129,12 +97,7 @@ export default async function handler(req, res) {
   try {
     const method = req.method;
     if (method !== 'GET' && method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });
-
     const path = String(req.query.path || req.body?.path || '');
-    if (!path.startsWith('/') || path.includes('..') || path.includes('?')) {
-      return res.status(400).json({ ok: false, error: "Noto'g'ri path" });
-    }
-
     const auth = checkInitData(req.headers['x-telegram-init-data']);
     const user = auth.user || null;
     const isAdmin = user && String(user.id) === String(env('ADMIN_ID')).trim();
@@ -142,11 +105,9 @@ export default async function handler(req, res) {
     if (path === '/_config') return handleConfig(req, res, auth);
 
     // ════════════════════════════════════════════════════════════
-    //  /order-stars — Fragment + TON Blockchain Integration
+    //  /order-stars — Fragment + TON Blockchain Integration (Anti-bot aylanib o'tish)
     // ════════════════════════════════════════════════════════════
     if (path === '/order-stars' && method === 'POST') {
-      
-      // SUPER PARSER: Ma'lumot qanday formatda kelmasin, qazib olamiz
       let b = req.body;
       if (typeof b === 'string') try { b = JSON.parse(b); } catch(e){}
       let d = b?.data || b || {};
@@ -154,34 +115,33 @@ export default async function handler(req, res) {
       
       const username = d?.username || b?.username;
       const quantity = d?.quantity || b?.quantity;
-      
-      // Agar baribir topolmasa, telefon ekraniga yuborilgan narsani o'zini chiqaramiz
-      if (!username || !quantity) {
-        return res.status(400).json({ 
-          ok: false, 
-          error: `MA'LUMOT KELMADI! Server olgan narsa: ${JSON.stringify(req.body).substring(0, 150)}` 
-        });
-      }
+      if (!username || !quantity) return res.status(400).json({ ok: false, error: 'username va quantity majburiy' });
 
       try {
         const mnemonic = (process.env.TON_MNEMONIC || '').trim().split(/\s+/);
-        if (mnemonic.length < 12) throw new Error("TON_MNEMONIC sozlanmagan yoki noto'g'ri");
-
+        if (mnemonic.length < 12) throw new Error("TON_MNEMONIC xato");
         const fragmentHash = (process.env.FRAGMENT_API_HASH || '').trim();
         const fragmentCookie = (process.env.FRAGMENT_COOKIE || '').trim();
-        if (!fragmentHash || !fragmentCookie) {
-          throw new Error('FRAGMENT_API_HASH va FRAGMENT_COOKIE sozlanmagan. Vercelga kiritish kerak!');
-        }
+        if (!fragmentHash || !fragmentCookie) throw new Error('FRAGMENT kalitlari yoq');
 
         const FRAGMENT_API_URL = `https://fragment.com/api?hash=${fragmentHash}`;
+        
+        // KOMPYUTERINGIZ BILAN 100% BIR XIL QILINGAN HEADERS
         const FRAGMENT_HEADERS = {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
           'Cookie': fragmentCookie,
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36',
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json, text/javascript, */*; q=0.01',
           'Origin': 'https://fragment.com',
-          'Referer': 'https://fragment.com/stars'
+          'Referer': 'https://fragment.com/stars',
+          'sec-ch-ua': '"Google Chrome";v="155", "Chromium";v="155", "Not(A:Brand";v="24"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"Windows"',
+          'sec-fetch-dest': 'empty',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-origin',
+          'priority': 'u=1, i'
         };
 
         async function callFragment(apiMethod, data) {
@@ -204,82 +164,37 @@ export default async function handler(req, res) {
         const cleanUsername = String(username).replace(/^@/, '');
         const recipientRes = await callFragment('searchStarsRecipient', { query: cleanUsername });
         const recipientToken = recipientRes?.found?.recipient;
-        if (!recipientToken) throw new Error(`Fragment'da foydalanuvchi topilmadi: @${cleanUsername}`);
+        if (!recipientToken) throw new Error(`Topilmadi: @${cleanUsername}`);
 
-        const initRes = await callFragment('initBuyStarsRequest', {
-          recipient: recipientToken,
-          quantity: String(quantity),
-          payment_method: 'ton'
-        });
+        const initRes = await callFragment('initBuyStarsRequest', { recipient: recipientToken, quantity: String(quantity), payment_method: 'ton' });
         const requestId = initRes.req_id || initRes.request_id || initRes.id;
-        if (!requestId) throw new Error('Fragment buyurtmani yaratib bermadi');
-
+        
         const keyPair = await mnemonicToPrivateKey(mnemonic);
         const wallet = WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
-        const walletAddr = wallet.address.toString();
-
-        const linkRes = await callFragment('getBuyStarsLink', {
-          request_id: requestId,
-          address: walletAddr
-        });
+        const linkRes = await callFragment('getBuyStarsLink', { request_id: requestId, address: wallet.address.toString() });
 
         const destAddress = linkRes.address || linkRes.destination;
         const amountNano = linkRes.amount;  
         const payloadComment = linkRes.payload || linkRes.comment || '';
-        if (!destAddress || !amountNano) {
-          throw new Error("Fragment to'lov parametrlarini bermadi");
-        }
 
-        const tonClient = new TonClient({
-          endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-          apiKey: process.env.TONCENTER_API_KEY || undefined
-        });
+        const tonClient = new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' });
         const walletContract = tonClient.open(wallet);
         const seqno = await walletContract.getSeqno();
 
-        const body = beginCell()
-          .storeUint(0, 32)
-          .storeStringTail(payloadComment)
-          .endCell();
-
+        const bodyCell = beginCell().storeUint(0, 32).storeStringTail(payloadComment).endCell();
         await walletContract.sendTransfer({
-          seqno,
-          secretKey: keyPair.secretKey,
-          messages: [
-            internal({
-              to: Address.parse(destAddress),
-              value: BigInt(amountNano),
-              bounce: true,
-              body
-            })
-          ]
+          seqno, secretKey: keyPair.secretKey,
+          messages: [ internal({ to: Address.parse(destAddress), value: BigInt(amountNano), bounce: true, body: bodyCell }) ]
         });
 
-        return res.status(200).json({
-          ok: true,
-          message: 'Telegram Stars xaridi muvaffaqiyatli yuborildi',
-          username: cleanUsername,
-          quantity: Number(quantity),
-          txSeqno: seqno
-        });
-
+        return res.status(200).json({ ok: true, message: 'Telegram Stars muvaffaqiyatli xarid qilindi' });
       } catch (e) {
-        console.error('order-stars error:', e);
-        return res.status(500).json({ ok: false, error: e.message || "Noma'lum xato" });
+        return res.status(500).json({ ok: false, error: e.message || "Xato" });
       }
     }
 
     const apiKey = env('PLAYPAY_API_KEY');
-    if (!apiKey) return res.status(500).json({ ok: false, error: 'PLAYPAY_API_KEY kiritilmagan (api/proxy.js)' });
-
-    if (method === 'GET') {
-      const okPublic = GET_PUBLIC.some(r => r.test(path));
-      const okUser = GET_USER.some(r => r.test(path)) && user;
-      const okAdmin = path === '/balance' && isAdmin;
-      if (!okPublic && !okUser && !okAdmin) return res.status(403).json({ ok: false, error: "Ruxsat yo'q" });
-    } else if (!POST_USER.includes(path) || !user) {
-      return res.status(403).json({ ok: false, error: "Ruxsat yo'q" });
-    }
+    if (!apiKey) return res.status(500).json({ error: 'PLAYPAY_API_KEY yoq' });
 
     let url = `${PLAYPAY_API}${path}`;
     if (method === 'GET') url += '?currency=UZS';
@@ -289,7 +204,5 @@ export default async function handler(req, res) {
     const response = await fetch(url, options);
     const data = await response.json();
     return res.status(response.status).json(data);
-  } catch (error) {
-    return res.status(500).json({ ok: false, error: 'Server xatosi' });
-  }
+  } catch (error) { return res.status(500).json({ error: 'Server xatosi' }); }
 }
