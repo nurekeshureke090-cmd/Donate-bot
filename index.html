@@ -33,32 +33,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --p: #8b5cf6;
-  --s: #a855f7;
-  --p-rgb: 139, 92, 246;
-  --s-rgb: 168, 85, 247;
-  --p-glow: rgba(139, 92, 246, 0.35);
-  --p-light: rgba(139, 92, 246, 0.12);
-  --p-soft: rgba(139, 92, 246, 0.06);
+  --p: var(--tg-theme-button-color, #8b5cf6);
+  --p-text: var(--tg-theme-button-text-color, #ffffff);
 
-  --bg-main: #f5f7fc;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-solid: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.82);
-  --bg-input: #f1f4f9;
-
-  --border-card: rgba(226, 232, 240, 0.85);
+  --bg-main: var(--tg-theme-secondary-bg-color, #f5f7fc);
+  --bg-card: var(--tg-theme-bg-color, #ffffff);
+  --bg-card-solid: var(--tg-theme-bg-color, #ffffff);
+  --bg-glass: var(--tg-theme-bg-color, rgba(255, 255, 255, 0.82));
+  --text-main: var(--tg-theme-text-color, #0f172a);
+  --text-muted: var(--tg-theme-hint-color, #475569);
+  --bg-input: var(--tg-theme-secondary-bg-color, #f1f4f9);
+  --border-card: var(--tg-theme-hint-color, rgba(226, 232, 240, 0.85));
   --border-subtle: rgba(226, 232, 240, 0.6);
   --border-glow: rgba(139, 92, 246, 0.35);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: var(--tg-theme-text-color, #0f172a);
+  --text-secondary: var(--tg-theme-hint-color, #475569);
+  --text-tertiary: var(--tg-theme-hint-color, #94a3b8);
+  --text-inverse: var(--tg-theme-button-text-color, #ffffff);
 
-  --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
-  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
-  --shadow-glow: 0 8px 28px -4px rgba(139, 92, 246, 0.35);
+  --radius-xl: 20px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0,0,0, 0.02);
+  --shadow-glow: 0 8px 24px var(--p-glow);
+  --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.02);
+
+  --header-h: 60px;
+  --nav-h: 70px;
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 body.dark {
@@ -87,6 +92,21 @@ body.dark {
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+.text-gray-800, .text-gray-900, .text-slate-800 {
+  color: var(--text-primary) !important;
+}
+.text-gray-500, .text-gray-600, .text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+.bg-white {
+  background-color: var(--bg-card) !important;
 }
 
 body {
@@ -1879,20 +1899,7 @@ async function ppCreateOrder(gameId, paketId, playerId, serverId = null, charnam
 async function ppGetOrder(orderId) { return await ppRequest('GET', `/order/${orderId}`); }
 async function ppGetBalance() { return await ppRequest('GET', '/balance'); }
 
-const GAME_MAP = {
-  1: { name: 'PUBG Mobile', ppId: 141, currency: 'UC', needsServer: false, needsCharname: false, idLabel: 'Character ID', idHint: 'PUBG Mobile → Profil → Character ID' },
-  2: { name: 'Free Fire', ppId: 209, currency: 'Diamonds', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'Free Fire → Profil → Player ID' },
-  3: { name: 'Mobile Legends', ppId: 53, currency: 'Diamonds', needsServer: true, needsCharname: false, idLabel: 'User ID', idHint: 'ML → Profil → User ID', serverLabel: 'Server ID', serverHint: 'ML → Profil → Server ID' },
-  4: { name: 'Honor of Kings', ppId: 168, currency: 'Coins', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'HOK → Profil → Player ID' },
-  5: { name: 'Stand Off 2', ppId: null, currency: 'Gold', needsServer: false, needsCharname: false, idLabel: 'Player ID', idHint: 'SO2 → Profil → Player ID' },
-  6: { name: 'Steam', ppId: null, currency: 'Wallet', needsServer: false, needsCharname: false, idLabel: 'Steam Login', idHint: 'Steam loginingizni kiriting' },
-  7: { name: 'Telegram Stars', ppId: null, currency: 'Stars', needsServer: false, needsCharname: false, idLabel: 'Telegram ID', idHint: 'Telegram ID avtomatik' },
-  8: { name: 'Brawl Stars', ppId: null, currency: 'Gems', needsServer: false, needsCharname: false, idLabel: 'Player Tag', idHint: 'BS → Profil → Player Tag' },
-  9: { name: 'Clash Royale', ppId: null, currency: 'Gems', needsServer: false, needsCharname: false, idLabel: 'Player Tag', idHint: 'CR → Profil → Player Tag' },
-10: { name: 'Genshin Impact', ppId: 204, currency: 'Primogems', needsServer: true, needsCharname: false, idLabel: 'UID', idHint: 'GI → Profil → UID', serverLabel: 'Server', serverHint: 'GI → Profil → Server' },
-  11: { name: 'Roblox', ppId: null, currency: 'Robux', needsServer: false, needsCharname: false, idLabel: 'Username', idHint: 'Roblox username' },
-  12: { name: 'Fortnite', ppId: null, currency: 'V-Bucks', needsServer: false, needsCharname: false, idLabel: 'Epic ID', idHint: 'Epic Games ID' }
-};
+let GAME_MAP = {};
 
 let ppPackagesCache = {};
 let ppGamesCache = null;
@@ -1970,119 +1977,9 @@ function getFinalPrice(gameId, packIndex, basePrice) {
   return Math.round(basePrice * (1 + markup / 100) * (1 - vip.discount / 100));
 }
 
-const games = [
-  { id: 1, name: 'PUBG Mobile', currency: 'UC', popular: true, icon: 'https://i.postimg.cc/Sx9hsSKf/d700358872ea04fd5639226cd072d148.jpg', color: 'from-yellow-500 to-orange-600', banner: 'https://i.postimg.cc/Sx9hsSKf/d700358872ea04fd5639226cd072d148.jpg', rating: '5 · 1020', idLabel: 'Character ID', idHint: 'PUBG Mobile → Profil → Character ID' },
-  { id: 2, name: 'Free Fire', currency: 'Diamonds', popular: true, icon: 'https://i.postimg.cc/25YPSnJJ/a2dda96c1e4be54f64f71f7c9e7aff51.jpg', color: 'from-red-500 to-orange-500', banner: 'https://i.postimg.cc/DycRCxzs/1790853172720.jpg', rating: '4.9 · 856', idLabel: 'Player ID', idHint: 'Free Fire → Profil → Player ID' },
-  { id: 3, name: 'Mobile Legends', currency: 'Diamonds', popular: true, icon: 'https://i.postimg.cc/HLLFMTWD/unnamed.png', color: 'from-blue-500 to-purple-600', banner: 'https://i.postimg.cc/L8YBqsGm/1790853414646.jpg', rating: '4.8 · 720', idLabel: 'User ID + Server', idHint: 'ML → Profil → User ID va Server ID' },
-  { id: 4, name: 'Honor of Kings', currency: 'Coins', popular: true, icon: 'https://i.postimg.cc/Fs9pzDsP/images-(4).jpg', color: 'from-yellow-400 to-red-500', banner: 'https://i.postimg.cc/D065cYcz/1790853424658.jpg', rating: '4.7 · 650', idLabel: 'Player ID', idHint: 'HOK → Profil → Player ID' },
-  { id: 5, name: 'Stand Off 2', currency: 'Gold', popular: true, icon: 'https://i.postimg.cc/Zq0DRjjq/unnamed.jpg', color: 'from-gray-600 to-gray-800', banner: 'https://i.postimg.cc/XJcgVDm1/1790853409588.jpg', rating: '4.9 · 540', idLabel: 'Player ID', idHint: 'SO2 → Profil → Player ID' },
-  { id: 6, name: 'Steam', currency: 'Wallet', popular: true, icon: 'https://i.postimg.cc/wTcrb132/c9ea553f8efcd2ffb43f305d29f4c843a85e0c944c72d49f2c18a630d2585805-600.jpg', color: 'from-blue-600 to-indigo-700', banner: 'https://i.postimg.cc/d0G2BxsV/1790853405201.jpg', rating: '5 · 2100', idLabel: 'Steam Login', idHint: 'Steam loginingizni kiriting' },
-  { id: 7, name: 'Telegram Stars', currency: 'Stars', popular: false, icon: 'https://i.postimg.cc/tRcwVK8y/images-(7).jpg', color: 'from-yellow-400 to-yellow-600', banner: 'https://i.postimg.cc/W3Wh6GkD/1790853712181.jpg', rating: '5 · 3200', idLabel: 'Telegram ID', idHint: 'Telegram ID avtomatik aniqlanadi' },
-  { id: 8, name: 'Brawl Stars', currency: 'Gems', popular: false, icon: 'https://i.postimg.cc/MGRVdQpT/images-(8).jpg', color: 'from-purple-500 to-pink-500', banner: 'https://i.postimg.cc/CKC8Dn7w/1790853610531.jpg', rating: '4.8 · 980', idLabel: 'Player Tag', idHint: 'BS → Profil → Player Tag (#...)' },
-  { id: 9, name: 'Clash Royale', currency: 'Gems', popular: false, icon: 'https://i.postimg.cc/FRRCYpZf/3bd24a94f7a3aaa9b9e02ff15ee37bed57f51e784b1e6b9cdfaf5c0eb4b50c39-600.jpg', color: 'from-blue-500 to-blue-700', banner: 'https://i.postimg.cc/Gp90TvdG/1790853220765.jpg', rating: '4.7 · 1500', idLabel: 'Player Tag', idHint: 'CR → Profil → Player Tag' },
-  { id: 10, name: 'Genshin Impact', currency: 'Primogems', popular: false, icon: 'https://i.postimg.cc/nVqSCXKJ/images-(3).jpg', color: 'from-cyan-400 to-blue-500', banner: 'https://i.postimg.cc/tJvWJ05D/1790853398684.jpg', rating: '4.9 · 2400', idLabel: 'UID + Server', idHint: 'GI → Profil → UID va Server' },
-  { id: 11, name: 'Roblox', currency: 'Robux', popular: false, icon: 'https://i.postimg.cc/q7bVDzbY/images-(5).jpg', color: 'from-red-600 to-red-800', banner: 'https://i.postimg.cc/j2HBYX4D/1790853211312.jpg', rating: '4.6 · 1800', idLabel: 'Username', idHint: 'Roblox username' },
-  { id: 12, name: 'Fortnite', currency: 'V-Bucks', popular: false, icon: 'https://i.postimg.cc/nzcgvpHL/images-(6).jpg', color: 'from-purple-600 to-blue-600', banner: 'https://i.postimg.cc/nzcgvpHL/images-(6).jpg', rating: '4.8 · 3100', idLabel: 'Epic Games ID', idHint: 'Epic Games ID yoki email' }
-];
+let games = [];
 
-const gamePackages = {
-  // ===== PUBG Mobile =====
-  1: {
-    uc: [
-      { amount: 60, price: 11700, icon: 'https://i.postimg.cc/CxMhxZ2v/7b65d0a87b5c1386232dfd337015feca.jpg' },
-      { amount: 325, price: 59000, icon: 'https://i.postimg.cc/fLdZrY3m/images-(10).jpg' },
-      { amount: 660, price: 115000, icon: 'https://i.postimg.cc/mrvWChdc/images-(13).jpg' },
-      { amount: 1800, price: 290000, icon: 'https://i.postimg.cc/rFf6gfnp/images-(12).jpg' },
-      { amount: 3850, price: 575000, icon: 'https://i.postimg.cc/mrvWChdc/images-(13).jpg' },
-      { amount: 8100, price: 1165000, icon: 'https://i.postimg.cc/0j930S7m/images-(14).jpg' }
-    ],
-    prime: [
-      { amount: 'Prime (1 Month)', price: 12500, icon: 'https://i.postimg.cc/HLG6t5gW/51fa5596-7e74-412a-9219-72613969b914.webp' },
-      { amount: 'Prime (3 Months)', price: 37000, icon: 'https://i.postimg.cc/TwBjRvYt/e4a47383-21ce-488f-ab75-20478a28b4f6.webp' },
-      { amount: 'Prime (6 Months)', price: 71000, icon: 'https://i.postimg.cc/7YfX8XHc/577e0d5e-80d8-48e8-8bc3-3e4ffea00843.webp' },
-      { amount: 'Prime (12 Months)', price: 138000, icon: 'https://i.postimg.cc/7Zq3PVwh/9a088030-50e8-4628-938a-70985fbcb24b.webp' },
-      { amount: 'Prime Plus (1 Month)', price: 114000, icon: 'https://i.postimg.cc/BvcBcVpH/4e41b4f4-b0ed-44d0-8b76-30b66e138e03.webp' },
-      { amount: 'Prime Plus (3 Months)', price: 340000, icon: 'https://i.postimg.cc/Tw5mNNq7/2b30c42e-f142-4ae6-821c-6b714743d5b8.webp' },
-      { amount: 'Prime Plus (6 Months)', price: 685000, icon: 'https://i.postimg.cc/4ynvGNgL/98e5d702-f0f0-45ec-9e67-b0d4b80d7cc5.webp' },
-      { amount: 'Prime Plus (12 Months)', price: 1340000, icon: 'https://i.postimg.cc/bN9n5tkJ/6173a69b-e2dc-46eb-a14d-8dbb791ca9ff.webp' },
-      { amount: 'First Purchase Pack', price: 14000, icon: 'https://i.postimg.cc/MKC0kSrf/67dd49eb-f726-4603-93e1-7888d085da7d.webp' },
-      { amount: 'Weekly Deal Pack 1', price: 14000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
-      { amount: 'Weekly Mythic Emblem', price: 34000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
-      { amount: 'Upgradable Firearm', price: 38000, icon: 'https://i.postimg.cc/wxc3xdvL/7c346d4d-2b2e-42b1-9483-fc35824aa5d6.webp' },
-      { amount: 'Mythic Emblem Pack', price: 60000, icon: 'https://i.postimg.cc/XXSrPV7G/dea6e57d-9982-46a2-a210-05fc407a1b90.webp' },
-      { amount: 'Elite Pass LV1-50', price: 72000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' },
-      { amount: 'Elite Pass LV1-100', price: 140000, icon: 'https://i.postimg.cc/fR7960dM/23867607-6f4d-46f5-8c5b-6b34e3708bbc.webp' }
-    ]
-  },
-  // ===== Free Fire =====
-  2: {
-    diamonds: [
-      { amount: 100, price: 10000, icon: '💎' },
-      { amount: 310, price: 30000, icon: '💎' },
-      { amount: 520, price: 50000, icon: '💎' },
-      { amount: 1060, price: 100000, icon: '💎' },
-      { amount: 2180, price: 200000, icon: '💎' }
-    ],
-    pacs: [
-      { amount: 'Level Up Package 6', price: 4200, icon: 'https://i.postimg.cc/jjNzqkm8/images-(9).jpg' },
-      { amount: 'Level Up Package 10', price: 6800, icon: 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg' },
-      { amount: 'Level Up Package 15', price: 6800, icon: 'https://i.postimg.cc/HnW52WnG/1790855523904.jpg' },
-      { amount: 'Level Up Package 20', price: 6800, icon: 'https://i.postimg.cc/J0y7mSdx/1790855956898.jpg' },
-      { amount: 'Level Up Package 25', price: 6800, icon: 'https://i.postimg.cc/J42JNLLz/1790855507616.jpg' },
-      { amount: 'Level Up Package 30', price: 9900, icon: 'https://i.postimg.cc/Gtp8DMg4/1790855593969.jpg' },
-      { amount: 'Weekly Lite', price: 5200, icon: 'https://i.postimg.cc/Fs8dfVy1/IMG-20261001-165506-460.jpg' },
-      { amount: 'Weekly Membership', price: 20000, icon: 'https://i.postimg.cc/HL4VhGfM/IMG-20261001-165507-767.jpg' },
-      { amount: 'Monthly Membership', price: 74000, icon: 'https://i.postimg.cc/J0gnkRBX/IMG-20261001-165508-955.jpg' }
-    ]
-  },
-  // ===== Brawl Stars =====
-  8: {
-    default: [
-      { amount: 'Brawl Pass', price: 73000, icon: 'https://i.postimg.cc/gLcy6RJs/01KYBN0WWAPK3W73F141YSG6F3.webp' },
-      { amount: 'Brawl Pass Plus', price: 95000, icon: 'https://i.postimg.cc/zHDwRWBs/01KYBN16Q7JNANPYYS92NJ3AZG.webp' },
-      { amount: 'Brawl Pass Pro', price: 194000, icon: 'https://i.postimg.cc/CnMCfD1m/01KYBN1G4DF57TPEX693M4NKJJ.webp' },
-      { amount: '80 Gems', price: 38000, icon: 'https://i.postimg.cc/30rjDpRV/01KYBN1SQ59X8CK3NT6Z1NP642.webp' },
-      { amount: '170 Gems', price: 73000, icon: 'https://i.postimg.cc/YL2Nmg9y/01KYBN27ZZEHQ0RJ0KM33Z4WP4.webp' },
-      { amount: '360 Gems', price: 144000, icon: 'https://i.postimg.cc/WqpmJr39/01KYBN2VZWV2PSVSP3B7CTM114.webp' },
-      { amount: '950 Gems', price: 354000, icon: 'https://i.postimg.cc/V0s9bM6V/01KYBN367ARKZ46GTXP5G477HK.webp' },
-      { amount: '2000 Gems', price: 699000, icon: 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png' },
-      { amount: '4000 Gems', price: 1394000, icon: 'https://i.postimg.cc/fSW70XLK/01KYBN6ASH247A7957S1YH68V0.png' }
-    ]
-  },
-  // ===== Steam =====
-    6: { steam: true },
-  // ===== Telegram Stars =====
-  7: {
-    default: [
-      { amount: 50, price: 15000, icon: '⭐️' },
-      { amount: 100, price: 30000, icon: '⭐️' },
-      { amount: 250, price: 75000, icon: '⭐️' },
-      { amount: 500, price: 150000, icon: '⭐️' },
-      { amount: 1000, price: 300000, icon: '⭐️' }
-    ]
-  },
-  // ===== Mobile Legends =====
-  3: {
-    default: [
-      { amount: 5, price: 5000, icon: 'https://i.postimg.cc/64vSgrWx/01KWCQS0MKMM5ZPYJE3YKNYT7G.png' },
-      { amount: 12, price: 12000, icon: 'https://i.postimg.cc/WtFQdvMt/01KWCQX8HE5QJ4463F7YQBCPS0.png' },
-      { amount: 50, price: 50000, icon: 'https://i.postimg.cc/rz0vDkSK/06316848-beb3-4f8b-8399-8427f23bc4ce.webp' },
-      { amount: 72, price: 70000, icon: 'https://i.postimg.cc/23bP1D4q/0a79095a-0e53-429f-879b-c01e1b3d4fe0.webp' },
-      { amount: 145, price: 140000, icon: 'https://i.postimg.cc/7bGp5kgG/1985f989-ae7c-47b4-a52e-44531ab279a2.webp' }
-    ]
-  },
-  // ===== Honor of Kings (o'zgarmadi) =====
-    4: { default: [{ amount: 100, price: 15000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 300, price: 40000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 500, price: 65000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }, { amount: 1000, price: 120000, icon: 'https://i.postimg.cc/G34wzW8M/1c229bd7-a153-41bc-8f26-90f7929a5d01.png' }] },
-  // ===== Roblox =====
-  11: {
-    default: [
-      { amount: 80, price: 10000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
-      { amount: 400, price: 48000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
-      { amount: 800, price: 95000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' },
-      { amount: 1700, price: 195000, icon: 'https://i.postimg.cc/SxTfZvzs/01KY6DRX22HMA1M13QP750PB0F.jpg' }
-    ]
-  }
-};
+let gamePackages = {};
 
 function navigateTo(pageName) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2112,12 +2009,69 @@ function navigateTo(pageName) {
   window.scrollTo(0, 0);
 }
 
-function renderGames() {
+async function renderGames() {
   const popularContainer = document.getElementById('popular-games');
   const allContainer = document.getElementById('all-games');
-  popularContainer.innerHTML = ''; allContainer.innerHTML = '';
-  games.filter(g => g.popular).forEach(game => { popularContainer.innerHTML += createGameCard(game); });
-  games.forEach(game => { allContainer.innerHTML += createGameCard(game); });
+
+  popularContainer.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-8 animate-pulse"><div class="inline-block w-8 h-8 border-4 border-t-[var(--p)] border-gray-200 rounded-full animate-spin"></div><p class="mt-2 text-sm text-[var(--text-secondary)]">Yuklanmoqda...</p></div>';
+  allContainer.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/proxy?path=/games');
+    const data = await res.json();
+    if (data.ok && data.games) {
+      games = data.games.map((g, i) => {
+        let icon = 'https://i.postimg.cc/85z1D80C/default-game.jpg';
+        let color = 'from-gray-500 to-gray-700';
+        let currency = 'Coins';
+
+        let n = g.name.toLowerCase();
+        if (n.includes('pubg')) { icon = 'https://i.postimg.cc/Sx9hsSKf/d700358872ea04fd5639226cd072d148.jpg'; color = 'from-yellow-500 to-orange-600'; currency = 'UC'; }
+        if (n.includes('free fire')) { icon = 'https://i.postimg.cc/25YPSnJJ/a2dda96c1e4be54f64f71f7c9e7aff51.jpg'; color = 'from-red-500 to-orange-500'; currency = 'Diamonds'; }
+        if (n.includes('mobile legends')) { icon = 'https://i.postimg.cc/HLLFMTWD/unnamed.png'; color = 'from-blue-500 to-purple-600'; currency = 'Diamonds'; }
+        if (n.includes('roblox')) { icon = 'https://i.postimg.cc/q7bVDzbY/images-(5).jpg'; color = 'from-red-600 to-red-800'; currency = 'Robux'; }
+
+        return {
+          id: g.game_id,
+          name: g.name,
+          currency: currency,
+          popular: i < 6, // First 6 are popular
+          icon: icon,
+          color: color,
+          banner: icon,
+          rating: '5',
+          idLabel: g.id_label,
+          idHint: g.id_label,
+          needsServer: g.requires_server,
+          needsCharname: g.requires_charname
+        };
+      });
+
+      games.forEach(g => {
+        GAME_MAP[g.id] = {
+           name: g.name,
+           ppId: g.id,
+           currency: g.currency,
+           needsServer: g.needsServer,
+           needsCharname: g.needsCharname,
+           idLabel: g.idLabel,
+           idHint: g.idHint,
+           serverLabel: g.needsServer ? 'Server ID' : null,
+           serverHint: g.needsServer ? 'Serverni kiriting' : null
+        };
+      });
+
+      popularContainer.innerHTML = '';
+      allContainer.innerHTML = '';
+      games.filter(g => g.popular).forEach(game => { popularContainer.innerHTML += createGameCard(game); });
+      games.forEach(game => { allContainer.innerHTML += createGameCard(game); });
+    } else {
+      popularContainer.innerHTML = '<p class="text-red-500 text-center col-span-full">Xatolik yuz berdi.</p>';
+    }
+  } catch(e) {
+    console.error(e);
+    popularContainer.innerHTML = '<p class="text-red-500 text-center col-span-full">Xatolik yuz berdi.</p>';
+  }
 }
 
 function createGameCard(game) {
@@ -2126,35 +2080,135 @@ function createGameCard(game) {
 
 async function openGame(gameId) {
   selectedGame = games.find(g => g.id === gameId);
+  if(!selectedGame) return;
   selectedPackage = null; selectedPlaypayPackage = null;
   gd = { tab: 'cur', cur: [], pacs: [], selected: null };
   document.getElementById('detail-name').textContent = selectedGame.name;
   document.getElementById('detail-rating').textContent = selectedGame.rating || '5 · 1020';
-  document.getElementById('game-banner').style.backgroundImage = 'url("' + selectedGame.banner + '"), linear-gradient(135deg, #8b5cf6, #ec4899)';
+  document.getElementById('game-banner').style.backgroundImage = 'url("' + selectedGame.banner + '"), linear-gradient(135deg, var(--p), #ec4899)';
+
   const isSteam = !!(gamePackages[gameId] && gamePackages[gameId].steam);
   document.getElementById('steam-form').classList.toggle('hidden', !isSteam);
   document.getElementById('gd-main').classList.toggle('hidden', isSteam);
   currentGameType = isSteam ? 'steam' : 'local';
+
+  // Show sliding page
   navigateTo('game-detail');
   if (isSteam) return;
 
   document.getElementById('gd-tabs').innerHTML =
-    '<button class="tab-btn" data-k="cur" onclick="switchGD(\'cur\')"><i class="gd-dot"></i>' + escHtml(selectedGame.currency) + '</button>' +
-    '<button class="tab-btn" data-k="pacs" onclick="switchGD(\'pacs\')"><i class="gd-dot"></i>Pacs</button>';
-  document.getElementById('gd-list').innerHTML = '<p class="gd-empty">Yuklanmoqda...</p>';
+    '<button class="tab-btn active" style="width:100%; border-bottom: 2px solid var(--p)"><i class="gd-dot"></i>Paketlar</button>';
+
+  // Add Skeleton UI for loading packages
+  document.getElementById('gd-list').innerHTML = '<div class="col-span-full py-8 text-center animate-pulse"><div class="inline-block w-8 h-8 border-4 border-t-[var(--p)] border-gray-200 rounded-full animate-spin"></div><p class="mt-2 text-sm text-[var(--text-secondary)]">Paketlar yuklanmoqda...</p></div>';
 
   let built = null;
   const info = GAME_MAP[gameId];
   if (info && info.ppId) {
     const r = await loadPackagesFromAPI(gameId);
     if (selectedGame.id !== gameId) return;
-    if (r.ok && r.packages && r.packages.length) { built = buildPlaypayGD(gameId, r.packages); currentGameType = 'playpay'; currentPlaypayGameId = gameId; }
-    else console.warn('PlayPay API xatosi, lokal paketlar ko\'rsatildi:', r.error);
+
+    if (r.ok && r.packages && r.packages.length) {
+      built = buildPlaypayGD(gameId, r.packages);
+      currentGameType = 'playpay';
+      currentPlaypayGameId = gameId;
+      gd.cur = built.cur;
+      gd.pacs = built.pacs;
+
+      // Combine all packages to show in one list for redesign
+      gd.allPackages = [...built.cur, ...built.pacs];
+      renderRedesignedGD();
+
+    } else {
+      document.getElementById('gd-list').innerHTML = '<p class="text-red-500 text-center col-span-full">Paketlarni yuklashda xatolik yuz berdi.</p>';
+    }
+  } else {
+    document.getElementById('gd-list').innerHTML = '<p class="text-[var(--text-secondary)] text-center col-span-full">Bu o\'yin tez orada qo\'shiladi.</p>';
   }
-  if (!built) built = buildLocalGD(gameId);
-  gd.cur = built.cur; gd.pacs = built.pacs;
-  gd.tab = (gd.cur.length || !gd.pacs.length) ? 'cur' : 'pacs';
-  renderGD();
+}
+
+function renderRedesignedGD() {
+  const container = document.getElementById('gd-list');
+  container.innerHTML = '';
+
+  if (!gd.allPackages || gd.allPackages.length === 0) {
+    container.innerHTML = '<p class="text-[var(--text-secondary)] text-center w-full mt-4 col-span-full">Paketlar topilmadi.</p>';
+    return;
+  }
+
+  gd.allPackages.forEach(pkg => {
+    let p = pkg.isPlaypay ? pkg.playpayData : pkg;
+    let name = p.name || p.amount;
+    let price = p.price;
+    let icon = p.icon || '💎';
+
+    let html = `<div class="relative bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-3 cursor-pointer transition-all hover:border-[var(--p)] flex flex-col items-center justify-center min-h-[100px] shadow-sm" onclick="selectPackage('${pkg.paketId || pkg.id}')" id="pkg-${pkg.paketId || pkg.id}">
+      <div class="text-2xl mb-1">${icon.length < 5 ? icon : '<img src="'+icon+'" class="w-8 h-8 object-contain">'}</div>
+      <div class="text-center font-bold text-[var(--text-primary)] text-sm mb-1">${name}</div>
+      <div class="text-[var(--p)] font-bold text-xs">${fmtPrice(price)} UZS</div>
+    </div>`;
+    container.innerHTML += html;
+  });
+}
+
+function selectPackage(pkgId) {
+  if (gd.selected) {
+    let el = document.getElementById('pkg-' + (gd.selected.paketId || gd.selected.id));
+    if(el) {
+      el.classList.remove('border-[var(--p)]', 'ring-2', 'ring-[var(--p-glow)]');
+      el.classList.add('border-[var(--border-subtle)]');
+    }
+  }
+
+  let pkg = gd.allPackages.find(p => String(p.paketId || p.id) === String(pkgId));
+  if (!pkg) return;
+  gd.selected = pkg;
+  selectedPlaypayPackage = pkg.isPlaypay ? pkg.playpayData : null;
+
+  let el = document.getElementById('pkg-' + (pkg.paketId || pkg.id));
+  if (el) {
+    el.classList.remove('border-[var(--border-subtle)]');
+    el.classList.add('border-[var(--p)]', 'ring-2', 'ring-[var(--p-glow)]');
+  }
+
+  updateGameDetailInputs();
+}
+
+function updateGameDetailInputs() {
+  const formContainer = document.getElementById('id-inputs-container');
+  if(!formContainer) {
+    const main = document.getElementById('gd-main');
+    const formHtml = `
+      <div id="id-inputs-container" class="mt-6 bg-[var(--bg-card)] p-4 rounded-[var(--radius-lg)] shadow-sm col-span-full w-full">
+        <h3 class="font-bold text-[var(--text-primary)] mb-4">Ma'lumotlarni kiriting</h3>
+        <div id="dynamic-inputs"></div>
+      </div>
+    `;
+    main.insertAdjacentHTML('beforeend', formHtml);
+  }
+
+  const dyn = document.getElementById('dynamic-inputs');
+  const info = GAME_MAP[currentPlaypayGameId];
+
+  let html = '';
+  if(info) {
+    html += `<div class="mb-4">
+      <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">${info.idLabel || 'Player ID'}</label>
+      <input type="text" id="gd-id" class="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--p)]" placeholder="${info.idHint || 'ID ni kiriting'}">
+    </div>`;
+
+    if(info.needsServer) {
+       html += `<div class="mb-4">
+        <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">${info.serverLabel || 'Server'}</label>
+        <input type="text" id="gd-server" class="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] p-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--p)]" placeholder="${info.serverHint || 'Serverni kiriting'}">
+      </div>`;
+    }
+  }
+  dyn.innerHTML = html;
+
+  document.getElementById('gd-buy-btn').disabled = false;
+  document.getElementById('gd-buy-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+  document.getElementById('gd-buy-price').textContent = fmtPrice(gd.selected.isPlaypay ? gd.selected.playpayData.price : gd.selected.price) + ' UZS';
 }
 
 async function loadPackagesFromAPI(gameId) {
