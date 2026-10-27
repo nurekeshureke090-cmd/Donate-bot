@@ -355,6 +355,37 @@
           </div>
         </div>
 
+        <!-- Dynamic Card Requisites Box (Configured via Admin Panel) -->
+        <div class="card-requisites-box" id="topupRequisitesBox">
+          <div class="requisites-head">
+            <div class="req-title-wrap">
+              <span class="req-card-icon" id="reqCardIcon">💳</span>
+              <span class="requisites-title" id="reqCardTypeTitle">UZCARD orqali to'lov</span>
+            </div>
+            <span class="requisites-badge">Admin Kartasi</span>
+          </div>
+          
+          <div class="card-number-wrapper">
+            <span class="card-number-display" id="reqCardNumberDisplay">8600 1234 5678 9012</span>
+            <button class="btn-copy-card" id="btnCopyCard" type="button" title="Kartani nusxalash">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="btnCopyCardText">Nusxalash</span>
+            </button>
+          </div>
+
+          <div class="card-holder-row">
+            <span class="card-holder-label">Karta egasi:</span>
+            <strong class="card-holder-name" id="reqCardHolderDisplay">ADMINISTRATOR</strong>
+          </div>
+
+          <p class="requisites-instruction" id="reqInstructionsDisplay">
+            Kartaga to'lovni o'tkazing va pastdagi "To'ldirish" tugmasini bosing.
+          </p>
+        </div>
+
         <!-- Execute Top-up Button -->
         <button class="btn btn-primary topup-execute-btn" id="executeTopUpBtn" type="button">
           To'ldirish • <span id="topUpBtnAmountText">50 000 so'm</span>
@@ -490,28 +521,50 @@
           </div>
         </div>
 
-        <!-- Support & Information Group -->
+        <!-- Support & Information Group (Configured via Admin Panel) -->
         <div class="section-subheading" style="margin-top: 14px;">
-          <span>Qo'llab-quvvatlash</span>
+          <span>Qo'llab-quvvatlash va Havolalar</span>
         </div>
         <div class="menu-group">
-          <a href="https://t.me/admin" target="_blank" class="menu-item">
+          <!-- Support Telegram Link -->
+          <a href="https://t.me/admin" target="_blank" class="menu-item" id="profileSupportLink">
             <div class="menu-icon help-icon">💬</div>
             <div class="menu-text">
-              <span class="menu-title">Yordam va Aloqa</span>
-              <span class="menu-desc">Administrator: @admin</span>
+              <span class="menu-title">Yordam markazi</span>
+              <span class="menu-desc" id="profileSupportDesc">Administrator: @admin</span>
             </div>
             <span class="menu-arrow">›</span>
           </a>
 
+          <!-- Video Tutorials Link -->
+          <a href="https://t.me/admin" target="_blank" class="menu-item" id="profileVideoLink">
+            <div class="menu-icon video-icon">🎬</div>
+            <div class="menu-text">
+              <span class="menu-title">Video qo'llanma</span>
+              <span class="menu-desc">Ilovadan foydalanish bo'yicha</span>
+            </div>
+            <span class="menu-arrow">›</span>
+          </a>
+
+          <!-- Terms & Security Modal Button -->
           <div class="menu-item" id="termsBtn">
             <div class="menu-icon shield-icon">🛡</div>
             <div class="menu-text">
               <span class="menu-title">Kafolat va Xavfsizlik</span>
-              <span class="menu-desc">Xavfsiz tranzaksiyalar</span>
+              <span class="menu-desc">FAQ va foydalanish shartlari</span>
             </div>
             <span class="menu-arrow">›</span>
           </div>
+
+          <!-- Official Channel Link -->
+          <a href="https://t.me/admin" target="_blank" class="menu-item" id="profileChannelLink">
+            <div class="menu-icon notif-icon">📢</div>
+            <div class="menu-text">
+              <span class="menu-title">Rasmiy Kanal</span>
+              <span class="menu-desc">Yangiliklar va chegirmalar</span>
+            </div>
+            <span class="menu-arrow">›</span>
+          </a>
         </div>
 
         <div class="app-version">
@@ -662,10 +715,10 @@
     </div>
 
     <!-- ========================================================
-         ADMIN PANEL MODAL (TO'LOVLARNI TASDIQLASH MARKAZI)
+         COMPREHENSIVE ADMIN DASHBOARD MODAL (6-IN-1 STORE MANAGER)
          ======================================================== -->
     <div id="adminModal" class="modal-overlay">
-      <div class="modal-sheet admin-modal-sheet" id="adminModalSheet">
+      <div class="modal-sheet admin-dashboard-sheet" id="adminModalSheet">
         <div class="sheet-handle-bar">
           <div class="sheet-handle"></div>
         </div>
@@ -676,51 +729,396 @@
             <div class="admin-header-crown">👑</div>
             <div>
               <div class="admin-header-title-row">
-                <h2 class="modal-title">Admin Boshqaruvi</h2>
+                <h2 class="modal-title">Admin Boshqaruv Markazi</h2>
                 <span class="badge-admin">ADMIN</span>
               </div>
-              <span class="modal-sub">To'lovlarni tasdiqlash markazi</span>
+              <span class="modal-sub">Do'konni to'liq boshqarish tizimi</span>
             </div>
           </div>
           <button id="adminModalCloseBtn" class="modal-close" type="button" aria-label="Yopish">✕</button>
         </div>
 
-        <div class="modal-body admin-modal-body">
-          <!-- Pending Summary Stats Cards -->
-          <div class="admin-stats-summary">
-            <div class="admin-stat-pill">
-              <span class="stat-pill-label">Kutilayotgan so'rovlar</span>
-              <strong class="stat-pill-num" id="adminPendingCountVal">0 ta</strong>
+        <!-- Admin Dashboard 6-Tab Navigation Bar -->
+        <div class="admin-dashboard-nav" id="adminDashboardNav">
+          <button class="admin-dash-tab active" data-dash-tab="approvals" type="button">
+            <span class="dash-tab-icon">⏳</span>
+            <span class="dash-tab-label">To'lovlar</span>
+            <span class="dash-tab-badge" id="adminNavApprovalsBadge" style="display: none;">0</span>
+          </button>
+          <button class="admin-dash-tab" data-dash-tab="cards" type="button">
+            <span class="dash-tab-icon">💳</span>
+            <span class="dash-tab-label">Kartalar</span>
+          </button>
+          <button class="admin-dash-tab" data-dash-tab="margins" type="button">
+            <span class="dash-tab-icon">📈</span>
+            <span class="dash-tab-label">Ustama</span>
+          </button>
+          <button class="admin-dash-tab" data-dash-tab="links" type="button">
+            <span class="dash-tab-icon">🔗</span>
+            <span class="dash-tab-label">Havolalar</span>
+          </button>
+          <button class="admin-dash-tab" data-dash-tab="users" type="button">
+            <span class="dash-tab-icon">👥</span>
+            <span class="dash-tab-label">Mijozlar</span>
+          </button>
+          <button class="admin-dash-tab" data-dash-tab="orders" type="button">
+            <span class="dash-tab-icon">📋</span>
+            <span class="dash-tab-label">Buyurtmalar</span>
+          </button>
+        </div>
+
+        <!-- Admin Dashboard Content Panels -->
+        <div class="admin-dashboard-body">
+
+          <!-- ----------------------------------------------------
+               SECTION 1: PAYMENT APPROVALS (TO'LOVLARNI TASDIQLASH)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view active" id="adminViewApprovals">
+            <!-- Pending Summary Stats Cards -->
+            <div class="admin-stats-summary">
+              <div class="admin-stat-pill">
+                <span class="stat-pill-label">Kutilayotgan so'rovlar</span>
+                <strong class="stat-pill-num" id="adminPendingCountVal">0 ta</strong>
+              </div>
+              <div class="admin-stat-pill highlight-gold">
+                <span class="stat-pill-label">Kutilayotgan summa</span>
+                <strong class="stat-pill-num" id="adminPendingSumVal">0 so'm</strong>
+              </div>
             </div>
-            <div class="admin-stat-pill highlight-gold">
-              <span class="stat-pill-label">Kutilayotgan summa</span>
-              <strong class="stat-pill-num" id="adminPendingSumVal">0 so'm</strong>
+
+            <!-- Filter Segment Tabs -->
+            <div class="admin-filter-bar">
+              <button class="admin-filter-btn active" id="adminFilterPendingBtn" type="button">
+                <span>Kutilmoqda</span>
+                <span class="admin-filter-badge" id="adminFilterBadge">0</span>
+              </button>
+              <button class="admin-filter-btn" id="adminFilterAllBtn" type="button">
+                <span>Barcha so'rovlar</span>
+              </button>
+            </div>
+
+            <!-- Dynamic List of Pending Payments -->
+            <div id="adminPendingList" class="admin-requests-list">
+              <!-- Rendered via app.js -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="adminEmptyState" class="state-container admin-empty-state" style="display: none;">
+              <div class="state-icon">🎉</div>
+              <h3 class="state-title">Kutilayotgan to'lovlar yo'q</h3>
+              <p class="state-desc">Hozirda barcha to'lov so'rovlari ko'rib chiqilgan yoki yangi so'rovlar kelib tushmagan.</p>
             </div>
           </div>
 
-          <!-- Filter Segment Tabs -->
-          <div class="admin-filter-bar">
-            <button class="admin-filter-btn active" id="adminFilterPendingBtn" type="button">
-              <span>Kutilmoqda</span>
-              <span class="admin-filter-badge" id="adminFilterBadge">0</span>
-            </button>
-            <button class="admin-filter-btn" id="adminFilterAllBtn" type="button">
-              <span>Barcha so'rovlar</span>
-            </button>
+          <!-- ----------------------------------------------------
+               SECTION 2: PAYMENT SETTINGS (KARTA SOZLAMALARI)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view" id="adminViewCards">
+            <div class="section-subheading">
+              <span>Admin Rekvizitlari (To'lov kartalari)</span>
+            </div>
+            <p class="admin-section-tip">
+              Ushbu kartalar foydalanuvchilarning <strong>To'ldirish</strong> sahifasida ko'rinadi va to'lovlar shu kartalarga qabul qilinadi.
+            </p>
+
+            <form id="adminCardsForm" class="admin-form-group" onsubmit="return false;">
+              <!-- Uzcard -->
+              <div class="admin-card-setting-box">
+                <div class="card-box-header">
+                  <span class="card-box-icon">💳</span>
+                  <strong>UZCARD Sozlamalari</strong>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="settingUzcardNumber">UZCARD Karta raqami</label>
+                  <input type="text" id="settingUzcardNumber" class="form-input" placeholder="8600 0000 0000 0000" maxlength="19">
+                </div>
+                <div class="form-group" style="margin-top: 8px;">
+                  <label class="form-label" for="settingUzcardHolder">Karta egasining Ism-familiyasi</label>
+                  <input type="text" id="settingUzcardHolder" class="form-input" placeholder="ALIJON VALIYEV">
+                </div>
+              </div>
+
+              <!-- Humo -->
+              <div class="admin-card-setting-box" style="margin-top: 12px;">
+                <div class="card-box-header">
+                  <span class="card-box-icon">💳</span>
+                  <strong>HUMO Sozlamalari</strong>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="settingHumoNumber">HUMO Karta raqami</label>
+                  <input type="text" id="settingHumoNumber" class="form-input" placeholder="9860 0000 0000 0000" maxlength="19">
+                </div>
+                <div class="form-group" style="margin-top: 8px;">
+                  <label class="form-label" for="settingHumoHolder">Karta egasining Ism-familiyasi</label>
+                  <input type="text" id="settingHumoHolder" class="form-input" placeholder="ALIJON VALIYEV">
+                </div>
+              </div>
+
+              <!-- Note -->
+              <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label" for="settingPayNote">To'lov yo'riqnomasi (Foydalanuvchiga eslatma)</label>
+                <textarea id="settingPayNote" class="form-input form-textarea" rows="2" placeholder="To'lov izohida o'z Telegram ID raqamingizni yozib qoldiring."></textarea>
+              </div>
+
+              <button class="btn btn-primary" id="btnSaveCardSettings" type="button" style="margin-top: 14px; width: 100%;">
+                💾 Karta sozlamalarini saqlash
+              </button>
+            </form>
           </div>
 
-          <!-- Dynamic List of Pending Payments -->
-          <div id="adminPendingList" class="admin-requests-list">
-            <!-- Dynamic cards rendered by app.js -->
+          <!-- ----------------------------------------------------
+               SECTION 3: PRICING & MARGINS (USTAMA SOZLAMALARI - CRITICAL)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view" id="adminViewMargins">
+            <div class="section-subheading">
+              <span>Do'kon Ustama Foydasi (Pricing & Margins)</span>
+            </div>
+            <p class="admin-section-tip">
+              PlayPay API paketlariga do'koningiz foydasini avtomatik qo'shish. Foydalanuvchilar o'yinlar katalogida aynan shu ustama qo'shilgan yakuniy narxni ko'radilar.
+            </p>
+
+            <form id="adminMarginForm" class="admin-form-group" onsubmit="return false;">
+              <!-- Toggle Enabled -->
+              <div class="menu-item toggle-item" style="border-radius: var(--radius-sm); margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                <div class="menu-icon">⚡️</div>
+                <div class="menu-text">
+                  <span class="menu-title">Ustama tizimini yoqish</span>
+                  <span class="menu-desc">Paketlarga avtomatik foyda qo'shish</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingMarginEnabled" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- Margin Type -->
+              <div class="form-group">
+                <label class="form-label">Ustama hisoblash usuli</label>
+                <div class="admin-type-grid">
+                  <button type="button" class="type-pill-btn active" data-margin-type="percent" id="btnMarginTypePercent">
+                    <span>Foizda (%)</span>
+                    <small>Masalan: +15%</small>
+                  </button>
+                  <button type="button" class="type-pill-btn" data-margin-type="fixed" id="btnMarginTypeFixed">
+                    <span>Qat'iy sumamada (so'm)</span>
+                    <small>Masalan: +5 000 so'm</small>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Margin Value -->
+              <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label" id="settingMarginValueLabel">Ustama miqdori (Foiz: %)</label>
+                <div class="input-wrap">
+                  <input type="number" id="settingMarginValue" class="form-input" placeholder="15" min="0" max="1000000" step="1">
+                  <span class="input-suffix" id="settingMarginSuffix">%</span>
+                </div>
+              </div>
+
+              <!-- Live Profit Margin Calculator Preview -->
+              <div class="margin-preview-card" id="marginCalcPreview">
+                <div class="preview-card-header">
+                  <span class="preview-icon">🧮</span>
+                  <strong>Jonli hisob-kitob namunasi:</strong>
+                </div>
+                <div class="preview-row">
+                  <span>Asl PlayPay API narxi:</span>
+                  <strong>10 000 so'm</strong>
+                </div>
+                <div class="preview-row">
+                  <span>Do'koningiz ustamasi:</span>
+                  <strong class="highlight-profit" id="prevMarginAddition">+1 500 so'm (+15%)</strong>
+                </div>
+                <div class="preview-divider"></div>
+                <div class="preview-row total-row">
+                  <span>Foydalanuvchi ko'radigan narx:</span>
+                  <strong class="total-client-price" id="prevClientPrice">11 500 so'm</strong>
+                </div>
+                <div class="preview-row profit-row">
+                  <span>Do'konning sof foydasi:</span>
+                  <strong class="net-profit-val" id="prevNetProfit">+1 500 so'm</strong>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" id="btnSaveMarginSettings" type="button" style="margin-top: 14px; width: 100%;">
+                💾 Ustama sozlamalarini saqlash
+              </button>
+            </form>
           </div>
 
-          <!-- Empty State (No Pending Payments) -->
-          <div id="adminEmptyState" class="state-container admin-empty-state" style="display: none;">
-            <div class="state-icon">🎉</div>
-            <h3 class="state-title">Kutilayotgan to'lovlar yo'q</h3>
-            <p class="state-desc">Hozirda barcha to'lov so'rovlari ko'rib chiqilgan yoki yangi so'rovlar kelib tushmagan.</p>
+          <!-- ----------------------------------------------------
+               SECTION 4: CONTENT & LINKS (HAVOLALAR & KONTENT)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view" id="adminViewLinks">
+            <div class="section-subheading">
+              <span>Do'kon Havolalari va Bog'lanish</span>
+            </div>
+            <p class="admin-section-tip">
+              Profil va boshqa sahifalardagi yordam, video qo'llanma va rasmiy Telegram havolalarini sozlang.
+            </p>
+
+            <form id="adminLinksForm" class="admin-form-group" onsubmit="return false;">
+              <div class="form-group">
+                <label class="form-label" for="settingSupportUrl">💬 Yordam markazi (Telegram URL)</label>
+                <input type="text" id="settingSupportUrl" class="form-input" placeholder="https://t.me/admin">
+              </div>
+
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label" for="settingSupportDesc">Yordam bo'limi ostidagi matn</label>
+                <input type="text" id="settingSupportDesc" class="form-input" placeholder="Administrator: @admin">
+              </div>
+
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label" for="settingVideoUrl">🎬 Video qo'llanma havolasi (YouTube / Telegram)</label>
+                <input type="text" id="settingVideoUrl" class="form-input" placeholder="https://youtube.com/... yoki https://t.me/...">
+              </div>
+
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label" for="settingChannelUrl">📢 Rasmiy Telegram kanal havolasi</label>
+                <input type="text" id="settingChannelUrl" class="form-input" placeholder="https://t.me/donat_store_news">
+              </div>
+
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label" for="settingStoreTitle">🏪 Do'kon brend nomi</label>
+                <input type="text" id="settingStoreTitle" class="form-input" placeholder="Donat Store">
+              </div>
+
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label" for="settingFaqContent">🛡 Kafolat va Foydalanish shartlari (FAQ)</label>
+                <textarea id="settingFaqContent" class="form-input form-textarea" rows="4" placeholder="Kafolat shartlari va qoidalari..."></textarea>
+              </div>
+
+              <button class="btn btn-primary" id="btnSaveLinksSettings" type="button" style="margin-top: 14px; width: 100%;">
+                💾 Havolalarni saqlash
+              </button>
+            </form>
+          </div>
+
+          <!-- ----------------------------------------------------
+               SECTION 5: USER MANAGEMENT (MIJOZLAR)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view" id="adminViewUsers">
+            <div class="section-heading" style="margin-bottom: 10px;">
+              <div class="heading-left">
+                <span class="section-title" style="font-size: 15px;">Mijozlar hisoblarini boshqarish</span>
+              </div>
+              <span class="badge" id="adminUsersCountBadge">0 ta mijoz</span>
+            </div>
+
+            <!-- User Search Bar -->
+            <div class="search-wrapper" style="margin-bottom: 12px;">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="adminUserSearchInput" class="search-input" placeholder="ID yoki Ism bo'yicha qidirish...">
+            </div>
+
+            <!-- Users List -->
+            <div id="adminUsersList" class="admin-users-list">
+              <!-- Rendered via app.js -->
+            </div>
+          </div>
+
+          <!-- ----------------------------------------------------
+               SECTION 6: ORDER HISTORY (BARCHA BUYURTMALAR - MASTER LOG)
+               ---------------------------------------------------- -->
+          <div class="admin-dash-view" id="adminViewOrders">
+            <div class="section-heading" style="margin-bottom: 10px;">
+              <div class="heading-left">
+                <span class="section-title" style="font-size: 15px;">Do'kondagi barcha tranzaksiyalar</span>
+              </div>
+              <span class="badge" id="adminOrdersCountBadge">0 ta</span>
+            </div>
+
+            <!-- Order History Search -->
+            <div class="search-wrapper" style="margin-bottom: 10px;">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="adminOrderSearchInput" class="search-input" placeholder="Buyurtma ID, User ID yoki O'yin...">
+            </div>
+
+            <!-- Master Order Filter Chips -->
+            <div class="admin-filter-bar" style="margin-bottom: 12px;">
+              <button class="admin-filter-btn active" data-order-type="all" id="btnFilterOrdersAll" type="button">
+                Barchasi
+              </button>
+              <button class="admin-filter-btn" data-order-type="games" id="btnFilterOrdersGames" type="button">
+                🎮 O'yinlar
+              </button>
+              <button class="admin-filter-btn" data-order-type="topups" id="btnFilterOrdersTopups" type="button">
+                💳 To'ldirishlar
+              </button>
+            </div>
+
+            <!-- All Orders List -->
+            <div id="adminAllOrdersList" class="admin-requests-list">
+              <!-- Rendered via app.js -->
+            </div>
+
+            <!-- Empty Orders State -->
+            <div id="adminEmptyOrdersState" class="state-container admin-empty-state" style="display: none;">
+              <div class="state-icon">📦</div>
+              <h3 class="state-title">Hozircha buyurtmalar yo'q</h3>
+              <p class="state-desc">Do'konda amalga oshirilgan xaridlar shu yerda aks etadi.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         USER BALANCE ADJUSTMENT SUB-MODAL
+         ======================================================== -->
+    <div id="adminBalanceModal" class="modal-overlay balance-adjust-overlay">
+      <div class="balance-adjust-card">
+        <div class="modal-header" style="padding: 0 0 14px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">💰</span>
+            <h3 style="font-size: 15px; font-weight: 700;">Balansni boshqarish</h3>
+          </div>
+          <button id="adminBalanceCloseBtn" class="modal-close" type="button">✕</button>
+        </div>
+
+        <div class="adjust-user-summary" style="margin-top: 12px;">
+          <div class="admin-u-avatar" id="adjustUserAvatar">👤</div>
+          <div>
+            <div class="adjust-user-name" id="adjustUserName">Foydalanuvchi</div>
+            <div class="adjust-user-id">Telegram ID: <code id="adjustUserId">000000</code></div>
           </div>
         </div>
+
+        <div class="current-bal-banner">
+          <span style="color: var(--hint-color); font-size: 12px;">Joriy balansi:</span>
+          <strong id="adjustCurrentBalance" style="font-size: 17px; color: var(--brand-primary);">0 so'm</strong>
+        </div>
+
+        <!-- Action Type: Add or Deduct -->
+        <div class="adjust-action-toggle">
+          <button class="adjust-type-btn active" data-type="add" id="btnTypeAdd" type="button">
+            <span>+ Mablag' qo'shish</span>
+          </button>
+          <button class="adjust-type-btn" data-type="deduct" id="btnTypeDeduct" type="button">
+            <span>- Mablag' yechish</span>
+          </button>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px;">
+          <label class="form-label" for="adjustAmountInput">O'zgartirish miqdori (so'm)</label>
+          <input type="number" id="adjustAmountInput" class="form-input" placeholder="Masalan: 50000" min="1000" step="1000">
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label" for="adjustReasonInput">Sabab / Izoh</label>
+          <input type="text" id="adjustReasonInput" class="form-input" placeholder="Masalan: Bonus yoki Admin to'g'irlashi">
+        </div>
+
+        <button class="btn btn-primary" id="btnConfirmBalanceAdjust" style="margin-top: 16px; width: 100%;" type="button">
+          Balansni tasdiqlash va yangilash
+        </button>
       </div>
     </div>
 
