@@ -73,6 +73,7 @@
          TAB 1: ASOSIY (HOME)
          ======================================================== -->
     <section id="viewHome" class="tab-view active">
+      <!-- Top App Header -->
       <header class="app-header">
         <div class="header-top">
           <div class="user-info">
@@ -86,6 +87,12 @@
             <span class="pulse-dot"></span>
             <span>24/7 Avtomat</span>
           </div>
+          <!-- Admin Header Quick Access Pill (Strictly for Admin) -->
+          <button id="homeAdminBtn" class="home-admin-badge" style="display: none;" type="button" title="Admin Boshqaruv Paneli">
+            <span class="crown-emoji">👑</span>
+            <span class="admin-lbl">Admin</span>
+            <span id="homeAdminBadgeCount" class="admin-mini-count" style="display: none;">0</span>
+          </button>
         </div>
       </header>
 
@@ -132,7 +139,9 @@
         </div>
 
         <!-- Home Featured Games Grid -->
-        <div id="homeFeaturedGrid" class="games-grid"></div>
+        <div id="homeFeaturedGrid" class="games-grid">
+          <!-- Populated from loaded games -->
+        </div>
 
         <!-- Trust Badges -->
         <div class="trust-grid">
@@ -363,7 +372,9 @@
       </header>
 
       <main class="main-content">
-        <div id="ordersList" class="orders-list"></div>
+        <div id="ordersList" class="orders-list">
+          <!-- Populated from user storage -->
+        </div>
 
         <!-- Empty Orders State -->
         <div id="emptyOrdersState" class="state-container" style="display: none;">
@@ -413,6 +424,24 @@
           <div class="stat-box">
             <span class="stat-number price-color" id="statsTotalSpent">0 so'm</span>
             <span class="stat-label">Jami xarajat</span>
+          </div>
+        </div>
+
+        <!-- Admin Panel Card (Strictly visible ONLY for Admin) -->
+        <div id="adminPanelTrigger" class="admin-entry-card" style="display: none;">
+          <div class="admin-entry-content">
+            <div class="admin-badge-icon">👑</div>
+            <div class="admin-entry-details">
+              <div class="admin-title-row">
+                <span class="admin-title">Admin Boshqaruv Paneli</span>
+                <span class="badge-admin">ADMIN</span>
+              </div>
+              <p class="admin-subtitle">To'lovlarni tasdiqlash markazi</p>
+            </div>
+          </div>
+          <div class="admin-entry-action">
+            <span id="adminPendingBadge" class="pending-pill-badge" style="display: none;">0</span>
+            <span class="admin-entry-arrow">›</span>
           </div>
         </div>
 
@@ -529,7 +558,7 @@
             <div id="packagesList" class="packages-grid" style="display: none;"></div>
           </div>
 
-          <!-- Checkout Form -->
+          <!-- Dynamic Player Credentials & Wallet Balance Checkout Form -->
           <div id="playerFormSection" class="player-form-section" style="display: none;">
             <div class="section-subheading">
               <span id="playerFormTitle">Hisob ma'lumotlari</span>
@@ -551,7 +580,7 @@
               <div id="idVerificationStatus" class="verification-badge" style="display: none;"></div>
             </div>
 
-            <!-- Server / Zone ID Field -->
+            <!-- Server / Zone ID Field (if required by game) -->
             <div class="form-group" id="serverIdGroup" style="display: none;">
               <label for="serverIdInput" class="form-label">Server ID / Zone ID</label>
               <div class="input-wrap">
@@ -629,6 +658,69 @@
         </div>
 
         <button id="successCloseBtn" class="btn btn-primary" type="button">Tushundim</button>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         ADMIN PANEL MODAL (TO'LOVLARNI TASDIQLASH MARKAZI)
+         ======================================================== -->
+    <div id="adminModal" class="modal-overlay">
+      <div class="modal-sheet admin-modal-sheet" id="adminModalSheet">
+        <div class="sheet-handle-bar">
+          <div class="sheet-handle"></div>
+        </div>
+
+        <!-- Admin Modal Header -->
+        <div class="modal-header admin-modal-header">
+          <div class="modal-game-info">
+            <div class="admin-header-crown">👑</div>
+            <div>
+              <div class="admin-header-title-row">
+                <h2 class="modal-title">Admin Boshqaruvi</h2>
+                <span class="badge-admin">ADMIN</span>
+              </div>
+              <span class="modal-sub">To'lovlarni tasdiqlash markazi</span>
+            </div>
+          </div>
+          <button id="adminModalCloseBtn" class="modal-close" type="button" aria-label="Yopish">✕</button>
+        </div>
+
+        <div class="modal-body admin-modal-body">
+          <!-- Pending Summary Stats Cards -->
+          <div class="admin-stats-summary">
+            <div class="admin-stat-pill">
+              <span class="stat-pill-label">Kutilayotgan so'rovlar</span>
+              <strong class="stat-pill-num" id="adminPendingCountVal">0 ta</strong>
+            </div>
+            <div class="admin-stat-pill highlight-gold">
+              <span class="stat-pill-label">Kutilayotgan summa</span>
+              <strong class="stat-pill-num" id="adminPendingSumVal">0 so'm</strong>
+            </div>
+          </div>
+
+          <!-- Filter Segment Tabs -->
+          <div class="admin-filter-bar">
+            <button class="admin-filter-btn active" id="adminFilterPendingBtn" type="button">
+              <span>Kutilmoqda</span>
+              <span class="admin-filter-badge" id="adminFilterBadge">0</span>
+            </button>
+            <button class="admin-filter-btn" id="adminFilterAllBtn" type="button">
+              <span>Barcha so'rovlar</span>
+            </button>
+          </div>
+
+          <!-- Dynamic List of Pending Payments -->
+          <div id="adminPendingList" class="admin-requests-list">
+            <!-- Dynamic cards rendered by app.js -->
+          </div>
+
+          <!-- Empty State (No Pending Payments) -->
+          <div id="adminEmptyState" class="state-container admin-empty-state" style="display: none;">
+            <div class="state-icon">🎉</div>
+            <h3 class="state-title">Kutilayotgan to'lovlar yo'q</h3>
+            <p class="state-desc">Hozirda barcha to'lov so'rovlari ko'rib chiqilgan yoki yangi so'rovlar kelib tushmagan.</p>
+          </div>
+        </div>
       </div>
     </div>
 
