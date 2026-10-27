@@ -31,6 +31,217 @@
     );
   }
 
+  // ==========================================================================
+  // TRANSLATION DICTIONARY (UZ / RU)
+  // ==========================================================================
+  const I18N = {
+    uz: {
+      nav_home: "Asosiy",
+      nav_games: "O'yinlar",
+      nav_topup: "To'ldirish",
+      nav_orders: "Buyurtmalar",
+      nav_profile: "Profil",
+      welcome: "Xush kelibsiz!",
+      online_24_7: "24/7 Avtomat",
+      wallet_balance: "Hisob balansingiz",
+      topup_btn: "Balansni to'ldirish",
+      history_btn: "Tarix",
+      promo_badge: "Rasmiy & Xavfsiz",
+      promo_title: "O'yin hisobingizga soniyada donat",
+      promo_desc: "ID raqamingiz orqali to'g'ridan-to'g'ri yetkaziladi",
+      popular_games: "Ommabop o'yinlar",
+      quick_buy: "Tezkor xaridlar",
+      view_all: "Barchasi ›",
+      catalog_title: "O'yinlar Katalogi",
+      catalog_sub: "Barcha o'yinlar va xizmatlar",
+      cat_all: "Barchasi",
+      cat_popular: "Ommabop",
+      cat_mobile: "Mobil",
+      cat_services: "Servislar",
+      search_placeholder: "O'yin yoki servisni qidiring...",
+      topup_title: "Balansni to'ldirish",
+      topup_sub: "Hisobingizni hamyonbop narxlarda to'ldiring",
+      current_balance: "Joriy balansingiz:",
+      topup_amount_label: "To'ldirish miqdori:",
+      custom_amount_placeholder: "Boshqa summa kiriting",
+      pay_method_label: "To'lov usuli:",
+      admin_card_badge: "Admin Kartasi",
+      copy_btn: "Nusxalash",
+      copied_btn: "Nusxalandi!",
+      card_holder_label: "Karta egasi:",
+      penny_tag: "PENNY MATCHING • TO'LOV KODI",
+      copy_exact_btn: "Summani nusxalash",
+      penny_exact_label: "O'tkazishingiz kerak bo'lgan aniq summa:",
+      penny_tip: "💡 Ushbu qo'shimcha bir necha tiyinlar to'lovingizni bank SMS orqali adashmasdan tezkor aniqlash uchun kerak.",
+      receipt_upload_title: "To'lov chekini yuklash",
+      mandatory_badge: "Majburiy",
+      receipt_upload_sub: "Bank ilovasidan to'lov skrinshotini biriktiring",
+      dropzone_prompt: "Chek skrinshotini tanlang",
+      dropzone_hint: "JPG, PNG, WebP formatlarida rasm yuklang",
+      ready_tag: "✓ Chek biriktirildi",
+      receipt_error_msg: "⚠️ Iltimos, davom etishdan oldin to'lov cheki (skrinshot) rasmini yuklang!",
+      orders_title: "Mening buyurtmalarim",
+      orders_sub: "Barcha amalga oshirilgan xaridlar tarixi",
+      empty_orders_title: "Hozircha buyurtmalar yo'q",
+      empty_orders_desc: "Birinchi xaridingizni amalga oshiring va u shu yerda paydo bo'ladi.",
+      go_catalog: "O'yinlar katalogiga o'tish",
+      profile_title: "Mening Profilim",
+      profile_sub: "Shaxsiy hisob va sozlamalar",
+      stat_orders: "Buyurtmalar",
+      stat_spent: "Jami xarajat",
+      settings_section: "Ilova Sozlamalari",
+      theme_title: "Tungi rejim",
+      theme_desc: "Mavzuni moslashtirish",
+      lang_title: "Tilni tanlash",
+      lang_desc: "Ilova interfeysi tili",
+      notif_title: "Xabarnomalar",
+      notif_desc: "Buyurtma holati xabarlari",
+      support_section: "Qo'llab-quvvatlash va Havolalar",
+      support_title: "Yordam markazi",
+      video_title: "Video qo'llanma",
+      video_desc: "Ilovadan foydalanish bo'yicha",
+      terms_title: "Kafolat va Xavfsizlik",
+      terms_desc: "FAQ va foydalanish shartlari",
+      channel_title: "Rasmiy Kanal",
+      channel_desc: "Yangiliklar va chegirmalar",
+      buy_now_btn: "XARID QILISH",
+      packages_label: "Paketlar",
+      player_credentials: "Hisob ma'lumotlari",
+      sufficient_balance: "✓ Balans yetarli! Xariddan so'ng qoladi: ",
+      insufficient_balance: "⚠️ Balansda mablag' yetarli emas! Yetishmayapti: ",
+      purchase_success: "Xarid muvaffaqiyatli!",
+      purchase_success_desc: "Mablag' balansingizdan yechildi va buyurtma rasmiylashtirildi.",
+      understand_btn: "Tushundim"
+    },
+    ru: {
+      nav_home: "Главная",
+      nav_games: "Игры",
+      nav_topup: "Пополнить",
+      nav_orders: "Заказы",
+      nav_profile: "Профиль",
+      welcome: "Добро пожаловать!",
+      online_24_7: "24/7 Автомат",
+      wallet_balance: "Баланс счета",
+      topup_btn: "Пополнить баланс",
+      history_btn: "История",
+      promo_badge: "Официально и Безопасно",
+      promo_title: "Мгновенный донат на игровой аккаунт",
+      promo_desc: "Доставка напрямую по вашему ID номеру",
+      popular_games: "Популярные игры",
+      quick_buy: "Быстрые покупки",
+      view_all: "Все игры ›",
+      catalog_title: "Каталог Игр",
+      catalog_sub: "Все игры и цифровые сервисы",
+      cat_all: "Все",
+      cat_popular: "Популярные",
+      cat_mobile: "Мобильные",
+      cat_services: "Сервисы",
+      search_placeholder: "Поиск игры или сервиса...",
+      topup_title: "Пополнение баланса",
+      topup_sub: "Пополните свой счет по выгодным тарифам",
+      current_balance: "Текущий баланс:",
+      topup_amount_label: "Сумма пополнения:",
+      custom_amount_placeholder: "Введите другую сумму",
+      pay_method_label: "Способ оплаты:",
+      admin_card_badge: "Карта Админа",
+      copy_btn: "Копировать",
+      copied_btn: "Скопировано!",
+      card_holder_label: "Владелец карты:",
+      penny_tag: "PENNY MATCHING • КОД ОПЛАТЫ",
+      copy_exact_btn: "Копировать сумму",
+      penny_exact_label: "Точная сумма к переводу:",
+      penny_tip: "💡 Эти дополнительные копейки нужны для моментального распознавания вашего перевода через банковские SMS.",
+      receipt_upload_title: "Загрузка чека оплаты",
+      mandatory_badge: "Обязательно",
+      receipt_upload_sub: "Прикрепите скриншот чека из банковского приложения",
+      dropzone_prompt: "Выберите скриншот чека",
+      dropzone_hint: "Изображение в формате JPG, PNG или WebP",
+      ready_tag: "✓ Чек прикреплен",
+      receipt_error_msg: "⚠️ Пожалуйста, прикрепите скриншот чека об оплате перед отправкой!",
+      orders_title: "Мои заказы",
+      orders_sub: "История всех совершенных покупок",
+      empty_orders_title: "Заказов пока нет",
+      empty_orders_desc: "Совершите первую покупку, и она появится здесь.",
+      go_catalog: "Перейти в каталог игр",
+      profile_title: "Мой Профиль",
+      profile_sub: "Личный кабинет и настройки",
+      stat_orders: "Заказы",
+      stat_spent: "Всего потрачено",
+      settings_section: "Настройки Приложения",
+      theme_title: "Темная тема",
+      theme_desc: "Настройка ночного режима",
+      lang_title: "Выбор языка",
+      lang_desc: "Язык интерфейса приложения",
+      notif_title: "Уведомления",
+      notif_desc: "Сообщения о статусе заказов",
+      support_section: "Поддержка и Ссылки",
+      support_title: "Центр поддержки",
+      video_title: "Видеоинструкция",
+      video_desc: "Руководство по использованию",
+      terms_title: "Гарантия и Безопасность",
+      terms_desc: "FAQ и условия использования",
+      channel_title: "Официальный Канал",
+      channel_desc: "Новости и скидки",
+      buy_now_btn: "КУПИТЬ",
+      packages_label: "Пакеты",
+      player_credentials: "Данные аккаунта",
+      sufficient_balance: "✓ Баланс достаточен! После покупки останется: ",
+      insufficient_balance: "⚠️ Недостаточно средств на балансе! Не хватает: ",
+      purchase_success: "Покупка успешна!",
+      purchase_success_desc: "Средства списаны с вашего баланса, заказ оформлен.",
+      understand_btn: "Понятно"
+    }
+  };
+
+  function t(key) {
+    const lang = currentUser.settings?.lang || 'uz';
+    return I18N[lang]?.[key] || I18N['uz']?.[key] || key;
+  }
+
+  // --- Dynamic Theme Controller (Dark / Light) ---
+  function applyTheme(isDark) {
+    currentUser.settings.darkMode = Boolean(isDark);
+    saveStoredUserData(currentUser);
+    localStorage.setItem('donat_store_theme', isDark ? 'dark' : 'light');
+
+    document.body.classList.toggle('dark', Boolean(isDark));
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    if (elements.themeToggle) elements.themeToggle.checked = Boolean(isDark);
+  }
+
+  // --- Dynamic Language Controller (UZ / RU) ---
+  function applyLanguage(lang = 'uz') {
+    if (!I18N[lang]) lang = 'uz';
+    currentUser.settings.lang = lang;
+    saveStoredUserData(currentUser);
+    localStorage.setItem('donat_store_lang', lang);
+
+    const dict = I18N[lang];
+
+    // Translate all [data-i18n] nodes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key]) {
+        el.textContent = dict[key];
+      }
+    });
+
+    // Translate input placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (dict[key]) {
+        el.placeholder = dict[key];
+      }
+    });
+
+    if (elements.langSelect) elements.langSelect.value = lang;
+
+    updatePennyMatchingUI();
+    updateTopUpRequisitesUI();
+    updateProfileLinksUI();
+  }
+
   // --- Local User Store Architecture (Ready for Backend Sync) ---
   function getUserStorageKey(userId = currentUserId) {
     return `donat_store_user_${userId}`;
@@ -375,6 +586,12 @@
     adminActiveFilter: 'pending',
     adminMasterOrdersFilter: 'all',
     adminMarginType: 'percent',
+    pennyMatchingNumber: Math.floor(Math.random() * 999) + 1,
+    selectedTopUpAmount: 50000,
+    exactTopUpAmount: 50000 + 125, // Will be computed dynamically
+    selectedPayMethod: 'uzcard',
+    uploadedReceiptBase64: null,
+    activeViewingReceiptTxId: null,
     games: [],             // Strictly max 50 games
     filteredGames: [],
     selectedGame: null,
@@ -384,8 +601,6 @@
     serverId: '',
     verifiedPlayer: null,
     activeCategory: 'all',
-    selectedTopUpAmount: 50000,
-    selectedPayMethod: 'uzcard',
     isLoadingGames: false,
     isLoadingPackages: false,
     checkIdTimeout: null
@@ -441,6 +656,26 @@
     btnCopyCardText: document.getElementById('btnCopyCardText'),
     reqCardHolderDisplay: document.getElementById('reqCardHolderDisplay'),
     reqInstructionsDisplay: document.getElementById('reqInstructionsDisplay'),
+
+    // Penny Matching Top-Up Elements
+    pennyMatchingAlert: document.getElementById('pennyMatchingAlert'),
+    pennyExactAmountDisplay: document.getElementById('pennyExactAmountDisplay'),
+    pennyExactAmountHighlight: document.getElementById('pennyExactAmountHighlight'),
+    pennyWarningMessage: document.getElementById('pennyWarningMessage'),
+    btnCopyExactAmount: document.getElementById('btnCopyExactAmount'),
+    btnCopyExactText: document.getElementById('btnCopyExactText'),
+
+    // Mandatory Receipt Upload Elements
+    receiptUploadBox: document.getElementById('receiptUploadBox'),
+    receiptDropzone: document.getElementById('receiptDropzone'),
+    receiptFileInput: document.getElementById('receiptFileInput'),
+    dropzoneEmpty: document.getElementById('dropzoneEmpty'),
+    dropzonePreview: document.getElementById('dropzonePreview'),
+    receiptPreviewImg: document.getElementById('receiptPreviewImg'),
+    receiptFileName: document.getElementById('receiptFileName'),
+    receiptFileSize: document.getElementById('receiptFileSize'),
+    btnRemoveReceipt: document.getElementById('btnRemoveReceipt'),
+    receiptErrorNotice: document.getElementById('receiptErrorNotice'),
 
     // Orders View
     ordersList: document.getElementById('ordersList'),
@@ -515,6 +750,17 @@
     adminFilterBadge: document.getElementById('adminFilterBadge'),
     adminPendingList: document.getElementById('adminPendingList'),
     adminEmptyState: document.getElementById('adminEmptyState'),
+
+    // Admin Receipt Viewer Modal (Chekni ko'rish)
+    receiptModal: document.getElementById('receiptModal'),
+    receiptModalCloseBtn: document.getElementById('receiptModalCloseBtn'),
+    receiptModalTxId: document.getElementById('receiptModalTxId'),
+    receiptModalUserName: document.getElementById('receiptModalUserName'),
+    receiptModalExactAmount: document.getElementById('receiptModalExactAmount'),
+    receiptModalPayMethod: document.getElementById('receiptModalPayMethod'),
+    receiptModalImg: document.getElementById('receiptModalImg'),
+    receiptModalApproveBtn: document.getElementById('receiptModalApproveBtn'),
+    receiptModalRejectBtn: document.getElementById('receiptModalRejectBtn'),
 
     // Section 2: Cards Settings
     settingUzcardNumber: document.getElementById('settingUzcardNumber'),
@@ -1270,6 +1516,98 @@
     }
   }
 
+  // --- Penny Matching Logic ---
+  function updatePennyMatchingUI() {
+    const lang = currentUser.settings?.lang || 'uz';
+    const exact = state.exactTopUpAmount || (state.selectedTopUpAmount + state.pennyMatchingNumber);
+
+    if (elements.pennyExactAmountDisplay) {
+      elements.pennyExactAmountDisplay.textContent = formatUzs(exact);
+    }
+    if (elements.pennyExactAmountHighlight) {
+      elements.pennyExactAmountHighlight.textContent = `${exact.toLocaleString('uz-UZ')} UZS`;
+    }
+    if (elements.topUpBtnAmountText) {
+      elements.topUpBtnAmountText.textContent = formatUzs(exact);
+    }
+
+    if (elements.pennyWarningMessage) {
+      if (lang === 'ru') {
+        elements.pennyWarningMessage.innerHTML = `<strong>ВНИМАНИЕ!</strong> Для подтверждения платежа вы <u>ОБЯЗАНЫ</u> перевести на карту ровно <span id="pennyExactAmountHighlight">${exact.toLocaleString('uz-UZ')} UZS</span>! Иначе деньги не поступят на баланс.`;
+      } else {
+        elements.pennyWarningMessage.innerHTML = `<strong>DIQQAT!</strong> To'lovingiz tasdiqlanishi uchun kartaga roppa-rosa <span id="pennyExactAmountHighlight">${exact.toLocaleString('uz-UZ')} UZS</span> o'tkazishingiz <u>SHART!</u> Aks holda pulingiz balansga tushmaydi.`;
+      }
+    }
+  }
+
+  function setTopUpBaseAmount(amount) {
+    state.selectedTopUpAmount = amount;
+    state.pennyMatchingNumber = Math.floor(Math.random() * 999) + 1;
+    state.exactTopUpAmount = amount + state.pennyMatchingNumber;
+    updatePennyMatchingUI();
+  }
+
+  // --- Receipt Image Processing (Compress to safe Base64) ---
+  function handleReceiptFileSelect(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert("Iltimos, faqat rasm faylini tanlang (JPG, PNG, WebP)!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const rawDataUrl = e.target.result;
+      
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const maxDim = 900;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Safe compressed JPEG (~80-120KB for localStorage compatibility)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+        state.uploadedReceiptBase64 = compressedBase64;
+
+        if (elements.receiptPreviewImg) elements.receiptPreviewImg.src = compressedBase64;
+        if (elements.receiptFileName) elements.receiptFileName.textContent = file.name;
+        if (elements.receiptFileSize) {
+          const kb = Math.round((compressedBase64.length * 0.75) / 1024);
+          elements.receiptFileSize.textContent = `${kb} KB`;
+        }
+
+        if (elements.dropzoneEmpty) elements.dropzoneEmpty.style.display = 'none';
+        if (elements.dropzonePreview) elements.dropzonePreview.style.display = 'flex';
+        if (elements.receiptErrorNotice) elements.receiptErrorNotice.style.display = 'none';
+
+        triggerHaptic('success');
+      };
+      img.src = rawDataUrl;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearReceiptUpload() {
+    state.uploadedReceiptBase64 = null;
+    if (elements.receiptFileInput) elements.receiptFileInput.value = '';
+    if (elements.receiptPreviewImg) elements.receiptPreviewImg.src = '';
+    if (elements.dropzonePreview) elements.dropzonePreview.style.display = 'none';
+    if (elements.dropzoneEmpty) elements.dropzoneEmpty.style.display = 'flex';
+  }
+
   // --- Top-Up Handling (To'ldirish) ---
   function setupTopUpHandlers() {
     // Preset buttons
@@ -1278,9 +1616,8 @@
         elements.presetBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const amount = Number(btn.getAttribute('data-amount')) || 50000;
-        state.selectedTopUpAmount = amount;
         if (elements.customAmountInput) elements.customAmountInput.value = amount;
-        if (elements.topUpBtnAmountText) elements.topUpBtnAmountText.textContent = formatUzs(amount);
+        setTopUpBaseAmount(amount);
         triggerHaptic('light');
       });
     });
@@ -1288,7 +1625,6 @@
     // Custom Amount Input
     elements.customAmountInput?.addEventListener('input', (e) => {
       const val = Number(e.target.value) || 0;
-      state.selectedTopUpAmount = val;
       elements.presetBtns.forEach(b => {
         if (Number(b.getAttribute('data-amount')) === val) {
           b.classList.add('active');
@@ -1296,7 +1632,7 @@
           b.classList.remove('active');
         }
       });
-      if (elements.topUpBtnAmountText) elements.topUpBtnAmountText.textContent = formatUzs(val);
+      setTopUpBaseAmount(val);
     });
 
     // Payment method selection
@@ -1321,18 +1657,54 @@
 
       navigator.clipboard?.writeText(cardNumber).then(() => {
         triggerHaptic('success');
-        if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = 'Nusxalandi!';
+        if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = t('copied_btn') || 'Nusxalandi!';
         setTimeout(() => {
-          if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = 'Nusxalash';
+          if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = t('copy_btn') || 'Nusxalash';
         }, 1800);
       });
     });
 
-    // Execute Top-up (Submits Request for Admin Approval)
+    // Copy Exact Amount Button (Penny Matching)
+    elements.btnCopyExactAmount?.addEventListener('click', () => {
+      const exact = state.exactTopUpAmount;
+      if (!exact) return;
+
+      navigator.clipboard?.writeText(String(exact)).then(() => {
+        triggerHaptic('success');
+        if (elements.btnCopyExactText) elements.btnCopyExactText.textContent = t('copied_btn') || 'Nusxalandi!';
+        setTimeout(() => {
+          if (elements.btnCopyExactText) elements.btnCopyExactText.textContent = t('copy_exact_btn') || 'Summani nusxalash';
+        }, 1800);
+      });
+    });
+
+    // Receipt File Upload Events
+    elements.receiptFileInput?.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleReceiptFileSelect(e.target.files[0]);
+      }
+    });
+
+    elements.btnRemoveReceipt?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearReceiptUpload();
+      triggerHaptic('light');
+    });
+
+    // Execute Top-up (Submits Request with Exact Penny Matching & Receipt)
     elements.executeTopUpBtn?.addEventListener('click', () => {
       const amount = state.selectedTopUpAmount;
       if (!amount || amount < 1000) {
         alert("Iltimos, to'ldirish miqdorini kamida 1 000 so'm qilib belgilang.");
+        return;
+      }
+
+      // Mandatory Receipt Verification
+      if (!state.uploadedReceiptBase64) {
+        triggerHaptic('error');
+        if (elements.receiptErrorNotice) elements.receiptErrorNotice.style.display = 'block';
+        elements.receiptUploadBox?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        alert(t('receipt_error_msg'));
         return;
       }
 
@@ -1341,14 +1713,19 @@
       elements.executeTopUpBtn.textContent = "So'rov yuborilmoqda...";
 
       setTimeout(() => {
+        const exactAmount = state.exactTopUpAmount;
         const transactionId = 'TX' + Math.floor(100000 + Math.random() * 900000);
         const newTopUpRequest = {
           id: transactionId,
           userId: currentUserId,
           userName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || `@${currentUser.username}` || 'Foydalanuvchi',
           userHandle: currentUser.username ? `@${currentUser.username}` : '',
-          amount: amount,
+          baseAmount: amount,
+          exactAmount: exactAmount,
+          pennies: state.pennyMatchingNumber,
+          amount: amount, // Credited amount upon admin approval
           method: state.selectedPayMethod.toUpperCase(),
+          receiptImage: state.uploadedReceiptBase64,
           date: new Date().toLocaleString('uz-UZ'),
           status: 'Kutilmoqda'
         };
@@ -1369,17 +1746,22 @@
           type: 'topup',
           userId: currentUserId,
           userName: newTopUpRequest.userName,
-          title: `Balans to'ldirish (${newTopUpRequest.method})`,
-          price: amount,
+          title: `Balans to'ldirish (${newTopUpRequest.method}) • Aniq: ${formatUzs(exactAmount)}`,
+          price: exactAmount,
           date: newTopUpRequest.date,
-          status: 'Kutilmoqda'
+          status: 'Kutilmoqda',
+          receiptImage: state.uploadedReceiptBase64
         });
 
         triggerHaptic('success');
         elements.executeTopUpBtn.disabled = false;
-        elements.executeTopUpBtn.innerHTML = `To'ldirish • <span id="topUpBtnAmountText">${formatUzs(amount)}</span>`;
+        elements.executeTopUpBtn.innerHTML = `To'ldirish • <span id="topUpBtnAmountText">${formatUzs(exactAmount)}</span>`;
 
-        const alertMsg = `✅ To'lov so'rovingiz qabul qilindi!\n\nSo'rov ID: #${transactionId}\nMiqdor: ${formatUzs(amount)}\nTo'lov usuli: ${newTopUpRequest.method}\nHolati: ⏳ Kutilmoqda\n\nAdministrator to'lovni tekshirib tasdiqlaganidan so'ng mablag' balansingizga avtomatik qo'shiladi.`;
+        // Clear uploaded receipt and re-roll penny matching for next request
+        clearReceiptUpload();
+        setTopUpBaseAmount(amount);
+
+        const alertMsg = `✅ To'lov so'rovingiz qabul qilindi!\n\nSo'rov ID: #${transactionId}\nO'tkazilgan aniq summa: ${formatUzs(exactAmount)}\nTo'lov cheki: Muvaffaqiyatli biriktirildi ✓\nHolati: ⏳ Kutilmoqda\n\nAdministrator bank SMS va chekni tekshirib tasdiqlagach, ${formatUzs(amount)} balansingizga qo'shiladi.`;
         if (tg?.showAlert) {
           tg.showAlert(alertMsg);
         } else {
@@ -1488,9 +1870,7 @@
     if (elements.themeToggle) {
       elements.themeToggle.checked = currentUser.settings?.darkMode || false;
       elements.themeToggle.addEventListener('change', (e) => {
-        currentUser.settings.darkMode = e.target.checked;
-        saveStoredUserData(currentUser);
-        document.body.classList.toggle('dark', e.target.checked);
+        applyTheme(e.target.checked);
         triggerHaptic('light');
       });
     }
@@ -1499,8 +1879,7 @@
     if (elements.langSelect) {
       elements.langSelect.value = currentUser.settings?.lang || 'uz';
       elements.langSelect.addEventListener('change', (e) => {
-        currentUser.settings.lang = e.target.value;
-        saveStoredUserData(currentUser);
+        applyLanguage(e.target.value);
         triggerHaptic('light');
       });
     }
@@ -1736,6 +2115,10 @@
               <span class="detail-k">To'lov miqdori</span>
               <span class="detail-v amount-highlight">+${formatUzs(item.amount)}</span>
             </div>
+            <div class="admin-detail-item admin-detail-exact">
+              <span class="detail-k">SMS Aniq Summa:</span>
+              <span class="detail-v exact-amount-pill">🎯 ${formatUzs(item.exactAmount || item.amount)}</span>
+            </div>
             <div class="admin-detail-item">
               <span class="detail-k">To'lov usuli</span>
               <span class="detail-v method-tag">💳 ${escapeHtml(item.method || 'UZCARD')}</span>
@@ -1745,6 +2128,28 @@
               <span class="detail-v">📅 ${escapeHtml(item.date)}</span>
             </div>
           </div>
+
+          ${item.receiptImage ? `
+            <div class="admin-receipt-action-row" style="margin-top: 10px; margin-bottom: 6px;">
+              <button 
+                class="admin-btn btn-view-receipt" 
+                type="button" 
+                onclick="viewReceiptModal('${escapeHtml(item.id)}')"
+                style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; background: rgba(99, 102, 241, 0.12); color: var(--accent-color); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; font-weight: 600; cursor: pointer;"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Chekni ko'rish (Skrinshot)</span>
+              </button>
+            </div>
+          ` : `
+            <div style="font-size: 11px; color: var(--hint-color); margin-top: 6px; font-style: italic;">
+              To'lov cheki biriktirilmagan
+            </div>
+          `}
 
           ${isPending ? `
             <div class="admin-action-row">
@@ -1919,6 +2324,60 @@
     renderAdminPendingList(state.adminActiveFilter);
   }
   window.rejectTopUp = rejectTopUp;
+
+  // --------------------------------------------------------------------------
+  // RECEIPT VIEWER MODAL CONTROLLER
+  // --------------------------------------------------------------------------
+  let activeReceiptTxId = null;
+
+  function viewReceiptModal(transactionId) {
+    const list = getPendingTopUps();
+    const tx = list.find(t => String(t.id) === String(transactionId));
+    if (!tx) {
+      alert("Xatolik: So'rov topilmadi!");
+      return;
+    }
+
+    activeReceiptTxId = tx.id;
+
+    if (elements.receiptModalTxId) elements.receiptModalTxId.textContent = `#${tx.id}`;
+    if (elements.receiptModalUserName) elements.receiptModalUserName.textContent = `${tx.userName || 'Foydalanuvchi'} (ID: ${tx.userId})`;
+    if (elements.receiptModalExactAmount) elements.receiptModalExactAmount.textContent = formatUzs(tx.exactAmount || tx.amount);
+    if (elements.receiptModalPayMethod) elements.receiptModalPayMethod.textContent = tx.method || 'UZCARD';
+
+    if (elements.receiptModalImg) {
+      if (tx.receiptImage) {
+        elements.receiptModalImg.src = tx.receiptImage;
+        elements.receiptModalImg.style.display = 'block';
+      } else {
+        elements.receiptModalImg.src = '';
+        elements.receiptModalImg.style.display = 'none';
+      }
+    }
+
+    const footer = document.getElementById('receiptViewerFooter');
+    if (footer) {
+      if (tx.status === 'Kutilmoqda') {
+        footer.style.display = 'flex';
+      } else {
+        footer.style.display = 'none';
+      }
+    }
+
+    if (elements.receiptModal) {
+      elements.receiptModal.classList.add('active');
+    }
+    triggerHaptic('light');
+  }
+  window.viewReceiptModal = viewReceiptModal;
+
+  function closeReceiptModal() {
+    if (elements.receiptModal) {
+      elements.receiptModal.classList.remove('active');
+    }
+    activeReceiptTxId = null;
+  }
+  window.closeReceiptModal = closeReceiptModal;
 
   // --------------------------------------------------------------------------
   // SECTION 2: PAYMENT CARDS SETTINGS (KARTA SOZLAMALARI)
@@ -2563,6 +3022,28 @@
       renderAdminAllOrders(state.adminMasterOrdersFilter, e.target.value);
     });
 
+    // Receipt Modal Viewer Events
+    elements.receiptModalCloseBtn?.addEventListener('click', closeReceiptModal);
+    elements.receiptModal?.addEventListener('click', (e) => {
+      if (e.target === elements.receiptModal) closeReceiptModal();
+    });
+
+    elements.receiptModalApproveBtn?.addEventListener('click', () => {
+      if (!activeReceiptTxId) return;
+      const list = getPendingTopUps();
+      const tx = list.find(t => String(t.id) === String(activeReceiptTxId));
+      if (tx) {
+        approveTopUp(tx.id, tx.userId, tx.amount);
+        closeReceiptModal();
+      }
+    });
+
+    elements.receiptModalRejectBtn?.addEventListener('click', () => {
+      if (!activeReceiptTxId) return;
+      rejectTopUp(activeReceiptTxId);
+      closeReceiptModal();
+    });
+
     setupTopUpHandlers();
     setupProfileSettings();
   }
@@ -2570,6 +3051,24 @@
   // --- Bootstrap ---
   function init() {
     initTelegram();
+
+    // 1. Dynamic Theme initialization
+    const savedTheme = localStorage.getItem('donat_store_theme') || (currentUser.settings?.darkMode ? 'dark' : 'light');
+    applyTheme(savedTheme === 'dark');
+
+    // 2. Dynamic Language initialization
+    const savedLang = localStorage.getItem('donat_store_lang') || currentUser.settings?.lang || 'uz';
+    applyLanguage(savedLang);
+
+    // 3. Initial Penny Matching roll & TopUp UI
+    setTopUpBaseAmount(50000);
+    updateTopUpRequisitesUI();
+
+    // 4. Populate Admin form fields from stored settings
+    loadCardSettingsIntoForm();
+    loadMarginSettingsIntoForm();
+    loadLinksSettingsIntoForm();
+
     updateBalanceUI();
     setupEventListeners();
     updateOrdersBadge();
