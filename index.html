@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PayerPin - Raqamli Donat Do'koni</title>
+  <title>Donat Store - Raqamli Mahsulotlar</title>
   
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -16,7 +16,7 @@
   <!-- Core Native Stylesheet -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Critical Inline CSS (Guarantees Fixed Bottom Navigation & Viewport Sizing) -->
+  <!-- Critical Inline CSS (Guarantees Fixed 5-Tab Bottom Navigation & Instant Loading) -->
   <style>
     .bottom-nav {
       position: fixed !important;
@@ -26,7 +26,7 @@
       width: 100% !important;
       max-width: 600px !important;
       margin: 0 auto !important;
-      height: 65px !important;
+      height: 66px !important;
       background-color: var(--tg-theme-bg-color, #ffffff) !important;
       border-top: 1px solid rgba(142, 154, 171, 0.18) !important;
       display: flex !important;
@@ -49,6 +49,7 @@
       background: none !important;
       color: var(--tg-theme-hint-color, #6b7280) !important;
       cursor: pointer !important;
+      padding: 4px 0 !important;
     }
     .bottom-nav .nav-item.active {
       color: #6366f1 !important;
@@ -61,7 +62,7 @@
       font-weight: 700 !important;
     }
     .tab-view {
-      padding-bottom: 85px !important;
+      padding-bottom: 90px !important;
     }
   </style>
 </head>
@@ -69,27 +70,101 @@
   <div id="app" class="app-container">
 
     <!-- ========================================================
-         PAGE SECTION 1: ASOSIY (HOME)
+         TAB 1: ASOSIY (HOME)
          ======================================================== -->
     <section id="viewHome" class="tab-view active">
-      <!-- Top App Header -->
       <header class="app-header">
         <div class="header-top">
-          <div class="brand-info">
-            <div class="brand-logo">PP</div>
-            <div class="brand-text">
-              <span class="brand-title">PayerPin</span>
-              <span class="brand-badge">Tezkor Donat</span>
+          <div class="user-info">
+            <div class="user-avatar" id="homeUserAvatar">👤</div>
+            <div class="user-meta">
+              <span class="user-greeting">Xush kelibsiz!</span>
+              <span class="user-name" id="homeUserName">Foydalanuvchi</span>
             </div>
           </div>
-          <div class="user-pill">
-            <span class="user-greeting-dot"></span>
-            <span id="headerUserName" class="user-pill-name">Foydalanuvchi</span>
+          <div class="store-badge">
+            <span class="pulse-dot"></span>
+            <span>24/7 Avtomat</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <!-- Rounded Top Balance Card -->
+        <div class="balance-card">
+          <div class="balance-card-bg-glow"></div>
+          <div class="balance-top-row">
+            <span class="balance-label">Hisob balansingiz</span>
+            <span class="balance-currency-tag">UZS</span>
+          </div>
+          <div class="balance-amount-row">
+            <h1 class="balance-number" id="homeBalanceDisplay">0 so'm</h1>
+          </div>
+          <div class="balance-actions-row">
+            <button class="balance-btn btn-topup" id="homeTopUpBtn" type="button">
+              <span class="btn-icon">⚡️</span>
+              <span>Balansni to'ldirish</span>
+            </button>
+            <button class="balance-btn btn-history" id="homeHistoryBtn" type="button">
+              <span class="btn-icon">🕒</span>
+              <span>Tarix</span>
+            </button>
           </div>
         </div>
 
+        <!-- Promo Banner -->
+        <div class="promo-banner">
+          <div class="promo-content">
+            <span class="promo-tag">Rasmiy & Xavfsiz</span>
+            <h2 class="promo-title">O'yin hisobingizga soniyada donat</h2>
+            <p class="promo-desc">ID raqamingiz orqali to'g'ridan-to'g'ri yetkaziladi</p>
+          </div>
+          <div class="promo-glow"></div>
+        </div>
+
+        <!-- Popular Games Quick Section -->
+        <div class="section-heading">
+          <div class="heading-left">
+            <h2 class="section-title">Ommabop o'yinlar</h2>
+            <span class="catalog-sub">Tezkor xaridlar</span>
+          </div>
+          <button class="view-all-btn" id="homeViewAllGamesBtn" type="button">Barchasi ›</button>
+        </div>
+
+        <!-- Home Featured Games Grid -->
+        <div id="homeFeaturedGrid" class="games-grid"></div>
+
+        <!-- Trust Badges -->
+        <div class="trust-grid">
+          <div class="trust-item">
+            <span class="trust-icon">🚀</span>
+            <span class="trust-title">Tezkor yetkazish</span>
+            <span class="trust-desc">Avtomatlashtirilgan tizim</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🛡</span>
+            <span class="trust-title">100% Kafolat</span>
+            <span class="trust-desc">Xavfsiz to'lov shlyuzlari</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">💬</span>
+            <span class="trust-title">Qo'llab-quvvatlash</span>
+            <span class="trust-desc">Doimiy 24/7 aloqa</span>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ========================================================
+         TAB 2: O'YINLAR (GAMES CATALOG)
+         ======================================================== -->
+    <section id="viewGames" class="tab-view">
+      <header class="app-header">
+        <h1 class="page-title">O'yinlar katalogi</h1>
+        <p class="page-subtitle">Kerakli o'yin yoki xizmatni tanlang</p>
+
         <!-- Search Bar -->
-        <div class="search-box">
+        <div class="search-box" style="margin-top: 12px; margin-bottom: 10px;">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -98,43 +173,30 @@
             type="text" 
             id="gameSearchInput" 
             class="search-input" 
-            placeholder="O'yin yoki mahsulotni qidiring..." 
+            placeholder="O'yin nomini yozing..." 
             autocomplete="off"
           >
-          <button id="clearSearchBtn" class="clear-btn" style="display: none;" aria-label="Tozalash">✕</button>
+          <button id="clearSearchBtn" class="clear-btn" style="display: none;" aria-label="Tozalash" type="button">✕</button>
         </div>
 
-        <!-- Quick Category Chips -->
+        <!-- Category Chips -->
         <div class="category-chips">
           <button class="chip active" data-category="all" type="button">Barchasi</button>
           <button class="chip" data-category="popular" type="button">🔥 Mashhur</button>
-          <button class="chip" data-category="mobile" type="button">📱 Mobil o'yinlar</button>
+          <button class="chip" data-category="mobile" type="button">📱 Mobil</button>
           <button class="chip" data-category="services" type="button">⚡️ Xizmatlar</button>
         </div>
       </header>
 
-      <!-- Main Home Content -->
       <main class="main-content">
-        <!-- Banner Carousel -->
-        <div class="promo-banner">
-          <div class="promo-content">
-            <span class="promo-tag">Avtomatlashtirilgan tizim</span>
-            <h2 class="promo-title">O'yinlarga 30 soniyada donat qiling</h2>
-            <p class="promo-desc">Rasmiy ID orqali xavfsiz va kafolatlangan yetkazish</p>
-          </div>
-          <div class="promo-glow"></div>
-        </div>
-
-        <!-- Section Title & Counter (Max 50) -->
         <div class="section-heading">
           <div class="heading-left">
-            <h2 class="section-title">O'yinlar katalogi</h2>
-            <span class="catalog-sub">Eng ommabop 50 ta o'yin</span>
+            <span class="catalog-sub">Mavjud katalog (50 tagacha)</span>
           </div>
           <span class="badge" id="gamesCountBadge">...</span>
         </div>
 
-        <!-- Skeleton Grid (shown during initial loading) -->
+        <!-- Skeleton Grid -->
         <div id="gamesSkeleton" class="games-grid">
           <div class="game-card skeleton-card">
             <div class="skeleton-thumb shimmer"></div>
@@ -166,7 +228,7 @@
           </div>
         </div>
 
-        <!-- Live Games Grid (Max 50 Games rendered here) -->
+        <!-- Live Games Grid (Strictly max 50 games) -->
         <div id="gamesGrid" class="games-grid" style="display: none;"></div>
 
         <!-- Empty & Error States -->
@@ -176,7 +238,6 @@
           <p class="state-desc">Boshqa so'z bilan qidirib ko'ring.</p>
         </div>
 
-        <!-- Prominent Error Box with Retry Button -->
         <div id="errorState" class="state-container" style="display: none;">
           <div class="state-icon">⚠️</div>
           <h3 class="state-title">Katalog yuklanmadi</h3>
@@ -187,7 +248,113 @@
     </section>
 
     <!-- ========================================================
-         PAGE SECTION 2: BUYURTMALAR (ORDERS)
+         TAB 3: TO'LDIRISH (WALLET / TOP-UP)
+         ======================================================== -->
+    <section id="viewTopUp" class="tab-view">
+      <header class="app-header page-header">
+        <h1 class="page-title">Balansni to'ldirish</h1>
+        <p class="page-subtitle">Hisobingizni qulay to'lov tizimlari orqali to'ldiring</p>
+      </header>
+
+      <main class="main-content">
+        <!-- Current Balance Snapshot -->
+        <div class="wallet-balance-box">
+          <div class="wallet-balance-info">
+            <span class="wallet-label">Joriy balans:</span>
+            <h2 class="wallet-amount" id="topUpCurrentBalance">0 so'm</h2>
+          </div>
+          <div class="wallet-badge">Komissiya 0%</div>
+        </div>
+
+        <!-- Amount Presets -->
+        <div class="topup-section">
+          <label class="topup-section-label">To'ldirish miqdorini tanlang:</label>
+          <div class="amount-presets-grid">
+            <button class="preset-btn" data-amount="10000" type="button">10 000 so'm</button>
+            <button class="preset-btn" data-amount="25000" type="button">25 000 so'm</button>
+            <button class="preset-btn active" data-amount="50000" type="button">50 000 so'm</button>
+            <button class="preset-btn" data-amount="100000" type="button">100 000 so'm</button>
+            <button class="preset-btn" data-amount="200000" type="button">200 000 so'm</button>
+            <button class="preset-btn" data-amount="500000" type="button">500 000 so'm</button>
+          </div>
+
+          <!-- Custom Amount Input -->
+          <div class="custom-amount-wrap">
+            <label for="customAmountInput" class="form-label">Yoki boshqa miqdor kiriting:</label>
+            <div class="input-wrap">
+              <input 
+                type="number" 
+                id="customAmountInput" 
+                class="form-input" 
+                placeholder="Masalan: 75000" 
+                value="50000"
+                min="1000"
+                max="5000000"
+              >
+              <span class="input-suffix">so'm</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="topup-section">
+          <label class="topup-section-label">To'lov usuli:</label>
+          <div class="payment-methods-grid">
+            <!-- Uzcard -->
+            <label class="payment-method-card selected">
+              <input type="radio" name="payMethod" value="uzcard" checked>
+              <div class="pay-method-icon uzcard-icon">💳</div>
+              <div class="pay-method-details">
+                <span class="pay-method-name">UZCARD</span>
+                <span class="pay-method-sub">Milliy karta (0%)</span>
+              </div>
+              <span class="pay-radio-check">✓</span>
+            </label>
+
+            <!-- Humo -->
+            <label class="payment-method-card">
+              <input type="radio" name="payMethod" value="humo">
+              <div class="pay-method-icon humo-icon">💳</div>
+              <div class="pay-method-details">
+                <span class="pay-method-name">HUMO</span>
+                <span class="pay-method-sub">Milliy karta (0%)</span>
+              </div>
+              <span class="pay-radio-check">✓</span>
+            </label>
+
+            <!-- Click -->
+            <label class="payment-method-card">
+              <input type="radio" name="payMethod" value="click">
+              <div class="pay-method-icon click-icon">📲</div>
+              <div class="pay-method-details">
+                <span class="pay-method-name">Click</span>
+                <span class="pay-method-sub">Ilova orqali</span>
+              </div>
+              <span class="pay-radio-check">✓</span>
+            </label>
+
+            <!-- Payme -->
+            <label class="payment-method-card">
+              <input type="radio" name="payMethod" value="payme">
+              <div class="pay-method-icon payme-icon">📱</div>
+              <div class="pay-method-details">
+                <span class="pay-method-name">Payme</span>
+                <span class="pay-method-sub">Ilova orqali</span>
+              </div>
+              <span class="pay-radio-check">✓</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Execute Top-up Button -->
+        <button class="btn btn-primary topup-execute-btn" id="executeTopUpBtn" type="button">
+          To'ldirish • <span id="topUpBtnAmountText">50 000 so'm</span>
+        </button>
+      </main>
+    </section>
+
+    <!-- ========================================================
+         TAB 4: BUYURTMALAR (ORDERS HISTORY)
          ======================================================== -->
     <section id="viewOrders" class="tab-view">
       <header class="app-header page-header">
@@ -196,26 +363,25 @@
       </header>
 
       <main class="main-content">
-        <div id="ordersList" class="orders-list">
-          <!-- Populated dynamically from localStorage -->
-        </div>
+        <div id="ordersList" class="orders-list"></div>
 
         <!-- Empty Orders State -->
         <div id="emptyOrdersState" class="state-container" style="display: none;">
           <div class="state-icon">📦</div>
           <h3 class="state-title">Hozircha buyurtmalar yo'q</h3>
           <p class="state-desc">Birinchi xaridingizni amalga oshiring va u shu yerda paydo bo'ladi.</p>
-          <button class="btn btn-primary" id="goShopBtn" type="button" style="max-width: 200px; margin: 10px auto 0;">Xarid qilish</button>
+          <button class="btn btn-primary" id="goCatalogBtn" type="button" style="max-width: 220px; margin: 12px auto 0;">O'yinlar katalogiga o'tish</button>
         </div>
       </main>
     </section>
 
     <!-- ========================================================
-         PAGE SECTION 3: PROFIL (PROFILE)
+         TAB 5: PROFIL (PROFILE & SETTINGS)
          ======================================================== -->
     <section id="viewProfile" class="tab-view">
       <header class="app-header page-header">
         <h1 class="page-title">Mening Profilim</h1>
+        <p class="page-subtitle">Shaxsiy hisob va sozlamalar</p>
       </header>
 
       <main class="main-content">
@@ -223,7 +389,7 @@
         <div class="profile-card">
           <div class="profile-avatar" id="profileAvatar">👤</div>
           <div class="profile-details">
-            <h2 class="profile-name" id="profileFullName">Telegram Foydalanuvchisi</h2>
+            <h2 class="profile-name" id="profileFullName">Foydalanuvchi</h2>
             <p class="profile-username" id="profileUsername">@username</p>
             <div class="profile-id-row">
               <span class="id-tag">ID: <strong id="profileUserId">000000</strong></span>
@@ -250,22 +416,61 @@
           </div>
         </div>
 
-        <!-- Quick Menu Links -->
+        <!-- Settings Toggles Group -->
+        <div class="section-subheading" style="margin-top: 10px;">
+          <span>Ilova Sozlamalari</span>
+        </div>
         <div class="menu-group">
-          <a href="https://t.me/payerpinbot" target="_blank" class="menu-item">
+          <!-- Theme Toggle -->
+          <div class="menu-item toggle-item">
+            <div class="menu-icon theme-icon">🌙</div>
+            <div class="menu-text">
+              <span class="menu-title">Tungi rejim</span>
+              <span class="menu-desc">Mavzuni moslashtirish</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="themeToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Language Selector -->
+          <div class="menu-item toggle-item">
+            <div class="menu-icon lang-icon">🌐</div>
+            <div class="menu-text">
+              <span class="menu-title">Tilni tanlash</span>
+              <span class="menu-desc">Ilova interfeysi tili</span>
+            </div>
+            <select class="lang-select" id="langSelect">
+              <option value="uz" selected>O'zbekcha</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+
+          <!-- Notifications Toggle -->
+          <div class="menu-item toggle-item">
+            <div class="menu-icon notif-icon">🔔</div>
+            <div class="menu-text">
+              <span class="menu-title">Xabarnomalar</span>
+              <span class="menu-desc">Buyurtma holati xabarlari</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Support & Information Group -->
+        <div class="section-subheading" style="margin-top: 14px;">
+          <span>Qo'llab-quvvatlash</span>
+        </div>
+        <div class="menu-group">
+          <a href="https://t.me/admin" target="_blank" class="menu-item">
             <div class="menu-icon help-icon">💬</div>
             <div class="menu-text">
               <span class="menu-title">Yordam va Aloqa</span>
-              <span class="menu-desc">Telegram orqali 24/7 qo'llab-quvvatlash</span>
-            </div>
-            <span class="menu-arrow">›</span>
-          </a>
-
-          <a href="https://t.me/payerpin" target="_blank" class="menu-item">
-            <div class="menu-icon channel-icon">📢</div>
-            <div class="menu-text">
-              <span class="menu-title">Rasmiy Kanalimiz</span>
-              <span class="menu-desc">Chegirmalar va yangiliklar</span>
+              <span class="menu-desc">Administrator: @admin</span>
             </div>
             <span class="menu-arrow">›</span>
           </a>
@@ -274,20 +479,20 @@
             <div class="menu-icon shield-icon">🛡</div>
             <div class="menu-text">
               <span class="menu-title">Kafolat va Xavfsizlik</span>
-              <span class="menu-desc">PlayPay rasmiy to'lov tizimi</span>
+              <span class="menu-desc">Xavfsiz tranzaksiyalar</span>
             </div>
             <span class="menu-arrow">›</span>
           </div>
         </div>
 
         <div class="app-version">
-          PayerPin Mini App • Versiya 2.4
+          Donat Store Mini App • Versiya 3.0
         </div>
       </main>
     </section>
 
     <!-- ========================================================
-         SLIDING BOTTOM SHEET MODAL (PACKAGE SELECTION)
+         SLIDING BOTTOM SHEET MODAL (PACKAGE SELECTION & WALLET DEDUCTION)
          ======================================================== -->
     <div id="modalOverlay" class="modal-overlay">
       <div class="modal-sheet" id="modalSheet">
@@ -307,6 +512,7 @@
         </div>
 
         <div class="modal-body">
+          <!-- Packages Section -->
           <div class="packages-section">
             <div class="section-subheading">
               <span>Paketlar</span>
@@ -323,11 +529,13 @@
             <div id="packagesList" class="packages-grid" style="display: none;"></div>
           </div>
 
+          <!-- Checkout Form -->
           <div id="playerFormSection" class="player-form-section" style="display: none;">
             <div class="section-subheading">
               <span id="playerFormTitle">Hisob ma'lumotlari</span>
             </div>
 
+            <!-- Player ID Field -->
             <div class="form-group">
               <label for="playerIdInput" id="playerIdLabel" class="form-label">Player ID</label>
               <div class="input-wrap">
@@ -343,6 +551,7 @@
               <div id="idVerificationStatus" class="verification-badge" style="display: none;"></div>
             </div>
 
+            <!-- Server / Zone ID Field -->
             <div class="form-group" id="serverIdGroup" style="display: none;">
               <label for="serverIdInput" class="form-label">Server ID / Zone ID</label>
               <div class="input-wrap">
@@ -356,18 +565,23 @@
               </div>
             </div>
 
+            <!-- Wallet Balance Check & Order Summary Card -->
             <div class="order-summary-card">
               <div class="summary-row">
                 <span class="summary-label">Tanlangan paket:</span>
                 <span class="summary-value" id="summaryPkgName">-</span>
               </div>
               <div class="summary-row">
-                <span class="summary-label">To'lov miqdori:</span>
+                <span class="summary-label">Paket narxi:</span>
                 <span class="summary-value price-highlight" id="summaryPkgPrice">0 so'm</span>
               </div>
-              <div class="summary-hint">
-                ⚡️ To'lov tasdiqlangach hisobingizga avtomatik yetkaziladi.
+              <div class="summary-row">
+                <span class="summary-label">Mening balansim:</span>
+                <span class="summary-value" id="summaryCurrentBalance">0 so'm</span>
               </div>
+
+              <!-- Balance status banner (sufficient or insufficient) -->
+              <div id="walletStatusNotice" class="wallet-status-notice"></div>
             </div>
           </div>
         </div>
@@ -388,8 +602,8 @@
         <div class="success-icon-wrap">
           <div class="success-checkmark">✓</div>
         </div>
-        <h3 class="success-title">Buyurtma qabul qilindi!</h3>
-        <p class="success-desc" id="successDesc">Xaridingiz muvaffaqiyatli rasmiylashtirildi.</p>
+        <h3 class="success-title">Xarid muvaffaqiyatli!</h3>
+        <p class="success-desc" id="successDesc">Mablag' balansingizdan yechildi va buyurtma rasmiylashtirildi.</p>
         
         <div class="order-receipt" id="orderReceipt">
           <div class="receipt-row">
@@ -408,6 +622,10 @@
             <span>Hisob ID:</span>
             <strong id="receiptPlayerId">-</strong>
           </div>
+          <div class="receipt-row">
+            <span>Qolgan balans:</span>
+            <strong id="receiptRemainingBalance" style="color: #6366f1;">0 so'm</strong>
+          </div>
         </div>
 
         <button id="successCloseBtn" class="btn btn-primary" type="button">Tushundim</button>
@@ -417,7 +635,7 @@
   </div>
 
   <!-- ========================================================
-       FIXED BOTTOM NAVIGATION BAR (ALWAYS VISIBLE AT BOTTOM)
+       FIXED BOTTOM NAVIGATION BAR (EXACTLY 5 TABS)
        ======================================================== -->
   <nav class="bottom-nav" id="bottomNav">
     <!-- Tab 1: Asosiy (Home) -->
@@ -431,7 +649,34 @@
       <span class="nav-label">Asosiy</span>
     </button>
 
-    <!-- Tab 2: Buyurtmalar (Orders) -->
+    <!-- Tab 2: O'yinlar (Games) -->
+    <button class="nav-item" data-tab="games" type="button" aria-label="O'yinlar">
+      <div class="nav-icon-wrap">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+          <path d="M6 12h4"></path>
+          <path d="M8 10v4"></path>
+          <circle cx="15" cy="11" r="1" fill="currentColor"></circle>
+          <circle cx="17" cy="13" r="1" fill="currentColor"></circle>
+        </svg>
+      </div>
+      <span class="nav-label">O'yinlar</span>
+    </button>
+
+    <!-- Tab 3: To'ldirish (Top-Up) -->
+    <button class="nav-item" data-tab="topup" type="button" aria-label="To'ldirish">
+      <div class="nav-icon-wrap">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="3"></rect>
+          <line x1="2" y1="10" x2="22" y2="10"></line>
+          <circle cx="7" cy="15" r="1.5" fill="currentColor"></circle>
+          <path d="M15 15h3"></path>
+        </svg>
+      </div>
+      <span class="nav-label">To'ldirish</span>
+    </button>
+
+    <!-- Tab 4: Buyurtmalar (Orders) -->
     <button class="nav-item" data-tab="orders" type="button" aria-label="Buyurtmalar">
       <div class="nav-icon-wrap">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -444,7 +689,7 @@
       <span class="nav-label">Buyurtmalar</span>
     </button>
 
-    <!-- Tab 3: Profil (Profile) -->
+    <!-- Tab 5: Profil (Profile) -->
     <button class="nav-item" data-tab="profile" type="button" aria-label="Profil">
       <div class="nav-icon-wrap">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -456,7 +701,7 @@
     </button>
   </nav>
 
-  <!-- PayerPin Logic -->
+  <!-- Core App Logic -->
   <script src="app.js"></script>
 </body>
 </html>
