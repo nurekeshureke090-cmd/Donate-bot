@@ -362,7 +362,7 @@
               <span class="req-card-icon" id="reqCardIcon">💳</span>
               <span class="requisites-title" id="reqCardTypeTitle">UZCARD orqali to'lov</span>
             </div>
-            <span class="requisites-badge">Admin Kartasi</span>
+            <span class="requisites-badge" data-i18n="admin_card_badge">Admin Kartasi</span>
           </div>
           
           <div class="card-number-wrapper">
@@ -372,18 +372,82 @@
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
-              <span id="btnCopyCardText">Nusxalash</span>
+              <span id="btnCopyCardText" data-i18n="copy_btn">Nusxalash</span>
             </button>
           </div>
 
           <div class="card-holder-row">
-            <span class="card-holder-label">Karta egasi:</span>
+            <span class="card-holder-label" data-i18n="card_holder_label">Karta egasi:</span>
             <strong class="card-holder-name" id="reqCardHolderDisplay">ADMINISTRATOR</strong>
           </div>
 
           <p class="requisites-instruction" id="reqInstructionsDisplay">
             Kartaga to'lovni o'tkazing va pastdagi "To'ldirish" tugmasini bosing.
           </p>
+        </div>
+
+        <!-- Penny Matching Strict Warning Banner -->
+        <div class="penny-matching-banner" id="pennyMatchingAlert">
+          <div class="penny-banner-head">
+            <div class="penny-badge-wrap">
+              <span class="penny-pulse-icon">⚠️</span>
+              <span class="penny-tag" data-i18n="penny_tag">PENNY MATCHING • TO'LOV KODI</span>
+            </div>
+            <button class="btn-copy-exact" id="btnCopyExactAmount" type="button" title="Aniq summani nusxalash">
+              <span id="btnCopyExactText" data-i18n="copy_exact_btn">Summani nusxalash</span>
+            </button>
+          </div>
+
+          <div class="penny-amount-row">
+            <span class="penny-amount-label" data-i18n="penny_exact_label">O'tkazishingiz kerak bo'lgan aniq summa:</span>
+            <div class="penny-amount-value" id="pennyExactAmountDisplay">50 132 so'm</div>
+          </div>
+
+          <div class="penny-warning-message" id="pennyWarningMessage">
+            <strong>DIQQAT!</strong> To'lovingiz tasdiqlanishi uchun kartaga roppa-rosa <span id="pennyExactAmountHighlight">50 132 UZS</span> o'tkazishingiz <u>SHART!</u> Aks holda pulingiz balansga tushmaydi.
+          </div>
+          <div class="penny-tip" data-i18n="penny_tip">
+            💡 Ushbu qo'shimcha bir necha tiyinlar to'lovingizni bank SMS orqali adashmasdan tezkor aniqlash uchun kerak.
+          </div>
+        </div>
+
+        <!-- Mandatory Receipt Upload Box (Chek yuklash) -->
+        <div class="receipt-upload-box" id="receiptUploadBox">
+          <div class="receipt-upload-head">
+            <div class="upload-title-row">
+              <span class="upload-icon">🧾</span>
+              <strong class="upload-title" data-i18n="receipt_upload_title">To'lov chekini yuklash</strong>
+              <span class="badge-mandatory" data-i18n="mandatory_badge">Majburiy</span>
+            </div>
+            <span class="upload-sub" data-i18n="receipt_upload_sub">Bank ilovasidan to'lov skrinshotini biriktiring</span>
+          </div>
+
+          <div class="receipt-dropzone" id="receiptDropzone">
+            <input type="file" id="receiptFileInput" accept="image/*" class="receipt-file-input">
+            
+            <!-- Empty dropzone state -->
+            <div class="dropzone-empty" id="dropzoneEmpty">
+              <div class="dropzone-icon">📸</div>
+              <div class="dropzone-content">
+                <strong class="dropzone-prompt" data-i18n="dropzone_prompt">Chek skrinshotini tanlang</strong>
+                <span class="dropzone-hint" data-i18n="dropzone_hint">JPG, PNG, WebP formatlarida rasm yuklang</span>
+              </div>
+            </div>
+
+            <!-- Uploaded file preview -->
+            <div class="dropzone-preview" id="dropzonePreview" style="display: none;">
+              <img id="receiptPreviewImg" src="" alt="To'lov cheki" class="receipt-thumbnail">
+              <div class="preview-meta">
+                <span class="preview-fname" id="receiptFileName">chek.jpg</span>
+                <span class="preview-fsize" id="receiptFileSize">0 KB</span>
+                <span class="preview-ok-tag" data-i18n="ready_tag">✓ Chek biriktirildi</span>
+              </div>
+              <button class="btn-remove-receipt" id="btnRemoveReceipt" type="button" title="Chekni o'chirish">✕</button>
+            </div>
+          </div>
+          <div class="receipt-error-notice" id="receiptErrorNotice" style="display: none;" data-i18n="receipt_error_msg">
+            ⚠️ Iltimos, davom etishdan oldin to'lov cheki (skrinshot) rasmini yuklang!
+          </div>
         </div>
 
         <!-- Execute Top-up Button -->
@@ -1122,6 +1186,63 @@
       </div>
     </div>
 
+    <!-- ========================================================
+         ADMIN RECEIPT VIEWER MODAL (CHEKNI KO'RISH)
+         ======================================================== -->
+    <div id="receiptModal" class="modal-overlay receipt-viewer-overlay">
+      <div class="receipt-viewer-card">
+        <div class="modal-header receipt-viewer-header">
+          <div class="receipt-header-left">
+            <span style="font-size: 20px;">🧾</span>
+            <div>
+              <h3 class="receipt-viewer-title">To'lov Cheki (Skrinshot)</h3>
+              <span class="receipt-tx-badge" id="receiptModalTxId">#TX000000</span>
+            </div>
+          </div>
+          <button id="receiptModalCloseBtn" class="modal-close" type="button" aria-label="Yopish">✕</button>
+        </div>
+
+        <!-- Transaction Meta Summary -->
+        <div class="receipt-meta-banner">
+          <div class="receipt-meta-item">
+            <span class="receipt-meta-label">Mijoz:</span>
+            <strong id="receiptModalUserName">Foydalanuvchi</strong>
+          </div>
+          <div class="receipt-meta-item">
+            <span class="receipt-meta-label">Aniq summa (Penny Matching):</span>
+            <strong id="receiptModalExactAmount" class="exact-highlight">0 so'm</strong>
+          </div>
+          <div class="receipt-meta-item">
+            <span class="receipt-meta-label">To'lov usuli:</span>
+            <span id="receiptModalPayMethod" class="method-tag">UZCARD</span>
+          </div>
+        </div>
+
+        <!-- High-res Image Container -->
+        <div class="receipt-image-wrap" id="receiptImageWrap">
+          <img id="receiptModalImg" src="" alt="To'lov cheki skrinshoti" class="receipt-full-image">
+          <div class="receipt-zoom-hint">Chekni kattalashtirib ko'rish mumkin</div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="receipt-viewer-footer" id="receiptViewerFooter">
+          <button class="admin-btn btn-approve" id="receiptModalApproveBtn" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Tasdiqlash</span>
+          </button>
+          <button class="admin-btn btn-reject" id="receiptModalRejectBtn" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span>Rad etish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ========================================================
@@ -1136,7 +1257,7 @@
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
       </div>
-      <span class="nav-label">Asosiy</span>
+      <span class="nav-label" data-i18n="nav_home">Asosiy</span>
     </button>
 
     <!-- Tab 2: O'yinlar (Games) -->
@@ -1150,7 +1271,7 @@
           <circle cx="17" cy="13" r="1" fill="currentColor"></circle>
         </svg>
       </div>
-      <span class="nav-label">O'yinlar</span>
+      <span class="nav-label" data-i18n="nav_games">O'yinlar</span>
     </button>
 
     <!-- Tab 3: To'ldirish (Top-Up) -->
@@ -1163,7 +1284,7 @@
           <path d="M15 15h3"></path>
         </svg>
       </div>
-      <span class="nav-label">To'ldirish</span>
+      <span class="nav-label" data-i18n="nav_topup">To'ldirish</span>
     </button>
 
     <!-- Tab 4: Buyurtmalar (Orders) -->
@@ -1176,7 +1297,7 @@
         </svg>
         <span id="navOrdersBadge" class="nav-badge" style="display: none;">0</span>
       </div>
-      <span class="nav-label">Buyurtmalar</span>
+      <span class="nav-label" data-i18n="nav_orders">Buyurtmalar</span>
     </button>
 
     <!-- Tab 5: Profil (Profile) -->
@@ -1187,7 +1308,7 @@
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </div>
-      <span class="nav-label">Profil</span>
+      <span class="nav-label" data-i18n="nav_profile">Profil</span>
     </button>
   </nav>
 
