@@ -1,12 +1,18 @@
 /**
  * ==========================================================================
- * DONAT STORE - 5-TAB CONTROLLER & WALLET SYSTEM (app.js)
- * Wallet balance deduction, Top-up payment, 5-tab SPA, Telegram user sync
+ * DONAT STORE - 5-TAB CONTROLLER, WALLET SYSTEM & ADMIN PANEL (app.js)
+ * Wallet balance deduction, Top-up payment approval, Telegram user sync
  * ==========================================================================
  */
 
 (function () {
   'use strict';
+
+  // ==========================================================================
+  // 1. ADMIN CONFIGURATION (ADMIN SOZLAMALARI)
+  // O'zingizning Telegram ID raqamingizni quyidagi o'zgaruvchiga kiriting:
+  // ==========================================================================
+  const ADMIN_TELEGRAM_ID = '8467707826'; // <-- O'zgartirishingiz mumkin
 
   // --- Telegram WebApp Instance ---
   const tg = window.Telegram?.WebApp || null;
@@ -15,9 +21,19 @@
   const tgUser = tg?.initDataUnsafe?.user || null;
   const currentUserId = tgUser?.id ? String(tgUser.id) : 'guest_user_8467707826';
 
+  // Check if current user is Admin
+  function checkIsAdmin() {
+    const realTgId = tgUser?.id ? String(tgUser.id) : '';
+    return (
+      (realTgId && realTgId === String(ADMIN_TELEGRAM_ID)) ||
+      String(currentUserId) === String(ADMIN_TELEGRAM_ID) ||
+      String(currentUserId).includes(String(ADMIN_TELEGRAM_ID))
+    );
+  }
+
   // --- Local User Store Architecture (Ready for Backend Sync) ---
-  function getUserStorageKey() {
-    return `donat_store_user_${currentUserId}`;
+  function getUserStorageKey(userId = currentUserId) {
+    return `donat_store_user_${userId}`;
   }
 
   function getStoredUserData() {
@@ -47,7 +63,7 @@
 
   function saveStoredUserData(data) {
     try {
-      localStorage.setItem(getUserStorageKey(), JSON.stringify(data));
+      localStorage.setItem(getUserStorageKey(data.id || currentUserId), JSON.stringify(data));
       syncUserDataWithBackend(data);
     } catch (e) {
       console.warn('Storage save failed:', e);
@@ -58,9 +74,52 @@
   async function syncUserDataWithBackend(userData) {
     try {
       // In the future, this posts to /api/proxy?path=/user/sync or your DB
-      // console.log('[Sync] Synchronizing user data for ID:', userData.id);
     } catch (err) {
       console.warn('Sync failed:', err);
+    }
+  }
+
+  // --- Shared Pending Top-ups Store for Admin Approval ---
+  const PENDING_PAYMENTS_KEY = 'donat_store_pending_topups';
+
+  function getPendingTopUps() {
+    try {
+      const raw = localStorage.getItem(PENDING_PAYMENTS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+
+    // Realistic demo requests so Admin Panel is immediately testable upon launch
+    const initialDemoRequests = [
+      {
+        id: 'TX892104',
+        userId: '59384721',
+        userName: 'Azizbek Karimov',
+        userHandle: '@azizbek_01',
+        amount: 50000,
+        method: 'UZCARD',
+        date: new Date(Date.now() - 15 * 60000).toLocaleString('uz-UZ'),
+        status: 'Kutilmoqda'
+      },
+      {
+        id: 'TX619842',
+        userId: '61928471',
+        userName: 'Dilshod Rustamov',
+        userHandle: '@dilshod_pro',
+        amount: 100000,
+        method: 'HUMO',
+        date: new Date(Date.now() - 40 * 60000).toLocaleString('uz-UZ'),
+        status: 'Kutilmoqda'
+      }
+    ];
+    savePendingTopUps(initialDemoRequests);
+    return initialDemoRequests;
+  }
+
+  function savePendingTopUps(list) {
+    try {
+      localStorage.setItem(PENDING_PAYMENTS_KEY, JSON.stringify(list));
+    } catch (e) {
+      console.warn('Pending top-ups save error:', e);
     }
   }
 
@@ -70,6 +129,7 @@
   // --- App State ---
   const state = {
     activeTab: 'home',
+    adminActiveFilter: 'pending', // 'pending' | 'all'
     games: [],             // Strictly max 50 games
     filteredGames: [],
     selectedGame: null,
@@ -106,6 +166,8 @@
     homeHistoryBtn: document.getElementById('homeHistoryBtn'),
     homeViewAllGamesBtn: document.getElementById('homeViewAllGamesBtn'),
     homeFeaturedGrid: document.getElementById('homeFeaturedGrid'),
+    homeAdminBtn: document.getElementById('homeAdminBtn'),
+    homeAdminBadgeCount: document.getElementById('homeAdminBadgeCount'),
 
     // Games Catalog View
     searchInput: document.getElementById('gameSearchInput'),
@@ -140,6 +202,8 @@
     copyIdBtn: document.getElementById('copyIdBtn'),
     statsTotalOrders: document.getElementById('statsTotalOrders'),
     statsTotalSpent: document.getElementById('statsTotalSpent'),
+    adminPanelTrigger: document.getElementById('adminPanelTrigger'),
+    adminPendingBadge: document.getElementById('adminPendingBadge'),
     themeToggle: document.getElementById('themeToggle'),
     langSelect: document.getElementById('langSelect'),
     notifToggle: document.getElementById('notifToggle'),
@@ -177,7 +241,18 @@
     receiptPkgName: document.getElementById('receiptPkgName'),
     receiptPlayerId: document.getElementById('receiptPlayerId'),
     receiptRemainingBalance: document.getElementById('receiptRemainingBalance'),
-    successCloseBtn: document.getElementById('successCloseBtn')
+    successCloseBtn: document.getElementById('successCloseBtn'),
+
+    // Admin Panel Modal
+    adminModal: document.getElementById('adminModal'),
+    adminModalCloseBtn: document.getElementById('adminModalCloseBtn'),
+    adminPendingCountVal: document.getElementById('adminPendingCountVal'),
+    adminPendingSumVal: document.getElementById('adminPendingSumVal'),
+    adminFilterPendingBtn: document.getElementById('adminFilterPendingBtn'),
+    adminFilterAllBtn: document.getElementById('adminFilterAllBtn'),
+    adminFilterBadge: document.getElementById('adminFilterBadge'),
+    adminPendingList: document.getElementById('adminPendingList'),
+    adminEmptyState: document.getElementById('adminEmptyState')
   };
 
   // --- Formatting Helpers ---
@@ -285,7 +360,11 @@
 
       // Native BackButton
       tg.BackButton.onClick(() => {
-        closeModal();
+        if (elements.adminModal?.classList.contains('active')) {
+          closeAdminModal();
+        } else {
+          closeModal();
+        }
       });
 
       // Native MainButton
@@ -904,7 +983,7 @@
       });
     });
 
-    // Execute Top-up
+    // Execute Top-up (Submits Request for Admin Approval)
     elements.executeTopUpBtn?.addEventListener('click', () => {
       const amount = state.selectedTopUpAmount;
       if (!amount || amount < 1000) {
@@ -914,64 +993,117 @@
 
       triggerHaptic('medium');
       elements.executeTopUpBtn.disabled = true;
-      elements.executeTopUpBtn.textContent = "To'lov amalga oshirilmoqda...";
+      elements.executeTopUpBtn.textContent = "So'rov yuborilmoqda...";
 
       setTimeout(() => {
-        currentUser.balance += amount;
-        currentUser.topups.unshift({
-          id: Math.floor(100000 + Math.random() * 900000),
+        const transactionId = 'TX' + Math.floor(100000 + Math.random() * 900000);
+        const newTopUpRequest = {
+          id: transactionId,
+          userId: currentUserId,
+          userName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || `@${currentUser.username}` || 'Foydalanuvchi',
+          userHandle: currentUser.username ? `@${currentUser.username}` : '',
           amount: amount,
           method: state.selectedPayMethod.toUpperCase(),
-          date: new Date().toLocaleString('uz-UZ')
-        });
+          date: new Date().toLocaleString('uz-UZ'),
+          status: 'Kutilmoqda'
+        };
 
+        // 1. Add to shared pending requests list for Admin approval
+        const pendingList = getPendingTopUps();
+        pendingList.unshift(newTopUpRequest);
+        savePendingTopUps(pendingList);
+
+        // 2. Add to user's personal top-ups history
+        if (!Array.isArray(currentUser.topups)) currentUser.topups = [];
+        currentUser.topups.unshift(newTopUpRequest);
         saveStoredUserData(currentUser);
-        updateBalanceUI();
 
         triggerHaptic('success');
         elements.executeTopUpBtn.disabled = false;
         elements.executeTopUpBtn.innerHTML = `To'ldirish • <span id="topUpBtnAmountText">${formatUzs(amount)}</span>`;
 
-        const successMsg = `✅ Hisobingiz muvaffaqiyatli to'ldirildi!\n\nQo'shilgan mablag': +${formatUzs(amount)}\nJoriy balans: ${formatUzs(currentUser.balance)}`;
+        const alertMsg = `✅ To'lov so'rovingiz qabul qilindi!\n\nSo'rov ID: #${transactionId}\nMiqdor: ${formatUzs(amount)}\nTo'lov usuli: ${newTopUpRequest.method}\nHolati: ⏳ Kutilmoqda\n\nAdministrator to'lovni tekshirib tasdiqlaganidan so'ng mablag' balansingizga avtomatik qo'shiladi.`;
         if (tg?.showAlert) {
-          tg.showAlert(successMsg);
+          tg.showAlert(alertMsg);
         } else {
-          alert(successMsg);
+          alert(alertMsg);
         }
 
-        switchTab('home');
-      }, 700);
+        updateAdminUI();
+        switchTab('orders');
+      }, 600);
     });
   }
 
-  // --- Orders List Rendering ---
+  // --- Orders List Rendering (Game Orders & Top-Up Requests) ---
   function renderOrdersList() {
     if (!elements.ordersList) return;
 
-    const list = currentUser.orders || [];
-    if (!list.length) {
+    const orders = currentUser.orders || [];
+    const topups = currentUser.topups || [];
+
+    if (!orders.length && !topups.length) {
       elements.ordersList.innerHTML = '';
       if (elements.emptyOrdersState) elements.emptyOrdersState.style.display = 'block';
       return;
     }
 
     if (elements.emptyOrdersState) elements.emptyOrdersState.style.display = 'none';
-    elements.ordersList.innerHTML = list.map(item => `
-      <div class="order-card">
-        <div class="order-card-header">
-          <div class="order-game-title">${escapeHtml(item.gameName)} • ${escapeHtml(item.pkgName)}</div>
-          <span class="order-status-badge status-completed">✓ ${item.status || 'Bajarildi'}</span>
+
+    let html = '';
+
+    // Render Game Purchases
+    if (orders.length > 0) {
+      html += `<div class="section-subheading" style="margin-bottom: 8px;"><span>O'yin xaridlari</span></div>`;
+      html += orders.map(item => `
+        <div class="order-card">
+          <div class="order-card-header">
+            <div class="order-game-title">${escapeHtml(item.gameName)} • ${escapeHtml(item.pkgName)}</div>
+            <span class="order-status-badge status-completed">✓ ${item.status || 'Bajarildi'}</span>
+          </div>
+          <div class="order-card-body">
+            <div>ID: <strong>${escapeHtml(item.playerId)}</strong></div>
+            <div class="order-price">${formatUzs(item.price)}</div>
+          </div>
+          <div style="font-size: 11px; color: var(--hint-color); display: flex; justify-content: space-between;">
+            <span>Buyurtma #${item.id}</span>
+            <span>${item.date}</span>
+          </div>
         </div>
-        <div class="order-card-body">
-          <div>ID: <strong>${escapeHtml(item.playerId)}</strong></div>
-          <div class="order-price">${formatUzs(item.price)}</div>
-        </div>
-        <div style="font-size: 11px; color: var(--hint-color); display: flex; justify-content: space-between;">
-          <span>Buyurtma #${item.id}</span>
-          <span>${item.date}</span>
-        </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
+
+    // Render Top-Up Transactions
+    if (topups.length > 0) {
+      html += `<div class="section-subheading" style="margin-top: 14px; margin-bottom: 8px;"><span>Balans to'ldirish so'rovlari</span></div>`;
+      html += topups.map(item => {
+        let statusBadge = `<span class="order-status-badge" style="background: rgba(245, 158, 11, 0.14); color: #d97706;">⏳ Kutilmoqda</span>`;
+        if (item.status === 'Tasdiqlandi') {
+          statusBadge = `<span class="order-status-badge status-completed">✓ Tasdiqlandi</span>`;
+        } else if (item.status === 'Rad etildi') {
+          statusBadge = `<span class="order-status-badge" style="background: rgba(239, 68, 68, 0.14); color: #dc2626;">✕ Rad etildi</span>`;
+        }
+
+        return `
+          <div class="order-card">
+            <div class="order-card-header">
+              <div class="order-game-title">Balans to'ldirish • ${escapeHtml(item.method || 'UZCARD')}</div>
+              ${statusBadge}
+            </div>
+            <div class="order-card-body">
+              <div>So'rov: <strong>#${item.id}</strong></div>
+              <div class="order-price" style="color: #16a34a;">+${formatUzs(item.amount)}</div>
+            </div>
+            <div style="font-size: 11px; color: var(--hint-color); display: flex; justify-content: space-between;">
+              <span>To'lov usuli: ${item.method}</span>
+              <span>${item.date}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    elements.ordersList.innerHTML = html;
   }
 
   function updateOrdersBadge() {
@@ -1068,6 +1200,344 @@
       .replace(/'/g, '&#039;');
   }
 
+  // ==========================================================================
+  // ADMIN PANEL LOGIC & PAYMENT APPROVALS (TO'LOVLARNI TASDIQLASH)
+  // ==========================================================================
+
+  /**
+   * Update Admin Panel visibility and pending payment counters
+   */
+  function updateAdminUI() {
+    const isAdmin = checkIsAdmin();
+
+    // Admin trigger button in Profile
+    if (elements.adminPanelTrigger) {
+      elements.adminPanelTrigger.style.display = isAdmin ? 'flex' : 'none';
+    }
+
+    // Admin quick badge in Header
+    if (elements.homeAdminBtn) {
+      elements.homeAdminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+
+    if (!isAdmin) return;
+
+    // Calculate pending requests
+    const allRequests = getPendingTopUps();
+    const pendingRequests = allRequests.filter(r => r.status === 'Kutilmoqda');
+    const pendingCount = pendingRequests.length;
+    const pendingSum = pendingRequests.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
+
+    // Update Badges
+    if (elements.adminPendingBadge) {
+      if (pendingCount > 0) {
+        elements.adminPendingBadge.textContent = pendingCount;
+        elements.adminPendingBadge.style.display = 'inline-block';
+      } else {
+        elements.adminPendingBadge.style.display = 'none';
+      }
+    }
+
+    if (elements.homeAdminBadgeCount) {
+      if (pendingCount > 0) {
+        elements.homeAdminBadgeCount.textContent = pendingCount;
+        elements.homeAdminBadgeCount.style.display = 'inline-block';
+      } else {
+        elements.homeAdminBadgeCount.style.display = 'none';
+      }
+    }
+
+    // Update Modal Counters
+    if (elements.adminPendingCountVal) {
+      elements.adminPendingCountVal.textContent = `${pendingCount} ta`;
+    }
+    if (elements.adminPendingSumVal) {
+      elements.adminPendingSumVal.textContent = formatUzs(pendingSum);
+    }
+    if (elements.adminFilterBadge) {
+      elements.adminFilterBadge.textContent = pendingCount;
+    }
+  }
+
+  /**
+   * Render Dynamic List of Pending Top-Up Requests
+   * Filter: 'pending' (faqat kutilayotgan) | 'all' (barcha tarix)
+   */
+  function renderAdminPendingList(filter = state.adminActiveFilter || 'pending') {
+    if (!elements.adminPendingList) return;
+
+    const allRequests = getPendingTopUps();
+    const filtered = filter === 'pending'
+      ? allRequests.filter(item => item.status === 'Kutilmoqda')
+      : allRequests;
+
+    if (!filtered.length) {
+      elements.adminPendingList.innerHTML = '';
+      if (elements.adminEmptyState) {
+        elements.adminEmptyState.style.display = 'block';
+        const titleEl = elements.adminEmptyState.querySelector('.state-title');
+        const descEl = elements.adminEmptyState.querySelector('.state-desc');
+        if (titleEl) {
+          titleEl.textContent = filter === 'pending' ? "Kutilayotgan to'lovlar yo'q" : "Hozircha so'rovlar yo'q";
+        }
+        if (descEl) {
+          descEl.textContent = filter === 'pending'
+            ? "Barcha to'lov so'rovlari ko'rib chiqilgan."
+            : "Hali hech qanday to'lov so'rovi amalga oshirilmagan.";
+        }
+      }
+      return;
+    }
+
+    if (elements.adminEmptyState) elements.adminEmptyState.style.display = 'none';
+
+    elements.adminPendingList.innerHTML = filtered.map(item => {
+      const isPending = item.status === 'Kutilmoqda';
+      let statusClass = 'kutilmoqda';
+      let statusIcon = '⏳';
+      if (item.status === 'Tasdiqlandi') {
+        statusClass = 'tasdiqlandi';
+        statusIcon = '✓';
+      } else if (item.status === 'Rad etildi') {
+        statusClass = 'rad-etildi';
+        statusIcon = '✕';
+      }
+
+      return `
+        <div class="admin-request-card" id="tx-card-${escapeHtml(item.id)}">
+          <div class="admin-card-head">
+            <div class="admin-user-info-row">
+              <div class="admin-u-avatar">👤</div>
+              <div class="admin-u-meta">
+                <span class="admin-u-name">${escapeHtml(item.userName || 'Foydalanuvchi')}</span>
+                <span class="admin-u-id-tag">Telegram ID: <code>${escapeHtml(String(item.userId))}</code></span>
+              </div>
+            </div>
+            <span class="status-pill status-${statusClass}">
+              ${statusIcon} ${escapeHtml(item.status)}
+            </span>
+          </div>
+
+          <div class="admin-details-grid">
+            <div class="admin-detail-item">
+              <span class="detail-k">So'rov ID</span>
+              <span class="detail-v">#${escapeHtml(item.id)}</span>
+            </div>
+            <div class="admin-detail-item">
+              <span class="detail-k">To'lov miqdori</span>
+              <span class="detail-v amount-highlight">+${formatUzs(item.amount)}</span>
+            </div>
+            <div class="admin-detail-item">
+              <span class="detail-k">To'lov usuli</span>
+              <span class="detail-v method-tag">💳 ${escapeHtml(item.method || 'UZCARD')}</span>
+            </div>
+            <div class="admin-detail-item">
+              <span class="detail-k">Vaqt</span>
+              <span class="detail-v">📅 ${escapeHtml(item.date)}</span>
+            </div>
+          </div>
+
+          ${isPending ? `
+            <div class="admin-action-row">
+              <button 
+                class="admin-btn btn-approve" 
+                type="button" 
+                onclick="approveTopUp('${escapeHtml(item.id)}', '${escapeHtml(String(item.userId))}', ${Number(item.amount)})"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Tasdiqlash</span>
+              </button>
+              <button 
+                class="admin-btn btn-reject" 
+                type="button" 
+                onclick="rejectTopUp('${escapeHtml(item.id)}')"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Rad etish</span>
+              </button>
+            </div>
+          ` : `
+            <div class="admin-action-done">
+              Holat: <strong>${escapeHtml(item.status)}</strong> (${item.resolvedAt || 'Ko\'rib chiqildi'})
+            </div>
+          `}
+        </div>
+      `;
+    }).join('');
+  }
+
+  /**
+   * APPROVAL LOGIC (Tasdiqlash)
+   * Updates request status to 'Tasdiqlandi' and logically adds amount to user's balance.
+   */
+  function approveTopUp(transactionId, userId, amount) {
+    amount = Number(amount) || 0;
+    const list = getPendingTopUps();
+    const tx = list.find(t => String(t.id) === String(transactionId));
+    if (!tx) {
+      alert("Xatolik: So'rov topilmadi!");
+      return;
+    }
+
+    if (tx.status === 'Tasdiqlandi') {
+      alert("Bu so'rov allaqachon tasdiqlangan!");
+      return;
+    }
+
+    // 1. Update request status in admin store
+    tx.status = 'Tasdiqlandi';
+    tx.resolvedAt = new Date().toLocaleString('uz-UZ');
+    savePendingTopUps(list);
+
+    // 2. Logically add amount to that specific user's balance in storage
+    const targetKey = getUserStorageKey(userId);
+    let targetUserData = null;
+    try {
+      const raw = localStorage.getItem(targetKey);
+      if (raw) targetUserData = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!targetUserData) {
+      targetUserData = {
+        id: String(userId),
+        firstName: tx.userName || 'Foydalanuvchi',
+        balance: 0,
+        orders: [],
+        topups: []
+      };
+    }
+
+    targetUserData.balance = (Number(targetUserData.balance) || 0) + amount;
+
+    // Update in target user's top-up records
+    if (!Array.isArray(targetUserData.topups)) targetUserData.topups = [];
+    const userTx = targetUserData.topups.find(t => String(t.id) === String(transactionId));
+    if (userTx) {
+      userTx.status = 'Tasdiqlandi';
+    } else {
+      targetUserData.topups.unshift({
+        id: transactionId,
+        amount: amount,
+        method: tx.method,
+        date: tx.date,
+        status: 'Tasdiqlandi'
+      });
+    }
+    localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+
+    // 3. If currently logged in user is the approved user, sync active session
+    if (String(currentUser.id) === String(userId)) {
+      currentUser = targetUserData;
+      updateBalanceUI();
+      renderOrdersList();
+    }
+
+    triggerHaptic('success');
+    const msg = `✅ To'lov muvaffaqiyatli tasdiqlandi!\n\nTranzaksiya: #${transactionId}\nFoydalanuvchi: ${userId} (${tx.userName})\nQo'shilgan summa: +${formatUzs(amount)}\nYangi balans: ${formatUzs(targetUserData.balance)}`;
+    if (tg?.showAlert) {
+      tg.showAlert(msg);
+    } else {
+      alert(msg);
+    }
+
+    updateAdminUI();
+    renderAdminPendingList(state.adminActiveFilter);
+  }
+  // Expose globally for onclick handlers
+  window.approveTopUp = approveTopUp;
+
+  /**
+   * REJECTION LOGIC (Rad etish)
+   * Changes status to 'Rad etildi' without adding to the user's balance.
+   */
+  function rejectTopUp(transactionId) {
+    const list = getPendingTopUps();
+    const tx = list.find(t => String(t.id) === String(transactionId));
+    if (!tx) {
+      alert("Xatolik: So'rov topilmadi!");
+      return;
+    }
+
+    if (tx.status === 'Rad etildi') {
+      alert("Bu so'rov allaqachon rad etilgan!");
+      return;
+    }
+
+    // 1. Update status to 'Rad etildi'
+    tx.status = 'Rad etildi';
+    tx.resolvedAt = new Date().toLocaleString('uz-UZ');
+    savePendingTopUps(list);
+
+    // 2. Update user record if exists (balance unchanged)
+    const targetKey = getUserStorageKey(tx.userId);
+    try {
+      const raw = localStorage.getItem(targetKey);
+      if (raw) {
+        const targetUserData = JSON.parse(raw);
+        if (Array.isArray(targetUserData.topups)) {
+          const userTx = targetUserData.topups.find(t => String(t.id) === String(transactionId));
+          if (userTx) userTx.status = 'Rad etildi';
+          localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+        }
+        if (String(currentUser.id) === String(tx.userId)) {
+          currentUser = targetUserData;
+          renderOrdersList();
+        }
+      }
+    } catch (e) {}
+
+    triggerHaptic('warning');
+    const msg = `❌ To'lov so'rovi rad etildi!\n\nTranzaksiya: #${transactionId}\nFoydalanuvchi: ${tx.userId}\nHolati: Rad etildi (Balans o'zgartirilmadi).`;
+    if (tg?.showAlert) {
+      tg.showAlert(msg);
+    } else {
+      alert(msg);
+    }
+
+    updateAdminUI();
+    renderAdminPendingList(state.adminActiveFilter);
+  }
+  // Expose globally for onclick handlers
+  window.rejectTopUp = rejectTopUp;
+
+  /**
+   * Open Admin Panel Modal
+   */
+  function openAdminModal() {
+    if (!checkIsAdmin()) {
+      alert("Ruxsat berilmagan: Siz administrator emassiz.");
+      return;
+    }
+
+    triggerHaptic('light');
+    state.adminActiveFilter = 'pending';
+    if (elements.adminFilterPendingBtn) elements.adminFilterPendingBtn.classList.add('active');
+    if (elements.adminFilterAllBtn) elements.adminFilterAllBtn.classList.remove('active');
+
+    updateAdminUI();
+    renderAdminPendingList('pending');
+
+    if (elements.adminModal) elements.adminModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    tg?.BackButton?.show();
+  }
+
+  /**
+   * Close Admin Panel Modal
+   */
+  function closeAdminModal() {
+    if (elements.adminModal) elements.adminModal.classList.remove('active');
+    document.body.style.overflow = '';
+    if (!elements.modalOverlay?.classList.contains('active')) {
+      tg?.BackButton?.hide();
+    }
+  }
+
   // --- Setup Event Listeners ---
   function setupEventListeners() {
     // 5-Tab Navigation Items
@@ -1125,6 +1595,31 @@
       switchTab('orders');
     });
 
+    // Admin Panel Triggers & Modal Actions
+    elements.adminPanelTrigger?.addEventListener('click', openAdminModal);
+    elements.homeAdminBtn?.addEventListener('click', openAdminModal);
+    elements.adminModalCloseBtn?.addEventListener('click', closeAdminModal);
+    elements.adminModal?.addEventListener('click', (e) => {
+      if (e.target === elements.adminModal) closeAdminModal();
+    });
+
+    // Admin Filter Segment Tabs
+    elements.adminFilterPendingBtn?.addEventListener('click', () => {
+      state.adminActiveFilter = 'pending';
+      elements.adminFilterPendingBtn.classList.add('active');
+      elements.adminFilterAllBtn?.classList.remove('active');
+      renderAdminPendingList('pending');
+      triggerHaptic('light');
+    });
+
+    elements.adminFilterAllBtn?.addEventListener('click', () => {
+      state.adminActiveFilter = 'all';
+      elements.adminFilterAllBtn.classList.add('active');
+      elements.adminFilterPendingBtn?.classList.remove('active');
+      renderAdminPendingList('all');
+      triggerHaptic('light');
+    });
+
     setupTopUpHandlers();
     setupProfileSettings();
   }
@@ -1135,6 +1630,7 @@
     updateBalanceUI();
     setupEventListeners();
     updateOrdersBadge();
+    updateAdminUI();
     loadGames();
   }
 
