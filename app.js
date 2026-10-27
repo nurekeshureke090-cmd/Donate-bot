@@ -79,6 +79,248 @@
     }
   }
 
+  // --- Shared Storage Keys for Store Management ---
+  const SETTINGS_KEYS = {
+    PENDING_TOPUPS: 'donat_store_pending_topups',
+    PAYMENT_SETTINGS: 'donat_store_payment_settings',
+    MARGIN_SETTINGS: 'donat_store_margin_settings',
+    LINKS_SETTINGS: 'donat_store_links_settings',
+    USERS_REGISTRY: 'donat_store_users_registry',
+    MASTER_ORDERS: 'donat_store_master_orders'
+  };
+
+  // 1. Payment Cards Settings Storage
+  function getPaymentSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEYS.PAYMENT_SETTINGS);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+
+    const defaults = {
+      uzcardNumber: '8600 1234 5678 9012',
+      uzcardHolder: 'ALIJON VALIYEV',
+      humoNumber: '9860 1234 5678 9012',
+      humoHolder: 'ALIJON VALIYEV',
+      payNote: "To'lov izohida o'z Telegram ID raqamingizni yozib qoldiring."
+    };
+    savePaymentSettings(defaults);
+    return defaults;
+  }
+
+  function savePaymentSettings(settings) {
+    try {
+      localStorage.setItem(SETTINGS_KEYS.PAYMENT_SETTINGS, JSON.stringify(settings));
+      updateTopUpRequisitesUI();
+    } catch (e) {
+      console.warn('Payment settings save error:', e);
+    }
+  }
+
+  // 2. Pricing & Margins Settings Storage (CRITICAL)
+  function getMarginSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEYS.MARGIN_SETTINGS);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+
+    const defaults = {
+      enabled: true,
+      type: 'percent', // 'percent' | 'fixed'
+      value: 15        // 15% or fixed amount in UZS
+    };
+    saveMarginSettings(defaults);
+    return defaults;
+  }
+
+  function saveMarginSettings(settings) {
+    try {
+      localStorage.setItem(SETTINGS_KEYS.MARGIN_SETTINGS, JSON.stringify(settings));
+      if (state.packages && state.packages.length > 0) {
+        renderPackages();
+      }
+    } catch (e) {
+      console.warn('Margin settings save error:', e);
+    }
+  }
+
+  /**
+   * CRITICAL: Dynamic Price Calculation with Profit Margin
+   * Calculates the final price shown to users with Admin's profit margin applied
+   */
+  function getPackagePrice(pkg) {
+    if (!pkg) return 0;
+    const basePrice = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
+    const marginSettings = getMarginSettings();
+
+    if (!marginSettings || !marginSettings.enabled) {
+      return basePrice;
+    }
+
+    const val = Number(marginSettings.value) || 0;
+    if (val <= 0) return basePrice;
+
+    if (marginSettings.type === 'percent') {
+      const markup = Math.round(basePrice * (val / 100));
+      return basePrice + markup;
+    } else {
+      return basePrice + val;
+    }
+  }
+
+  // 3. Content & Links Settings Storage
+  function getLinksSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEYS.LINKS_SETTINGS);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+
+    const defaults = {
+      supportUrl: 'https://t.me/admin',
+      supportDesc: 'Administrator: @admin',
+      videoUrl: 'https://t.me/admin',
+      channelUrl: 'https://t.me/admin',
+      storeTitle: 'Donat Store',
+      faqContent: "🛡 Kafolat va Xavfsizlik:\n\n• Barcha o'yin to'lovlari hisobingizdagi ichki balansdan yechiladi.\n• Buyurtmalar 30 soniya ichida o'yin hisobingizga avtomatik yetkazib beriladi.\n• Savollar bo'yicha: @admin"
+    };
+    saveLinksSettings(defaults);
+    return defaults;
+  }
+
+  function saveLinksSettings(settings) {
+    try {
+      localStorage.setItem(SETTINGS_KEYS.LINKS_SETTINGS, JSON.stringify(settings));
+      updateProfileLinksUI();
+    } catch (e) {
+      console.warn('Links settings save error:', e);
+    }
+  }
+
+  // 4. Users Registry Storage (User Management)
+  function getAllUsers() {
+    let list = [];
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEYS.USERS_REGISTRY);
+      if (raw) list = JSON.parse(raw);
+    } catch (e) {}
+
+    // Ensure currentUser is present and up to date
+    const currentIdx = list.findIndex(u => String(u.id) === String(currentUser.id));
+    const currentEntry = {
+      id: currentUser.id,
+      name: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'Foydalanuvchi',
+      username: currentUser.username ? `@${currentUser.username}` : '@user',
+      balance: currentUser.balance || 0,
+      ordersCount: (currentUser.orders || []).length,
+      registeredDate: '27.10.2026'
+    };
+
+    if (currentIdx !== -1) {
+      list[currentIdx].balance = currentUser.balance;
+      list[currentIdx].ordersCount = (currentUser.orders || []).length;
+    } else {
+      list.unshift(currentEntry);
+    }
+
+    if (list.length < 3) {
+      list.push(
+        {
+          id: '59384721',
+          name: 'Azizbek Karimov',
+          username: '@azizbek_01',
+          balance: 145000,
+          ordersCount: 4,
+          registeredDate: '25.10.2026'
+        },
+        {
+          id: '61928471',
+          name: 'Dilshod Rustamov',
+          username: '@dilshod_pro',
+          balance: 75000,
+          ordersCount: 2,
+          registeredDate: '26.10.2026'
+        },
+        {
+          id: '72819402',
+          name: 'Jamshid Aliyev',
+          username: '@jamik_pubg',
+          balance: 320000,
+          ordersCount: 7,
+          registeredDate: '24.10.2026'
+        }
+      );
+    }
+
+    saveAllUsers(list);
+    return list;
+  }
+
+  function saveAllUsers(list) {
+    try {
+      localStorage.setItem(SETTINGS_KEYS.USERS_REGISTRY, JSON.stringify(list));
+    } catch (e) {
+      console.warn('Users registry save error:', e);
+    }
+  }
+
+  // 5. Master Orders Storage (All Store Orders)
+  function getAllMasterOrders() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEYS.MASTER_ORDERS);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+
+    const defaults = [
+      {
+        id: '849201',
+        type: 'game',
+        userId: '59384721',
+        userName: 'Azizbek Karimov',
+        title: 'Free Fire • 100+10 Olmos',
+        playerId: '59384721',
+        price: 15000,
+        date: new Date(Date.now() - 30 * 60000).toLocaleString('uz-UZ'),
+        status: 'Bajarildi'
+      },
+      {
+        id: 'TX892104',
+        type: 'topup',
+        userId: '59384721',
+        userName: 'Azizbek Karimov',
+        title: "Balans to'ldirish (UZCARD)",
+        price: 50000,
+        date: new Date(Date.now() - 15 * 60000).toLocaleString('uz-UZ'),
+        status: 'Kutilmoqda'
+      },
+      {
+        id: '849188',
+        type: 'game',
+        userId: '72819402',
+        userName: 'Jamshid Aliyev',
+        title: 'PUBG Mobile • 60 UC',
+        playerId: '519284910',
+        price: 13500,
+        date: new Date(Date.now() - 90 * 60000).toLocaleString('uz-UZ'),
+        status: 'Bajarildi'
+      }
+    ];
+    saveAllMasterOrders(defaults);
+    return defaults;
+  }
+
+  function saveAllMasterOrders(list) {
+    try {
+      localStorage.setItem(SETTINGS_KEYS.MASTER_ORDERS, JSON.stringify(list));
+    } catch (e) {
+      console.warn('Master orders save error:', e);
+    }
+  }
+
+  function recordMasterOrder(order) {
+    const list = getAllMasterOrders();
+    list.unshift(order);
+    saveAllMasterOrders(list);
+  }
+
   // --- Shared Pending Top-ups Store for Admin Approval ---
   const PENDING_PAYMENTS_KEY = 'donat_store_pending_topups';
 
@@ -129,7 +371,10 @@
   // --- App State ---
   const state = {
     activeTab: 'home',
-    adminActiveFilter: 'pending', // 'pending' | 'all'
+    adminActiveTab: 'approvals',
+    adminActiveFilter: 'pending',
+    adminMasterOrdersFilter: 'all',
+    adminMarginType: 'percent',
     games: [],             // Strictly max 50 games
     filteredGames: [],
     selectedGame: null,
@@ -181,20 +426,28 @@
     errorMessage: document.getElementById('errorMessage'),
     retryFetchBtn: document.getElementById('retryFetchBtn'),
 
-    // Top-Up View
+    // Top-Up View & Dynamic Requisites
     topUpCurrentBalance: document.getElementById('topUpCurrentBalance'),
     presetBtns: document.querySelectorAll('.preset-btn'),
     customAmountInput: document.getElementById('customAmountInput'),
     paymentMethodCards: document.querySelectorAll('.payment-method-card'),
     topUpBtnAmountText: document.getElementById('topUpBtnAmountText'),
     executeTopUpBtn: document.getElementById('executeTopUpBtn'),
+    topupRequisitesBox: document.getElementById('topupRequisitesBox'),
+    reqCardTypeTitle: document.getElementById('reqCardTypeTitle'),
+    reqCardIcon: document.getElementById('reqCardIcon'),
+    reqCardNumberDisplay: document.getElementById('reqCardNumberDisplay'),
+    btnCopyCard: document.getElementById('btnCopyCard'),
+    btnCopyCardText: document.getElementById('btnCopyCardText'),
+    reqCardHolderDisplay: document.getElementById('reqCardHolderDisplay'),
+    reqInstructionsDisplay: document.getElementById('reqInstructionsDisplay'),
 
     // Orders View
     ordersList: document.getElementById('ordersList'),
     emptyOrdersState: document.getElementById('emptyOrdersState'),
     goCatalogBtn: document.getElementById('goCatalogBtn'),
 
-    // Profile View
+    // Profile View & Configurable Links
     profileAvatar: document.getElementById('profileAvatar'),
     profileFullName: document.getElementById('profileFullName'),
     profileUsername: document.getElementById('profileUsername'),
@@ -208,6 +461,10 @@
     langSelect: document.getElementById('langSelect'),
     notifToggle: document.getElementById('notifToggle'),
     termsBtn: document.getElementById('termsBtn'),
+    profileSupportLink: document.getElementById('profileSupportLink'),
+    profileSupportDesc: document.getElementById('profileSupportDesc'),
+    profileVideoLink: document.getElementById('profileVideoLink'),
+    profileChannelLink: document.getElementById('profileChannelLink'),
 
     // Packages Sliding Modal
     modalOverlay: document.getElementById('modalOverlay'),
@@ -243,16 +500,75 @@
     receiptRemainingBalance: document.getElementById('receiptRemainingBalance'),
     successCloseBtn: document.getElementById('successCloseBtn'),
 
-    // Admin Panel Modal
+    // Comprehensive Admin Dashboard (6-in-1)
     adminModal: document.getElementById('adminModal'),
     adminModalCloseBtn: document.getElementById('adminModalCloseBtn'),
+    adminDashTabs: document.querySelectorAll('.admin-dash-tab'),
+    adminDashViews: document.querySelectorAll('.admin-dash-view'),
+    adminNavApprovalsBadge: document.getElementById('adminNavApprovalsBadge'),
+
+    // Section 1: Approvals
     adminPendingCountVal: document.getElementById('adminPendingCountVal'),
     adminPendingSumVal: document.getElementById('adminPendingSumVal'),
     adminFilterPendingBtn: document.getElementById('adminFilterPendingBtn'),
     adminFilterAllBtn: document.getElementById('adminFilterAllBtn'),
     adminFilterBadge: document.getElementById('adminFilterBadge'),
     adminPendingList: document.getElementById('adminPendingList'),
-    adminEmptyState: document.getElementById('adminEmptyState')
+    adminEmptyState: document.getElementById('adminEmptyState'),
+
+    // Section 2: Cards Settings
+    settingUzcardNumber: document.getElementById('settingUzcardNumber'),
+    settingUzcardHolder: document.getElementById('settingUzcardHolder'),
+    settingHumoNumber: document.getElementById('settingHumoNumber'),
+    settingHumoHolder: document.getElementById('settingHumoHolder'),
+    settingPayNote: document.getElementById('settingPayNote'),
+    btnSaveCardSettings: document.getElementById('btnSaveCardSettings'),
+
+    // Section 3: Margins Settings
+    settingMarginEnabled: document.getElementById('settingMarginEnabled'),
+    btnMarginTypePercent: document.getElementById('btnMarginTypePercent'),
+    btnMarginTypeFixed: document.getElementById('btnMarginTypeFixed'),
+    settingMarginValueLabel: document.getElementById('settingMarginValueLabel'),
+    settingMarginValue: document.getElementById('settingMarginValue'),
+    settingMarginSuffix: document.getElementById('settingMarginSuffix'),
+    prevMarginAddition: document.getElementById('prevMarginAddition'),
+    prevClientPrice: document.getElementById('prevClientPrice'),
+    prevNetProfit: document.getElementById('prevNetProfit'),
+    btnSaveMarginSettings: document.getElementById('btnSaveMarginSettings'),
+
+    // Section 4: Links Settings
+    settingSupportUrl: document.getElementById('settingSupportUrl'),
+    settingSupportDesc: document.getElementById('settingSupportDesc'),
+    settingVideoUrl: document.getElementById('settingVideoUrl'),
+    settingChannelUrl: document.getElementById('settingChannelUrl'),
+    settingStoreTitle: document.getElementById('settingStoreTitle'),
+    settingFaqContent: document.getElementById('settingFaqContent'),
+    btnSaveLinksSettings: document.getElementById('btnSaveLinksSettings'),
+
+    // Section 5: Users Management
+    adminUsersCountBadge: document.getElementById('adminUsersCountBadge'),
+    adminUserSearchInput: document.getElementById('adminUserSearchInput'),
+    adminUsersList: document.getElementById('adminUsersList'),
+    adminBalanceModal: document.getElementById('adminBalanceModal'),
+    adminBalanceCloseBtn: document.getElementById('adminBalanceCloseBtn'),
+    adjustUserAvatar: document.getElementById('adjustUserAvatar'),
+    adjustUserName: document.getElementById('adjustUserName'),
+    adjustUserId: document.getElementById('adjustUserId'),
+    adjustCurrentBalance: document.getElementById('adjustCurrentBalance'),
+    btnTypeAdd: document.getElementById('btnTypeAdd'),
+    btnTypeDeduct: document.getElementById('btnTypeDeduct'),
+    adjustAmountInput: document.getElementById('adjustAmountInput'),
+    adjustReasonInput: document.getElementById('adjustReasonInput'),
+    btnConfirmBalanceAdjust: document.getElementById('btnConfirmBalanceAdjust'),
+
+    // Section 6: Master Orders Log
+    adminOrdersCountBadge: document.getElementById('adminOrdersCountBadge'),
+    adminOrderSearchInput: document.getElementById('adminOrderSearchInput'),
+    btnFilterOrdersAll: document.getElementById('btnFilterOrdersAll'),
+    btnFilterOrdersGames: document.getElementById('btnFilterOrdersGames'),
+    btnFilterOrdersTopups: document.getElementById('btnFilterOrdersTopups'),
+    adminAllOrdersList: document.getElementById('adminAllOrdersList'),
+    adminEmptyOrdersState: document.getElementById('adminEmptyOrdersState')
   };
 
   // --- Formatting Helpers ---
@@ -360,7 +676,9 @@
 
       // Native BackButton
       tg.BackButton.onClick(() => {
-        if (elements.adminModal?.classList.contains('active')) {
+        if (elements.adminBalanceModal?.classList.contains('active')) {
+          closeBalanceModal();
+        } else if (elements.adminModal?.classList.contains('active')) {
           closeAdminModal();
         } else {
           closeModal();
@@ -658,7 +976,7 @@
       }
 
       elements.packagesList.innerHTML = state.packages.map(pkg => {
-        const priceUzs = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
+        const priceUzs = getPackagePrice(pkg);
         const usdText = pkg.price?.usd ? `$${pkg.price.usd}` : '';
         return `
           <div class="pkg-card" data-paket-id="${pkg.paket_id}">
@@ -699,7 +1017,7 @@
     checkBadge.textContent = '✓';
     cardElement.appendChild(checkBadge);
 
-    const priceUzs = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
+    const priceUzs = getPackagePrice(pkg);
     if (elements.summaryPkgName) elements.summaryPkgName.textContent = pkg.name;
     if (elements.summaryPkgPrice) elements.summaryPkgPrice.textContent = formatUzs(priceUzs);
     if (elements.summaryCurrentBalance) elements.summaryCurrentBalance.textContent = formatUzs(currentUser.balance);
@@ -795,8 +1113,7 @@
 
   // --- MainButton / Fallback Button State ---
   function updateMainButtonState() {
-    const priceUzs = state.selectedPackage?.price?.amount || 
-      (state.selectedPackage?.price?.usd ? Math.round(state.selectedPackage.price.usd * 12800) : 0);
+    const priceUzs = state.selectedPackage ? getPackagePrice(state.selectedPackage) : 0;
 
     const hasEnoughBalance = currentUser.balance >= priceUzs;
 
@@ -837,8 +1154,7 @@
   async function handlePurchase() {
     if (!state.selectedGame || !state.selectedPackage) return;
 
-    const priceUzs = state.selectedPackage.price?.amount || 
-      (state.selectedPackage.price?.usd ? Math.round(state.selectedPackage.price.usd * 12800) : 0);
+    const priceUzs = getPackagePrice(state.selectedPackage);
 
     // 1. Strict Balance Check
     if (currentUser.balance < priceUzs) {
@@ -895,7 +1211,7 @@
       const orderId = res?.order_id || Math.floor(100000 + Math.random() * 900000);
 
       // 3. Save order to User Storage
-      currentUser.orders.unshift({
+      const orderRecord = {
         id: orderId,
         gameName: state.selectedGame.name,
         gameImg: state.selectedGame.image,
@@ -904,6 +1220,20 @@
         playerId: playerId + (serverId ? ` (${serverId})` : ''),
         status: 'Bajarildi',
         date: new Date().toLocaleString('uz-UZ', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      };
+      currentUser.orders.unshift(orderRecord);
+
+      // Record in Admin Master Log
+      recordMasterOrder({
+        id: orderId,
+        type: 'game',
+        userId: currentUserId,
+        userName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'Foydalanuvchi',
+        title: `${state.selectedGame.name} • ${state.selectedPackage.name}`,
+        playerId: playerId + (serverId ? ` (${serverId})` : ''),
+        price: priceUzs,
+        date: orderRecord.date,
+        status: 'Bajarildi'
       });
 
       saveStoredUserData(currentUser);
@@ -978,8 +1308,23 @@
         if (input) {
           input.checked = true;
           state.selectedPayMethod = input.value;
+          updateTopUpRequisitesUI();
         }
         triggerHaptic('light');
+      });
+    });
+
+    // Copy Card Number Button
+    elements.btnCopyCard?.addEventListener('click', () => {
+      const cardNumber = elements.reqCardNumberDisplay ? elements.reqCardNumberDisplay.textContent.replace(/\s+/g, '') : '';
+      if (!cardNumber) return;
+
+      navigator.clipboard?.writeText(cardNumber).then(() => {
+        triggerHaptic('success');
+        if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = 'Nusxalandi!';
+        setTimeout(() => {
+          if (elements.btnCopyCardText) elements.btnCopyCardText.textContent = 'Nusxalash';
+        }, 1800);
       });
     });
 
@@ -1017,6 +1362,18 @@
         if (!Array.isArray(currentUser.topups)) currentUser.topups = [];
         currentUser.topups.unshift(newTopUpRequest);
         saveStoredUserData(currentUser);
+
+        // 3. Record in Admin Master Log
+        recordMasterOrder({
+          id: transactionId,
+          type: 'topup',
+          userId: currentUserId,
+          userName: newTopUpRequest.userName,
+          title: `Balans to'ldirish (${newTopUpRequest.method})`,
+          price: amount,
+          date: newTopUpRequest.date,
+          status: 'Kutilmoqda'
+        });
 
         triggerHaptic('success');
         elements.executeTopUpBtn.disabled = false;
@@ -1201,11 +1558,14 @@
   }
 
   // ==========================================================================
-  // ADMIN PANEL LOGIC & PAYMENT APPROVALS (TO'LOVLARNI TASDIQLASH)
+  // COMPREHENSIVE ADMIN DASHBOARD & STORE MANAGEMENT (6-IN-1)
   // ==========================================================================
 
+  let selectedAdjustUserId = null;
+  let balanceAdjustAction = 'add'; // 'add' | 'deduct'
+
   /**
-   * Update Admin Panel visibility and pending payment counters
+   * Update Admin UI, Visibility and Badges
    */
   function updateAdminUI() {
     const isAdmin = checkIsAdmin();
@@ -1220,6 +1580,10 @@
       elements.homeAdminBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     }
 
+    // Sync public store configs to User UI
+    updateTopUpRequisitesUI();
+    updateProfileLinksUI();
+
     if (!isAdmin) return;
 
     // Calculate pending requests
@@ -1228,7 +1592,7 @@
     const pendingCount = pendingRequests.length;
     const pendingSum = pendingRequests.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
 
-    // Update Badges
+    // Update Profile badge
     if (elements.adminPendingBadge) {
       if (pendingCount > 0) {
         elements.adminPendingBadge.textContent = pendingCount;
@@ -1238,6 +1602,7 @@
       }
     }
 
+    // Update Header mini badge
     if (elements.homeAdminBadgeCount) {
       if (pendingCount > 0) {
         elements.homeAdminBadgeCount.textContent = pendingCount;
@@ -1247,22 +1612,66 @@
       }
     }
 
+    // Update Dashboard Nav Approvals Badge
+    if (elements.adminNavApprovalsBadge) {
+      if (pendingCount > 0) {
+        elements.adminNavApprovalsBadge.textContent = pendingCount;
+        elements.adminNavApprovalsBadge.style.display = 'inline-block';
+      } else {
+        elements.adminNavApprovalsBadge.style.display = 'none';
+      }
+    }
+
     // Update Modal Counters
-    if (elements.adminPendingCountVal) {
-      elements.adminPendingCountVal.textContent = `${pendingCount} ta`;
-    }
-    if (elements.adminPendingSumVal) {
-      elements.adminPendingSumVal.textContent = formatUzs(pendingSum);
-    }
-    if (elements.adminFilterBadge) {
-      elements.adminFilterBadge.textContent = pendingCount;
-    }
+    if (elements.adminPendingCountVal) elements.adminPendingCountVal.textContent = `${pendingCount} ta`;
+    if (elements.adminPendingSumVal) elements.adminPendingSumVal.textContent = formatUzs(pendingSum);
+    if (elements.adminFilterBadge) elements.adminFilterBadge.textContent = pendingCount;
   }
 
   /**
-   * Render Dynamic List of Pending Top-Up Requests
-   * Filter: 'pending' (faqat kutilayotgan) | 'all' (barcha tarix)
+   * Switch between the 6 Admin Dashboard Tabs
    */
+  function switchAdminTab(targetTab) {
+    state.adminActiveTab = targetTab;
+
+    elements.adminDashTabs.forEach(btn => {
+      if (btn.getAttribute('data-dash-tab') === targetTab) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    elements.adminDashViews.forEach(view => {
+      view.classList.remove('active');
+    });
+
+    const targetViewId = `adminView${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`;
+    const targetView = document.getElementById(targetViewId);
+    if (targetView) targetView.classList.add('active');
+
+    triggerHaptic('light');
+
+    // Tab-specific loaders
+    if (targetTab === 'approvals') {
+      renderAdminPendingList(state.adminActiveFilter);
+    } else if (targetTab === 'cards') {
+      loadCardSettingsIntoForm();
+    } else if (targetTab === 'margins') {
+      loadMarginSettingsIntoForm();
+    } else if (targetTab === 'links') {
+      loadLinksSettingsIntoForm();
+    } else if (targetTab === 'users') {
+      renderAdminUsers();
+    } else if (targetTab === 'orders') {
+      renderAdminAllOrders(state.adminMasterOrdersFilter);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // SECTION 1: PAYMENT APPROVALS (TO'LOVLARNI TASDIQLASH)
+  // --------------------------------------------------------------------------
+
   function renderAdminPendingList(filter = state.adminActiveFilter || 'pending') {
     if (!elements.adminPendingList) return;
 
@@ -1371,10 +1780,6 @@
     }).join('');
   }
 
-  /**
-   * APPROVAL LOGIC (Tasdiqlash)
-   * Updates request status to 'Tasdiqlandi' and logically adds amount to user's balance.
-   */
   function approveTopUp(transactionId, userId, amount) {
     amount = Number(amount) || 0;
     const list = getPendingTopUps();
@@ -1389,12 +1794,12 @@
       return;
     }
 
-    // 1. Update request status in admin store
+    // 1. Update request status in pending list
     tx.status = 'Tasdiqlandi';
     tx.resolvedAt = new Date().toLocaleString('uz-UZ');
     savePendingTopUps(list);
 
-    // 2. Logically add amount to that specific user's balance in storage
+    // 2. Add amount to user storage
     const targetKey = getUserStorageKey(userId);
     let targetUserData = null;
     try {
@@ -1414,7 +1819,6 @@
 
     targetUserData.balance = (Number(targetUserData.balance) || 0) + amount;
 
-    // Update in target user's top-up records
     if (!Array.isArray(targetUserData.topups)) targetUserData.topups = [];
     const userTx = targetUserData.topups.find(t => String(t.id) === String(transactionId));
     if (userTx) {
@@ -1430,7 +1834,19 @@
     }
     localStorage.setItem(targetKey, JSON.stringify(targetUserData));
 
-    // 3. If currently logged in user is the approved user, sync active session
+    // Update in users registry
+    const allUsers = getAllUsers();
+    const uReg = allUsers.find(u => String(u.id) === String(userId));
+    if (uReg) uReg.balance = targetUserData.balance;
+    saveAllUsers(allUsers);
+
+    // Update in Master Orders Log
+    const masterOrders = getAllMasterOrders();
+    const mOrd = masterOrders.find(o => String(o.id) === String(transactionId));
+    if (mOrd) mOrd.status = 'Tasdiqlandi';
+    saveAllMasterOrders(masterOrders);
+
+    // If currently logged in user is approved, sync session
     if (String(currentUser.id) === String(userId)) {
       currentUser = targetUserData;
       updateBalanceUI();
@@ -1448,13 +1864,8 @@
     updateAdminUI();
     renderAdminPendingList(state.adminActiveFilter);
   }
-  // Expose globally for onclick handlers
   window.approveTopUp = approveTopUp;
 
-  /**
-   * REJECTION LOGIC (Rad etish)
-   * Changes status to 'Rad etildi' without adding to the user's balance.
-   */
   function rejectTopUp(transactionId) {
     const list = getPendingTopUps();
     const tx = list.find(t => String(t.id) === String(transactionId));
@@ -1468,12 +1879,11 @@
       return;
     }
 
-    // 1. Update status to 'Rad etildi'
     tx.status = 'Rad etildi';
     tx.resolvedAt = new Date().toLocaleString('uz-UZ');
     savePendingTopUps(list);
 
-    // 2. Update user record if exists (balance unchanged)
+    // Update user record if exists
     const targetKey = getUserStorageKey(tx.userId);
     try {
       const raw = localStorage.getItem(targetKey);
@@ -1491,6 +1901,12 @@
       }
     } catch (e) {}
 
+    // Update in Master Orders Log
+    const masterOrders = getAllMasterOrders();
+    const mOrd = masterOrders.find(o => String(o.id) === String(transactionId));
+    if (mOrd) mOrd.status = 'Rad etildi';
+    saveAllMasterOrders(masterOrders);
+
     triggerHaptic('warning');
     const msg = `❌ To'lov so'rovi rad etildi!\n\nTranzaksiya: #${transactionId}\nFoydalanuvchi: ${tx.userId}\nHolati: Rad etildi (Balans o'zgartirilmadi).`;
     if (tg?.showAlert) {
@@ -1502,11 +1918,445 @@
     updateAdminUI();
     renderAdminPendingList(state.adminActiveFilter);
   }
-  // Expose globally for onclick handlers
   window.rejectTopUp = rejectTopUp;
 
+  // --------------------------------------------------------------------------
+  // SECTION 2: PAYMENT CARDS SETTINGS (KARTA SOZLAMALARI)
+  // --------------------------------------------------------------------------
+
+  function loadCardSettingsIntoForm() {
+    const settings = getPaymentSettings();
+    if (elements.settingUzcardNumber) elements.settingUzcardNumber.value = settings.uzcardNumber || '';
+    if (elements.settingUzcardHolder) elements.settingUzcardHolder.value = settings.uzcardHolder || '';
+    if (elements.settingHumoNumber) elements.settingHumoNumber.value = settings.humoNumber || '';
+    if (elements.settingHumoHolder) elements.settingHumoHolder.value = settings.humoHolder || '';
+    if (elements.settingPayNote) elements.settingPayNote.value = settings.payNote || '';
+  }
+
+  function handleSaveCardSettings() {
+    const newSettings = {
+      uzcardNumber: elements.settingUzcardNumber ? elements.settingUzcardNumber.value.trim() : '8600 1234 5678 9012',
+      uzcardHolder: elements.settingUzcardHolder ? elements.settingUzcardHolder.value.trim().toUpperCase() : 'ADMINISTRATOR',
+      humoNumber: elements.settingHumoNumber ? elements.settingHumoNumber.value.trim() : '9860 1234 5678 9012',
+      humoHolder: elements.settingHumoHolder ? elements.settingHumoHolder.value.trim().toUpperCase() : 'ADMINISTRATOR',
+      payNote: elements.settingPayNote ? elements.settingPayNote.value.trim() : "To'lov izohida o'z Telegram ID raqamingizni yozib qoldiring."
+    };
+
+    savePaymentSettings(newSettings);
+    triggerHaptic('success');
+
+    const msg = "✅ Karta sozlamalari muvaffaqiyatli saqlandi!\n\nFoydalanuvchilar endi ushbu yangi karta raqamlarini ko'radilar.";
+    if (tg?.showAlert) tg.showAlert(msg);
+    else alert(msg);
+  }
+
+  function updateTopUpRequisitesUI() {
+    const settings = getPaymentSettings();
+    const method = state.selectedPayMethod || 'uzcard';
+
+    if (!elements.topupRequisitesBox) return;
+
+    if (method === 'uzcard') {
+      if (elements.reqCardTypeTitle) elements.reqCardTypeTitle.textContent = "UZCARD orqali to'lov";
+      if (elements.reqCardIcon) elements.reqCardIcon.textContent = '💳';
+      if (elements.reqCardNumberDisplay) elements.reqCardNumberDisplay.textContent = settings.uzcardNumber || '8600 1234 5678 9012';
+      if (elements.reqCardHolderDisplay) elements.reqCardHolderDisplay.textContent = settings.uzcardHolder || 'ADMINISTRATOR';
+    } else if (method === 'humo') {
+      if (elements.reqCardTypeTitle) elements.reqCardTypeTitle.textContent = "HUMO orqali to'lov";
+      if (elements.reqCardIcon) elements.reqCardIcon.textContent = '💳';
+      if (elements.reqCardNumberDisplay) elements.reqCardNumberDisplay.textContent = settings.humoNumber || '9860 1234 5678 9012';
+      if (elements.reqCardHolderDisplay) elements.reqCardHolderDisplay.textContent = settings.humoHolder || 'ADMINISTRATOR';
+    } else if (method === 'click') {
+      if (elements.reqCardTypeTitle) elements.reqCardTypeTitle.textContent = "Click orqali to'lov";
+      if (elements.reqCardIcon) elements.reqCardIcon.textContent = '📲';
+      if (elements.reqCardNumberDisplay) elements.reqCardNumberDisplay.textContent = settings.uzcardNumber || settings.humoNumber;
+      if (elements.reqCardHolderDisplay) elements.reqCardHolderDisplay.textContent = settings.uzcardHolder || 'ADMINISTRATOR';
+    } else {
+      if (elements.reqCardTypeTitle) elements.reqCardTypeTitle.textContent = "Payme orqali to'lov";
+      if (elements.reqCardIcon) elements.reqCardIcon.textContent = '📱';
+      if (elements.reqCardNumberDisplay) elements.reqCardNumberDisplay.textContent = settings.uzcardNumber || settings.humoNumber;
+      if (elements.reqCardHolderDisplay) elements.reqCardHolderDisplay.textContent = settings.uzcardHolder || 'ADMINISTRATOR';
+    }
+
+    if (elements.reqInstructionsDisplay) {
+      elements.reqInstructionsDisplay.textContent = settings.payNote || "Kartaga to'lovni o'tkazing va pastdagi 'To'ldirish' tugmasini bosing.";
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // SECTION 3: PRICING & MARGINS (USTAMA SOZLAMALARI - CRITICAL)
+  // --------------------------------------------------------------------------
+
+  function loadMarginSettingsIntoForm() {
+    const settings = getMarginSettings();
+    state.adminMarginType = settings.type || 'percent';
+
+    if (elements.settingMarginEnabled) {
+      elements.settingMarginEnabled.checked = Boolean(settings.enabled);
+    }
+
+    if (elements.settingMarginValue) {
+      elements.settingMarginValue.value = settings.value || 15;
+    }
+
+    syncMarginTypePillUI();
+    updateMarginPreview();
+  }
+
+  function syncMarginTypePillUI() {
+    const isPercent = state.adminMarginType === 'percent';
+    if (elements.btnMarginTypePercent) elements.btnMarginTypePercent.classList.toggle('active', isPercent);
+    if (elements.btnMarginTypeFixed) elements.btnMarginTypeFixed.classList.toggle('active', !isPercent);
+
+    if (elements.settingMarginValueLabel) {
+      elements.settingMarginValueLabel.textContent = isPercent ? "Ustama miqdori (Foiz: %)" : "Ustama miqdori (Qat'iy summa: so'm)";
+    }
+    if (elements.settingMarginSuffix) {
+      elements.settingMarginSuffix.textContent = isPercent ? '%' : "so'm";
+    }
+  }
+
+  function updateMarginPreview() {
+    const enabled = elements.settingMarginEnabled ? elements.settingMarginEnabled.checked : true;
+    const type = state.adminMarginType || 'percent';
+    const val = Number(elements.settingMarginValue?.value) || 0;
+
+    const sampleBase = 10000;
+    let addition = 0;
+    if (enabled && val > 0) {
+      if (type === 'percent') {
+        addition = Math.round(sampleBase * (val / 100));
+      } else {
+        addition = val;
+      }
+    }
+
+    const finalClient = sampleBase + addition;
+
+    if (elements.prevMarginAddition) {
+      elements.prevMarginAddition.textContent = enabled 
+        ? `+${formatUzs(addition)} (${type === 'percent' ? `+${val}%` : `qat'iy`})`
+        : "0 so'm (o'chiq)";
+    }
+    if (elements.prevClientPrice) {
+      elements.prevClientPrice.textContent = formatUzs(finalClient);
+    }
+    if (elements.prevNetProfit) {
+      elements.prevNetProfit.textContent = `+${formatUzs(addition)}`;
+    }
+  }
+
+  function handleSaveMarginSettings() {
+    const enabled = elements.settingMarginEnabled ? elements.settingMarginEnabled.checked : true;
+    const type = state.adminMarginType || 'percent';
+    const val = Number(elements.settingMarginValue?.value) || 0;
+
+    const newSettings = {
+      enabled: enabled,
+      type: type,
+      value: val
+    };
+
+    saveMarginSettings(newSettings);
+    triggerHaptic('success');
+
+    const msg = `✅ Ustama narx sozlamalari saqlandi!\n\nHolati: ${enabled ? 'Faol' : 'O\'chiq'}\nUsul: ${type === 'percent' ? `+${val}%` : `+${formatUzs(val)}`}\n\nFoydalanuvchilar katalogdagi barcha o'yin paketlarini ushbu narxda ko'radilar.`;
+    if (tg?.showAlert) tg.showAlert(msg);
+    else alert(msg);
+  }
+
+  // --------------------------------------------------------------------------
+  // SECTION 4: CONTENT & LINKS (HAVOLALAR & KONTENT)
+  // --------------------------------------------------------------------------
+
+  function loadLinksSettingsIntoForm() {
+    const links = getLinksSettings();
+    if (elements.settingSupportUrl) elements.settingSupportUrl.value = links.supportUrl || '';
+    if (elements.settingSupportDesc) elements.settingSupportDesc.value = links.supportDesc || '';
+    if (elements.settingVideoUrl) elements.settingVideoUrl.value = links.videoUrl || '';
+    if (elements.settingChannelUrl) elements.settingChannelUrl.value = links.channelUrl || '';
+    if (elements.settingStoreTitle) elements.settingStoreTitle.value = links.storeTitle || 'Donat Store';
+    if (elements.settingFaqContent) elements.settingFaqContent.value = links.faqContent || '';
+  }
+
+  function handleSaveLinksSettings() {
+    const newSettings = {
+      supportUrl: elements.settingSupportUrl ? elements.settingSupportUrl.value.trim() : 'https://t.me/admin',
+      supportDesc: elements.settingSupportDesc ? elements.settingSupportDesc.value.trim() : 'Administrator: @admin',
+      videoUrl: elements.settingVideoUrl ? elements.settingVideoUrl.value.trim() : 'https://t.me/admin',
+      channelUrl: elements.settingChannelUrl ? elements.settingChannelUrl.value.trim() : 'https://t.me/admin',
+      storeTitle: elements.settingStoreTitle ? elements.settingStoreTitle.value.trim() : 'Donat Store',
+      faqContent: elements.settingFaqContent ? elements.settingFaqContent.value.trim() : "Xavfsiz tranzaksiyalar."
+    };
+
+    saveLinksSettings(newSettings);
+    triggerHaptic('success');
+
+    const msg = "✅ Do'kon havolalari va ma'lumotlari saqlandi!\n\nProfil sahifasidagi havolalar darhol yangilandi.";
+    if (tg?.showAlert) tg.showAlert(msg);
+    else alert(msg);
+  }
+
+  function updateProfileLinksUI() {
+    const links = getLinksSettings();
+    if (elements.profileSupportLink) elements.profileSupportLink.href = links.supportUrl || 'https://t.me/admin';
+    if (elements.profileSupportDesc) elements.profileSupportDesc.textContent = links.supportDesc || 'Administrator: @admin';
+    if (elements.profileVideoLink) elements.profileVideoLink.href = links.videoUrl || 'https://t.me/admin';
+    if (elements.profileChannelLink) elements.profileChannelLink.href = links.channelUrl || 'https://t.me/admin';
+  }
+
+  // --------------------------------------------------------------------------
+  // SECTION 5: USER MANAGEMENT (MIJOZLARNI BOSHQARISH)
+  // --------------------------------------------------------------------------
+
+  function renderAdminUsers(filterText = '') {
+    const list = getAllUsers();
+    const q = filterText.toLowerCase().trim();
+    const filtered = q
+      ? list.filter(u => String(u.id).includes(q) || u.name.toLowerCase().includes(q) || (u.username && u.username.toLowerCase().includes(q)))
+      : list;
+
+    if (elements.adminUsersCountBadge) {
+      elements.adminUsersCountBadge.textContent = `${filtered.length} ta mijoz`;
+    }
+
+    if (!elements.adminUsersList) return;
+
+    if (!filtered.length) {
+      elements.adminUsersList.innerHTML = `
+        <div style="text-align: center; padding: 24px 16px; color: var(--hint-color); font-size: 13px;">
+          Qidiruv bo'yicha mijoz topilmadi.
+        </div>
+      `;
+      return;
+    }
+
+    elements.adminUsersList.innerHTML = filtered.map(user => {
+      const firstChar = (user.name || 'U').charAt(0).toUpperCase();
+      return `
+        <div class="admin-user-card" data-user-id="${user.id}">
+          <div class="user-card-top">
+            <div class="user-card-info">
+              <div class="admin-u-avatar">${firstChar}</div>
+              <div>
+                <div class="admin-u-name">${escapeHtml(user.name)}</div>
+                <div class="admin-u-id-tag">${escapeHtml(user.username || '')} • Telegram ID: <code>${escapeHtml(String(user.id))}</code></div>
+              </div>
+            </div>
+            <button class="btn-adjust-balance" onclick="openBalanceModal('${escapeHtml(String(user.id))}')" type="button">
+              ⚙️ Balans
+            </button>
+          </div>
+          <div class="user-card-balance-box">
+            <span style="font-size: 11.5px; color: var(--hint-color);">Hisob balansi:</span>
+            <span class="user-card-balance-val">${formatUzs(user.balance)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function openBalanceModal(userId) {
+    selectedAdjustUserId = String(userId);
+    balanceAdjustAction = 'add';
+    const users = getAllUsers();
+    const user = users.find(u => String(u.id) === String(userId));
+    if (!user) return;
+
+    if (elements.adjustUserName) elements.adjustUserName.textContent = user.name;
+    if (elements.adjustUserId) elements.adjustUserId.textContent = user.id;
+    if (elements.adjustCurrentBalance) elements.adjustCurrentBalance.textContent = formatUzs(user.balance);
+    if (elements.adjustUserAvatar) elements.adjustUserAvatar.textContent = (user.name || 'U').charAt(0).toUpperCase();
+    if (elements.adjustAmountInput) elements.adjustAmountInput.value = '';
+    if (elements.adjustReasonInput) elements.adjustReasonInput.value = '';
+
+    if (elements.btnTypeAdd) elements.btnTypeAdd.classList.add('active');
+    if (elements.btnTypeDeduct) elements.btnTypeDeduct.classList.remove('active');
+
+    if (elements.adminBalanceModal) elements.adminBalanceModal.classList.add('active');
+    triggerHaptic('light');
+  }
+  window.openBalanceModal = openBalanceModal;
+
+  function closeBalanceModal() {
+    if (elements.adminBalanceModal) elements.adminBalanceModal.classList.remove('active');
+  }
+
+  function handleConfirmBalanceAdjust() {
+    if (!selectedAdjustUserId) return;
+
+    const amount = Number(elements.adjustAmountInput?.value) || 0;
+    if (amount <= 0) {
+      alert("Iltimos, to'g'ri summa kiriting (kamida 1 000 so'm)!");
+      return;
+    }
+
+    const reason = elements.adjustReasonInput?.value.trim() || (balanceAdjustAction === 'add' ? "Admin bonusi" : "Admin tomonidan yechildi");
+
+    // Load User from Storage
+    const targetKey = getUserStorageKey(selectedAdjustUserId);
+    let targetUserData = null;
+    try {
+      const raw = localStorage.getItem(targetKey);
+      if (raw) targetUserData = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!targetUserData) {
+      const users = getAllUsers();
+      const u = users.find(x => String(x.id) === String(selectedAdjustUserId));
+      targetUserData = {
+        id: String(selectedAdjustUserId),
+        firstName: u?.name || 'Foydalanuvchi',
+        balance: u?.balance || 0,
+        orders: [],
+        topups: []
+      };
+    }
+
+    if (balanceAdjustAction === 'add') {
+      targetUserData.balance = (Number(targetUserData.balance) || 0) + amount;
+    } else {
+      targetUserData.balance = Math.max(0, (Number(targetUserData.balance) || 0) - amount);
+    }
+
+    // Add entry to user's topups / adjustments
+    if (!Array.isArray(targetUserData.topups)) targetUserData.topups = [];
+    targetUserData.topups.unshift({
+      id: 'ADJ-' + Math.floor(100000 + Math.random() * 900000),
+      amount: balanceAdjustAction === 'add' ? amount : -amount,
+      method: 'ADMIN',
+      date: new Date().toLocaleString('uz-UZ'),
+      status: balanceAdjustAction === 'add' ? "Qo'shildi" : "Yechildi"
+    });
+
+    localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+
+    // Update Registry
+    const allUsers = getAllUsers();
+    const uReg = allUsers.find(u => String(u.id) === String(selectedAdjustUserId));
+    if (uReg) uReg.balance = targetUserData.balance;
+    saveAllUsers(allUsers);
+
+    // If current session is this user, update screen
+    if (String(currentUser.id) === String(selectedAdjustUserId)) {
+      currentUser = targetUserData;
+      updateBalanceUI();
+      renderOrdersList();
+    }
+
+    // Record in Master Orders
+    recordMasterOrder({
+      id: 'ADJ' + Math.floor(100000 + Math.random() * 900000),
+      type: 'topup',
+      userId: selectedAdjustUserId,
+      userName: targetUserData.firstName || 'Foydalanuvchi',
+      title: `Admin tuzatishi: ${balanceAdjustAction === 'add' ? '+' : '-'}${formatUzs(amount)} (${reason})`,
+      price: amount,
+      date: new Date().toLocaleString('uz-UZ'),
+      status: 'Tasdiqlandi'
+    });
+
+    triggerHaptic('success');
+    closeBalanceModal();
+
+    const msg = `✅ Foydalanuvchi (${selectedAdjustUserId}) balansi yangilandi!\n\nAmal: ${balanceAdjustAction === 'add' ? '+' : '-'}${formatUzs(amount)}\nYangi balans: ${formatUzs(targetUserData.balance)}`;
+    if (tg?.showAlert) tg.showAlert(msg);
+    else alert(msg);
+
+    renderAdminUsers(elements.adminUserSearchInput?.value || '');
+  }
+
+  // --------------------------------------------------------------------------
+  // SECTION 6: MASTER ORDER HISTORY (BARCHA BUYURTMALAR LOGI)
+  // --------------------------------------------------------------------------
+
+  function renderAdminAllOrders(filterType = state.adminMasterOrdersFilter || 'all', filterQuery = '') {
+    const all = getAllMasterOrders();
+    let filtered = all;
+
+    if (filterType === 'games') {
+      filtered = filtered.filter(o => o.type === 'game');
+    } else if (filterType === 'topups') {
+      filtered = filtered.filter(o => o.type === 'topup');
+    }
+
+    const q = filterQuery.toLowerCase().trim();
+    if (q) {
+      filtered = filtered.filter(o => 
+        String(o.id).toLowerCase().includes(q) ||
+        String(o.userId).toLowerCase().includes(q) ||
+        (o.userName && o.userName.toLowerCase().includes(q)) ||
+        (o.title && o.title.toLowerCase().includes(q))
+      );
+    }
+
+    if (elements.adminOrdersCountBadge) {
+      elements.adminOrdersCountBadge.textContent = `${filtered.length} ta`;
+    }
+
+    if (!elements.adminAllOrdersList) return;
+
+    if (!filtered.length) {
+      elements.adminAllOrdersList.innerHTML = '';
+      if (elements.adminEmptyOrdersState) elements.adminEmptyOrdersState.style.display = 'block';
+      return;
+    }
+
+    if (elements.adminEmptyOrdersState) elements.adminEmptyOrdersState.style.display = 'none';
+
+    elements.adminAllOrdersList.innerHTML = filtered.map(item => {
+      let statusClass = 'kutilmoqda';
+      let statusIcon = '⏳';
+      if (item.status === 'Bajarildi' || item.status === 'Tasdiqlandi') {
+        statusClass = 'tasdiqlandi';
+        statusIcon = '✓';
+      } else if (item.status === 'Rad etildi') {
+        statusClass = 'rad-etildi';
+        statusIcon = '✕';
+      }
+
+      const typeIcon = item.type === 'game' ? '🎮' : '💳';
+
+      return `
+        <div class="admin-request-card">
+          <div class="admin-card-head">
+            <div class="admin-user-info-row">
+              <span style="font-size: 20px;">${typeIcon}</span>
+              <div class="admin-u-meta">
+                <span class="admin-u-name">${escapeHtml(item.title)}</span>
+                <span class="admin-u-id-tag">Buyurtmachi: ${escapeHtml(item.userName || 'Mijoz')} (ID: <code>${escapeHtml(String(item.userId))}</code>)</span>
+              </div>
+            </div>
+            <span class="status-pill status-${statusClass}">${statusIcon} ${escapeHtml(item.status)}</span>
+          </div>
+
+          <div class="admin-details-grid">
+            <div class="admin-detail-item">
+              <span class="detail-k">Buyurtma ID</span>
+              <span class="detail-v">#${escapeHtml(item.id)}</span>
+            </div>
+            <div class="admin-detail-item">
+              <span class="detail-k">Summa</span>
+              <span class="detail-v amount-highlight">${formatUzs(item.price)}</span>
+            </div>
+            <div class="admin-detail-item">
+              <span class="detail-k">Vaqt</span>
+              <span class="detail-v">📅 ${escapeHtml(item.date)}</span>
+            </div>
+            ${item.playerId ? `
+              <div class="admin-detail-item">
+                <span class="detail-k">Hisob / ID</span>
+                <span class="detail-v">🎯 ${escapeHtml(item.playerId)}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   /**
-   * Open Admin Panel Modal
+   * Open Admin Panel Dashboard
    */
   function openAdminModal() {
     if (!checkIsAdmin()) {
@@ -1515,12 +2365,8 @@
     }
 
     triggerHaptic('light');
-    state.adminActiveFilter = 'pending';
-    if (elements.adminFilterPendingBtn) elements.adminFilterPendingBtn.classList.add('active');
-    if (elements.adminFilterAllBtn) elements.adminFilterAllBtn.classList.remove('active');
-
     updateAdminUI();
-    renderAdminPendingList('pending');
+    switchAdminTab('approvals');
 
     if (elements.adminModal) elements.adminModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1528,7 +2374,7 @@
   }
 
   /**
-   * Close Admin Panel Modal
+   * Close Admin Panel Dashboard
    */
   function closeAdminModal() {
     if (elements.adminModal) elements.adminModal.classList.remove('active');
@@ -1595,7 +2441,9 @@
       switchTab('orders');
     });
 
-    // Admin Panel Triggers & Modal Actions
+    // ==========================================
+    // ADMIN DASHBOARD EVENT HANDLERS
+    // ==========================================
     elements.adminPanelTrigger?.addEventListener('click', openAdminModal);
     elements.homeAdminBtn?.addEventListener('click', openAdminModal);
     elements.adminModalCloseBtn?.addEventListener('click', closeAdminModal);
@@ -1603,7 +2451,15 @@
       if (e.target === elements.adminModal) closeAdminModal();
     });
 
-    // Admin Filter Segment Tabs
+    // 6-Tab Navigation Bar in Admin Dashboard
+    elements.adminDashTabs.forEach(tabBtn => {
+      tabBtn.addEventListener('click', () => {
+        const targetTab = tabBtn.getAttribute('data-dash-tab');
+        if (targetTab) switchAdminTab(targetTab);
+      });
+    });
+
+    // Section 1: Approvals Filters
     elements.adminFilterPendingBtn?.addEventListener('click', () => {
       state.adminActiveFilter = 'pending';
       elements.adminFilterPendingBtn.classList.add('active');
@@ -1618,6 +2474,93 @@
       elements.adminFilterPendingBtn?.classList.remove('active');
       renderAdminPendingList('all');
       triggerHaptic('light');
+    });
+
+    // Section 2: Cards Settings Save
+    elements.btnSaveCardSettings?.addEventListener('click', handleSaveCardSettings);
+
+    // Section 3: Margins Settings Controls
+    elements.btnMarginTypePercent?.addEventListener('click', () => {
+      state.adminMarginType = 'percent';
+      syncMarginTypePillUI();
+      updateMarginPreview();
+      triggerHaptic('light');
+    });
+
+    elements.btnMarginTypeFixed?.addEventListener('click', () => {
+      state.adminMarginType = 'fixed';
+      syncMarginTypePillUI();
+      updateMarginPreview();
+      triggerHaptic('light');
+    });
+
+    elements.settingMarginEnabled?.addEventListener('change', () => {
+      updateMarginPreview();
+      triggerHaptic('light');
+    });
+
+    elements.settingMarginValue?.addEventListener('input', updateMarginPreview);
+    elements.btnSaveMarginSettings?.addEventListener('click', handleSaveMarginSettings);
+
+    // Section 4: Links Settings Save
+    elements.btnSaveLinksSettings?.addEventListener('click', handleSaveLinksSettings);
+
+    // Section 5: Users Management Controls
+    elements.adminUserSearchInput?.addEventListener('input', (e) => {
+      renderAdminUsers(e.target.value);
+    });
+
+    elements.adminBalanceCloseBtn?.addEventListener('click', closeBalanceModal);
+    elements.adminBalanceModal?.addEventListener('click', (e) => {
+      if (e.target === elements.adminBalanceModal) closeBalanceModal();
+    });
+
+    elements.btnTypeAdd?.addEventListener('click', () => {
+      balanceAdjustAction = 'add';
+      elements.btnTypeAdd.classList.add('active');
+      elements.btnTypeDeduct?.classList.remove('active');
+      triggerHaptic('light');
+    });
+
+    elements.btnTypeDeduct?.addEventListener('click', () => {
+      balanceAdjustAction = 'deduct';
+      elements.btnTypeDeduct.classList.add('active');
+      elements.btnTypeAdd?.classList.remove('active');
+      triggerHaptic('light');
+    });
+
+    elements.btnConfirmBalanceAdjust?.addEventListener('click', handleConfirmBalanceAdjust);
+
+    // Section 6: Master Orders Filters
+    elements.btnFilterOrdersAll?.addEventListener('click', () => {
+      state.adminMasterOrdersFilter = 'all';
+      elements.btnFilterOrdersAll.classList.add('active');
+      elements.btnFilterOrdersGames?.classList.remove('active');
+      elements.btnFilterOrdersTopups?.classList.remove('active');
+      renderAdminAllOrders('all', elements.adminOrderSearchInput?.value || '');
+      triggerHaptic('light');
+    });
+
+    elements.btnFilterOrdersGames?.addEventListener('click', () => {
+      state.adminMasterOrdersFilter = 'games';
+      elements.btnFilterOrdersGames.classList.add('active');
+      elements.btnFilterOrdersAll?.classList.remove('active');
+      elements.btnFilterOrdersTopups?.classList.remove('active');
+      renderAdminAllOrders('games', elements.adminOrderSearchInput?.value || '');
+      triggerHaptic('light');
+    });
+
+    elements.btnFilterOrdersTopups?.addEventListener('click', () => {
+      state.adminMasterOrdersFilter = 'topups';
+      elements.btnFilterOrdersTopups.classList.add('active');
+      elements.btnFilterOrdersAll?.classList.remove('active');
+      elements.btnFilterOrdersGames?.classList.remove('active');
+      renderAdminAllOrders('topups', elements.adminOrderSearchInput?.value || '');
+      triggerHaptic('light');
+    });
+
+    elements.adminOrderSearchInput?.addEventListener('input', (e) => {
+      renderAdminAllOrders(state.adminMasterOrdersFilter, e.target.value);
     });
 
     setupTopUpHandlers();
