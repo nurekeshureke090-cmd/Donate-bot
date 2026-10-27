@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Donat & Game Store</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Google Font: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Native Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">🎮</div>
+          <div class="user-meta">
+            <span class="user-greeting">Xush kelibsiz!</span>
+            <span class="user-name" id="userName">Foydalanuvchi</span>
+          </div>
+        </div>
+        <div class="store-badge">
+          <span class="pulse-dot"></span>
+          <span>Avto-Yetkazish</span>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          id="gameSearchInput" 
+          class="search-input" 
+          placeholder="O'yin yoki xizmatni qidiring..." 
+          autocomplete="off"
+        >
+        <button id="clearSearchBtn" class="clear-btn" style="display: none;" aria-label="Tozalash">✕</button>
+      </div>
+
+      <!-- Section Title & Counter -->
+      <div class="section-heading">
+        <h1 class="section-title">Mavjud O'yinlar</h1>
+        <span class="badge" id="gamesCountBadge">...</span>
+      </div>
+    </header>
+
+    <!-- Main Games Content -->
+    <main class="main-content">
+      <!-- Skeleton Grid (shown during initial loading) -->
+      <div id="gamesSkeleton" class="games-grid">
+        <div class="game-card skeleton-card">
+          <div class="skeleton-thumb shimmer"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-line line-title shimmer"></div>
+            <div class="skeleton-line line-subtitle shimmer"></div>
+          </div>
+        </div>
+        <div class="game-card skeleton-card">
+          <div class="skeleton-thumb shimmer"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-line line-title shimmer"></div>
+            <div class="skeleton-line line-subtitle shimmer"></div>
+          </div>
+        </div>
+        <div class="game-card skeleton-card">
+          <div class="skeleton-thumb shimmer"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-line line-title shimmer"></div>
+            <div class="skeleton-line line-subtitle shimmer"></div>
+          </div>
+        </div>
+        <div class="game-card skeleton-card">
+          <div class="skeleton-thumb shimmer"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-line line-title shimmer"></div>
+            <div class="skeleton-line line-subtitle shimmer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Games Grid -->
+      <div id="gamesGrid" class="games-grid" style="display: none;"></div>
+
+      <!-- Empty / Error States -->
+      <div id="emptyState" class="state-container" style="display: none;">
+        <div class="state-icon">🔍</div>
+        <h3 class="state-title">O'yin topilmadi</h3>
+        <p class="state-desc">Qidiruv so'zini o'zgartirib qayta urinib ko'ring.</p>
+      </div>
+
+      <div id="errorState" class="state-container" style="display: none;">
+        <div class="state-icon">⚠️</div>
+        <h3 class="state-title">Ma'lumot yuklanmadi</h3>
+        <p class="state-desc" id="errorMessage">Internet aloqasini tekshiring.</p>
+        <button class="btn btn-secondary" id="retryFetchBtn">Qayta urinish</button>
+      </div>
+    </main>
+
+    <!-- Modal / Sliding Bottom Sheet for Packages & Purchase -->
+    <div id="modalOverlay" class="modal-overlay">
+      <div class="modal-sheet" id="modalSheet">
+        <!-- Drawer Drag Handle -->
+        <div class="sheet-handle-bar">
+          <div class="sheet-handle"></div>
+        </div>
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-game-info">
+            <img id="modalGameImg" class="modal-game-avatar" src="" alt="Game Icon">
+            <div>
+              <h2 id="modalGameTitle" class="modal-title">O'yin nomi</h2>
+              <span id="modalGameSub" class="modal-sub">Paketni tanlang</span>
+            </div>
+          </div>
+          <button id="modalCloseBtn" class="modal-close" aria-label="Yopish">✕</button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <div class="modal-body">
+          <!-- Packages Section -->
+          <div class="packages-section">
+            <div class="section-subheading">
+              <span>Paketlar</span>
+              <span id="packagesCountBadge" class="badge">0 dona</span>
+            </div>
+
+            <!-- Skeleton Packages -->
+            <div id="packagesSkeleton" class="packages-grid">
+              <div class="pkg-card skeleton-pkg shimmer"></div>
+              <div class="pkg-card skeleton-pkg shimmer"></div>
+              <div class="pkg-card skeleton-pkg shimmer"></div>
+              <div class="pkg-card skeleton-pkg shimmer"></div>
+            </div>
+
+            <!-- Live Packages Grid -->
+            <div id="packagesList" class="packages-grid" style="display: none;"></div>
+          </div>
+
+          <!-- Dynamic Player Credentials Form -->
+          <div id="playerFormSection" class="player-form-section" style="display: none;">
+            <div class="section-subheading">
+              <span id="playerFormTitle">Hisob ma'lumotlari</span>
+            </div>
+
+            <!-- Player ID Field -->
+            <div class="form-group">
+              <label for="playerIdInput" id="playerIdLabel" class="form-label">Player ID</label>
+              <div class="input-wrap">
+                <input 
+                  type="text" 
+                  id="playerIdInput" 
+                  class="form-input" 
+                  placeholder="ID raqamingizni kiriting" 
+                  autocomplete="off"
+                >
+                <div id="idCheckSpinner" class="spinner-small" style="display: none;"></div>
+              </div>
+              <!-- Player ID verification status badge -->
+              <div id="idVerificationStatus" class="verification-badge" style="display: none;"></div>
+            </div>
+
+            <!-- Server / Zone ID Field (if required by game) -->
+            <div class="form-group" id="serverIdGroup" style="display: none;">
+              <label for="serverIdInput" class="form-label">Server ID / Zone ID</label>
+              <div class="input-wrap">
+                <input 
+                  type="text" 
+                  id="serverIdInput" 
+                  class="form-input" 
+                  placeholder="Server yoki Zone ID" 
+                  autocomplete="off"
+                >
+              </div>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="order-summary-card">
+              <div class="summary-row">
+                <span class="summary-label">Tanlangan paket:</span>
+                <span class="summary-value" id="summaryPkgName">-</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">To'lov miqdori:</span>
+                <span class="summary-value price-highlight" id="summaryPkgPrice">0 UZS</span>
+              </div>
+              <div class="summary-hint">
+                ⚡️ To'lov tasdiqlangach hisobingizga avtomatik yetkaziladi.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-Modal Fallback Purchase Button (for desktop/browser testing when MainButton is inactive) -->
+        <div class="modal-footer" id="modalFooterFallback">
+          <button id="modalPayBtn" class="btn btn-primary" disabled>
+            Xarid qilish
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay success-overlay">
+      <div class="success-card">
+        <div class="success-icon-wrap">
+          <div class="success-checkmark">✓</div>
+        </div>
+        <h3 class="success-title">Buyurtma qabul qilindi!</h3>
+        <p class="success-desc" id="successDesc">Xaridingiz muvaffaqiyatli rasmiylashtirildi.</p>
+        
+        <div class="order-receipt" id="orderReceipt">
+          <div class="receipt-row">
+            <span>Buyurtma ID:</span>
+            <strong id="receiptOrderId">#0000</strong>
+          </div>
+          <div class="receipt-row">
+            <span>O'yin:</span>
+            <strong id="receiptGameName">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Paket:</span>
+            <strong id="receiptPkgName">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Hisob ID:</span>
+            <strong id="receiptPlayerId">-</strong>
+          </div>
+        </div>
+
+        <button id="successCloseBtn" class="btn btn-primary">Tushundim</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
