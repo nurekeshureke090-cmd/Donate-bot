@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * PAYERPIN TELEGRAM MINI APP CONTROLLER (app.js)
- * Fixed 3-tab navigation, Max 50 Games Catalog, Dynamic Packages, MainButton
+ * Robust API fetching, Error Handling, Fixed Bottom Nav & Orders/Profile SPA
  * ==========================================================================
  */
 
@@ -30,10 +30,11 @@
 
   // --- DOM Elements ---
   const elements = {
-    // Views
+    // Views & Nav
     viewHome: document.getElementById('viewHome'),
     viewOrders: document.getElementById('viewOrders'),
     viewProfile: document.getElementById('viewProfile'),
+    bottomNav: document.getElementById('bottomNav'),
     navItems: document.querySelectorAll('.bottom-nav .nav-item'),
     navOrdersBadge: document.getElementById('navOrdersBadge'),
 
@@ -115,7 +116,7 @@
     }
   }
 
-  // --- API Proxy Requester ---
+  // --- API Proxy Requester with Deep Error Parsing ---
   async function apiFetch(path, options = {}) {
     const isGet = !options.method || options.method.toUpperCase() === 'GET';
     const url = isGet 
@@ -141,8 +142,32 @@
     }
 
     const res = await fetch(url, fetchConfig);
-    const data = await res.json();
-    return data;
+    const contentType = res.headers.get('content-type') || '';
+
+    if (!res.ok) {
+      let errText = `HTTP ${res.status}`;
+      try {
+        const errJson = await res.json();
+        errText = errJson.error || errJson.message || errText;
+      } catch (e) {
+        try {
+          const raw = await res.text();
+          if (raw) errText += ': ' + raw.slice(0, 100);
+        } catch (e2) {}
+      }
+      throw new Error(errText);
+    }
+
+    if (contentType.includes('application/json')) {
+      return await res.json();
+    } else {
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Serverdan kutilmagan javob: " + text.slice(0, 80));
+      }
+    }
   }
 
   // --- Telegram WebApp Setup ---
@@ -163,12 +188,12 @@
       const user = tg.initDataUnsafe?.user;
       if (user) {
         const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Foydalanuvchi';
-        elements.headerUserName.textContent = displayName;
-        elements.profileFullName.textContent = displayName;
-        elements.profileUsername.textContent = user.username ? `@${user.username}` : 'Foydalanuvchi';
-        elements.profileUserId.textContent = user.id || '8467707826';
+        if (elements.headerUserName) elements.headerUserName.textContent = displayName;
+        if (elements.profileFullName) elements.profileFullName.textContent = displayName;
+        if (elements.profileUsername) elements.profileUsername.textContent = user.username ? `@${user.username}` : 'Foydalanuvchi';
+        if (elements.profileUserId) elements.profileUserId.textContent = user.id || '8467707826';
 
-        if (user.first_name) {
+        if (user.first_name && elements.profileAvatar) {
           elements.profileAvatar.textContent = user.first_name.charAt(0).toUpperCase();
         }
       }
@@ -189,18 +214,18 @@
 
       tg.MainButton.onClick(handlePurchase);
     } catch (err) {
-      console.warn('Telegram WebApp setup error:', err);
+      console.warn('Telegram WebApp setup warning:', err);
     }
   }
 
-  // --- Tab Navigation (Asosiy, Buyurtmalar, Profil) ---
+  // --- Fixed Bottom Tab Navigation ---
   function switchTab(tabName) {
     if (state.activeTab === tabName) return;
 
     state.activeTab = tabName;
     triggerHaptic('light');
 
-    // Update Tab Buttons
+    // Update Bottom Nav Active State
     elements.navItems.forEach(item => {
       if (item.getAttribute('data-tab') === tabName) {
         item.classList.add('active');
@@ -209,120 +234,154 @@
       }
     });
 
-    // Update Active View
-    elements.viewHome.classList.toggle('active', tabName === 'home');
-    elements.viewOrders.classList.toggle('active', tabName === 'orders');
-    elements.viewProfile.classList.toggle('active', tabName === 'profile');
+    // Toggle Views
+    if (elements.viewHome) elements.viewHome.classList.toggle('active', tabName === 'home');
+    if (elements.viewOrders) elements.viewOrders.classList.toggle('active', tabName === 'orders');
+    if (elements.viewProfile) elements.viewProfile.classList.toggle('active', tabName === 'profile');
 
-    // If switching to Orders, refresh orders list
-    if (tabName === 'orders') {
-      renderOrdersList();
-    }
+    // Sub-view updates
+    if (tabName === 'orders') renderOrdersList();
+    if (tabName === 'profile') updateProfileStats();
 
-    // If switching to Profile, refresh stats
-    if (tabName === 'profile') {
-      updateProfileStats();
-    }
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // --- Load Games (Strictly Max 50 Games) ---
+  // --- Load Games Dynamically with Response Parser & Timeout ---
   async function loadGames() {
     state.isLoadingGames = true;
     showGamesSkeleton();
 
+    // 10 second timeout protection to prevent infinite skeleton freeze
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Server javob berish vaqti tugadi (Timeout 10s)")), 10000)
+    );
+
     try {
-      const res = await apiFetch('/games');
-      if (res && res.ok && Array.isArray(res.games)) {
+      const res = await Promise.race([apiFetch('/games'), timeoutPromise]);
+      console.log('GET /games parsed response:', res);
+
+      // Support all potential response shapes:
+      // - { ok: true, games: [...] }
+      // - { ok: true, data: [...] }
+      // - { data: { games: [...] } }
+      // - { data: { data: [...] } }
+      // - [ ... ] (direct array)
+      let gamesList = [];
+
+      if (Array.isArray(res)) {
+        gamesList = res;
+      } else if (res && Array.isArray(res.games)) {
+        gamesList = res.games;
+      } else if (res && Array.isArray(res.data)) {
+        gamesList = res.data;
+      } else if (res && res.data && Array.isArray(res.data.games)) {
+        gamesList = res.data.games;
+      } else if (res && res.data && Array.isArray(res.data.data)) {
+        gamesList = res.data.data;
+      }
+
+      if (gamesList && gamesList.length > 0) {
         // STRICT REQUIREMENT: Slice response to display a maximum of 50 games
-        state.games = res.games.slice(0, 50);
+        state.games = gamesList.slice(0, 50);
         state.filteredGames = state.games;
         renderGamesGrid();
       } else {
-        throw new Error(res?.error || "O'yinlar ro'yxatini yuklab bo'lmadi");
+        const errMsg = (res && (res.error || res.message)) 
+          ? (res.error || res.message) 
+          : "API orqali o'yinlar ro'yxati topilmadi";
+        throw new Error(errMsg);
       }
     } catch (error) {
       console.error('Failed to load games:', error);
-      showGamesError(error.message);
+      showGamesError(error.message || "Internet yoki server bilan aloqa uzildi");
     } finally {
       state.isLoadingGames = false;
     }
   }
 
   function showGamesSkeleton() {
-    elements.gamesSkeleton.style.display = 'grid';
-    elements.gamesGrid.style.display = 'none';
-    elements.emptyState.style.display = 'none';
-    elements.errorState.style.display = 'none';
-    elements.gamesCountBadge.textContent = '...';
+    if (elements.gamesSkeleton) elements.gamesSkeleton.style.display = 'grid';
+    if (elements.gamesGrid) elements.gamesGrid.style.display = 'none';
+    if (elements.emptyState) elements.emptyState.style.display = 'none';
+    if (elements.errorState) elements.errorState.style.display = 'none';
+    if (elements.gamesCountBadge) elements.gamesCountBadge.textContent = '...';
   }
 
   function showGamesError(msg) {
-    elements.gamesSkeleton.style.display = 'none';
-    elements.gamesGrid.style.display = 'none';
-    elements.emptyState.style.display = 'none';
-    elements.errorState.style.display = 'block';
-    elements.errorMessage.textContent = msg || 'Internet bilan aloqani tekshiring.';
+    if (elements.gamesSkeleton) elements.gamesSkeleton.style.display = 'none';
+    if (elements.gamesGrid) elements.gamesGrid.style.display = 'none';
+    if (elements.emptyState) elements.emptyState.style.display = 'none';
+    if (elements.errorState) {
+      elements.errorState.style.display = 'block';
+      if (elements.errorMessage) {
+        elements.errorMessage.innerHTML = `
+          <div style="color: #ef4444; font-weight: 700; margin-bottom: 6px;">Xatolik yuz berdi:</div>
+          <div style="background: rgba(239, 68, 68, 0.08); padding: 8px 12px; border-radius: 8px; font-size: 12px; word-break: break-all; margin-bottom: 6px;">
+            ${escapeHtml(msg || 'Serverga ulanib bo\'lmadi')}
+          </div>
+        `;
+      }
+    }
+    if (elements.gamesCountBadge) elements.gamesCountBadge.textContent = 'Xato';
   }
 
   function renderGamesGrid() {
-    elements.gamesSkeleton.style.display = 'none';
-    elements.errorState.style.display = 'none';
+    if (elements.gamesSkeleton) elements.gamesSkeleton.style.display = 'none';
+    if (elements.errorState) elements.errorState.style.display = 'none';
 
     if (!state.filteredGames.length) {
-      elements.gamesGrid.style.display = 'none';
-      elements.emptyState.style.display = 'block';
-      elements.gamesCountBadge.textContent = '0 dona';
+      if (elements.gamesGrid) elements.gamesGrid.style.display = 'none';
+      if (elements.emptyState) elements.emptyState.style.display = 'block';
+      if (elements.gamesCountBadge) elements.gamesCountBadge.textContent = '0 dona';
       return;
     }
 
-    elements.emptyState.style.display = 'none';
-    elements.gamesGrid.style.display = 'grid';
-    elements.gamesCountBadge.textContent = `${state.filteredGames.length} ta o'yin`;
+    if (elements.emptyState) elements.emptyState.style.display = 'none';
+    if (elements.gamesGrid) {
+      elements.gamesGrid.style.display = 'grid';
+      if (elements.gamesCountBadge) elements.gamesCountBadge.textContent = `${state.filteredGames.length} ta o'yin`;
 
-    elements.gamesGrid.innerHTML = state.filteredGames.map(game => {
-      const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(game.name)}&background=6366f1&color=fff&size=128`;
-      const pkgCountText = game.packages_count > 0 ? `${game.packages_count} ta paket` : 'Tezkor';
-      return `
-        <div class="game-card" data-game-id="${game.game_id}">
-          <div class="game-card-img-wrap">
-            <img 
-              class="game-card-img" 
-              src="${game.image || fallbackImg}" 
-              alt="${escapeHtml(game.name)}" 
-              loading="lazy"
-              onerror="this.onerror=null;this.src='${fallbackImg}';"
-            >
+      elements.gamesGrid.innerHTML = state.filteredGames.map(game => {
+        const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(game.name)}&background=6366f1&color=fff&size=128`;
+        const pkgCountText = game.packages_count > 0 ? `${game.packages_count} ta paket` : 'Tezkor';
+        return `
+          <div class="game-card" data-game-id="${game.game_id}">
+            <div class="game-card-img-wrap">
+              <img 
+                class="game-card-img" 
+                src="${game.image || fallbackImg}" 
+                alt="${escapeHtml(game.name)}" 
+                loading="lazy"
+                onerror="this.onerror=null;this.src='${fallbackImg}';"
+              >
+            </div>
+            <div class="game-card-name">${escapeHtml(game.name)}</div>
+            <div class="game-card-meta">
+              <span>⚡️</span>
+              <span>${pkgCountText}</span>
+            </div>
           </div>
-          <div class="game-card-name">${escapeHtml(game.name)}</div>
-          <div class="game-card-meta">
-            <span>⚡️</span>
-            <span>${pkgCountText}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
 
-    // Attach click listeners to game cards
-    elements.gamesGrid.querySelectorAll('.game-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const gameId = Number(card.getAttribute('data-game-id'));
-        const game = state.games.find(g => g.game_id === gameId);
-        if (game) {
-          triggerHaptic('light');
-          openGameModal(game);
-        }
+      // Click event listener
+      elements.gamesGrid.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const gameId = Number(card.getAttribute('data-game-id'));
+          const game = state.games.find(g => g.game_id === gameId);
+          if (game) {
+            triggerHaptic('light');
+            openGameModal(game);
+          }
+        });
       });
-    });
+    }
   }
 
-  // --- Filtering & Search ---
+  // --- Filtering & Live Search ---
   function applyFilters() {
     let result = state.games;
 
-    // Filter by Category
     if (state.activeCategory === 'popular') {
       const popKeywords = ['pubg', 'free fire', 'mobile legends', 'genshin', 'ea', 'brawl', 'telegram'];
       result = result.filter(g => popKeywords.some(kw => g.name.toLowerCase().includes(kw)));
@@ -332,9 +391,8 @@
       result = result.filter(g => g.name.toLowerCase().includes('telegram') || g.name.toLowerCase().includes('steam'));
     }
 
-    // Filter by Search Query
-    const q = elements.searchInput.value.trim().toLowerCase();
-    elements.clearSearchBtn.style.display = q ? 'flex' : 'none';
+    const q = elements.searchInput ? elements.searchInput.value.trim().toLowerCase() : '';
+    if (elements.clearSearchBtn) elements.clearSearchBtn.style.display = q ? 'flex' : 'none';
 
     if (q) {
       result = result.filter(g => g.name.toLowerCase().includes(q));
@@ -353,114 +411,117 @@
     state.serverId = '';
     state.verifiedPlayer = null;
 
-    // Reset Inputs
-    elements.playerIdInput.value = '';
-    elements.serverIdInput.value = '';
-    elements.idVerificationStatus.style.display = 'none';
-    elements.playerFormSection.style.display = 'none';
+    if (elements.playerIdInput) elements.playerIdInput.value = '';
+    if (elements.serverIdInput) elements.serverIdInput.value = '';
+    if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
+    if (elements.playerFormSection) elements.playerFormSection.style.display = 'none';
     updateMainButtonState();
 
-    // Setup Labels
-    elements.modalGameTitle.textContent = game.name;
-    elements.modalGameSub.textContent = game.packages_count ? `${game.packages_count} ta mavjud paket` : "Paketni tanlang";
-    elements.modalGameImg.src = game.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(game.name)}&background=6366f1&color=fff`;
+    if (elements.modalGameTitle) elements.modalGameTitle.textContent = game.name;
+    if (elements.modalGameSub) elements.modalGameSub.textContent = game.packages_count ? `${game.packages_count} ta mavjud paket` : "Paketni tanlang";
+    if (elements.modalGameImg) elements.modalGameImg.src = game.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(game.name)}&background=6366f1&color=fff`;
 
-    elements.playerIdLabel.textContent = game.id_label || 'Player ID';
-    elements.playerIdInput.placeholder = `${game.id_label || 'Player ID'} raqamingizni kiriting`;
+    if (elements.playerIdLabel) elements.playerIdLabel.textContent = game.id_label || 'Player ID';
+    if (elements.playerIdInput) elements.playerIdInput.placeholder = `${game.id_label || 'Player ID'} raqamingizni kiriting`;
 
-    // Show/Hide Server ID input
-    if (game.requires_server) {
-      elements.serverIdGroup.style.display = 'block';
-    } else {
-      elements.serverIdGroup.style.display = 'none';
+    if (elements.serverIdGroup) {
+      elements.serverIdGroup.style.display = game.requires_server ? 'block' : 'none';
     }
 
-    // Open Modal
-    elements.modalOverlay.classList.add('active');
+    if (elements.modalOverlay) elements.modalOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
     tg?.BackButton?.show();
 
-    // Fetch Packages
     await loadPackages(game.game_id);
   }
 
   async function loadPackages(gameId) {
     state.isLoadingPackages = true;
-    elements.packagesSkeleton.style.display = 'grid';
-    elements.packagesList.style.display = 'none';
-    elements.packagesCountBadge.textContent = 'Yuklanmoqda...';
+    if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'grid';
+    if (elements.packagesList) elements.packagesList.style.display = 'none';
+    if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = 'Yuklanmoqda...';
 
     try {
       const res = await apiFetch(`/games/${gameId}/packages`);
-      if (res && res.ok && Array.isArray(res.packages)) {
-        state.packages = res.packages;
+      let list = [];
+      if (Array.isArray(res)) list = res;
+      else if (res && Array.isArray(res.packages)) list = res.packages;
+      else if (res && Array.isArray(res.data)) list = res.data;
+      else if (res && res.data && Array.isArray(res.data.packages)) list = res.data.packages;
+
+      if (list && list.length > 0) {
+        state.packages = list;
         renderPackages();
       } else {
-        throw new Error(res?.error || 'Paketlarni yuklab bo\'lmadi');
+        throw new Error(res?.error || 'Paketlar topilmadi');
       }
     } catch (err) {
       console.error('Packages error:', err);
-      elements.packagesSkeleton.style.display = 'none';
-      elements.packagesList.style.display = 'block';
-      elements.packagesList.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color);">
-          Paketlar mavjud emas yoki yuklashda xatolik yuz berdi.
-        </div>
-      `;
-      elements.packagesCountBadge.textContent = '0 dona';
+      if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'none';
+      if (elements.packagesList) {
+        elements.packagesList.style.display = 'block';
+        elements.packagesList.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color); font-size: 13px;">
+            Paketlar mavjud emas yoki yuklashda xatolik yuz berdi.
+          </div>
+        `;
+      }
+      if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = '0 dona';
     } finally {
       state.isLoadingPackages = false;
     }
   }
 
   function renderPackages() {
-    elements.packagesSkeleton.style.display = 'none';
-    elements.packagesList.style.display = 'grid';
-    elements.packagesCountBadge.textContent = `${state.packages.length} dona`;
+    if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'none';
+    if (elements.packagesList) {
+      elements.packagesList.style.display = 'grid';
+      if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = `${state.packages.length} dona`;
 
-    if (!state.packages.length) {
-      elements.packagesList.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color);">
-          Ushbu o'yin uchun hozirda faol paketlar yo'q.
-        </div>
-      `;
-      return;
-    }
+      if (!state.packages.length) {
+        elements.packagesList.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color);">
+            Ushbu o'yin uchun hozirda faol paketlar yo'q.
+          </div>
+        `;
+        return;
+      }
 
-    elements.packagesList.innerHTML = state.packages.map(pkg => {
-      const priceUzs = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
-      const usdText = pkg.price?.usd ? `$${pkg.price.usd}` : '';
-      return `
-        <div class="pkg-card" data-paket-id="${pkg.paket_id}">
-          <div class="pkg-name">${escapeHtml(pkg.name)}</div>
-          <div class="pkg-price">${formatUzs(priceUzs)}</div>
-          ${usdText ? `<div class="pkg-usd">${usdText}</div>` : ''}
-        </div>
-      `;
-    }).join('');
+      elements.packagesList.innerHTML = state.packages.map(pkg => {
+        const priceUzs = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
+        const usdText = pkg.price?.usd ? `$${pkg.price.usd}` : '';
+        return `
+          <div class="pkg-card" data-paket-id="${pkg.paket_id}">
+            <div class="pkg-name">${escapeHtml(pkg.name)}</div>
+            <div class="pkg-price">${formatUzs(priceUzs)}</div>
+            ${usdText ? `<div class="pkg-usd">${usdText}</div>` : ''}
+          </div>
+        `;
+      }).join('');
 
-    // Attach click listeners to packages
-    elements.packagesList.querySelectorAll('.pkg-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const paketId = Number(card.getAttribute('data-paket-id'));
-        const pkg = state.packages.find(p => p.paket_id === paketId);
-        if (pkg) {
-          selectPackage(pkg, card);
-        }
+      elements.packagesList.querySelectorAll('.pkg-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const paketId = Number(card.getAttribute('data-paket-id'));
+          const pkg = state.packages.find(p => p.paket_id === paketId);
+          if (pkg) {
+            selectPackage(pkg, card);
+          }
+        });
       });
-    });
+    }
   }
 
   function selectPackage(pkg, cardElement) {
     state.selectedPackage = pkg;
     triggerHaptic('light');
 
-    // Highlight selected card
-    elements.packagesList.querySelectorAll('.pkg-card').forEach(c => {
-      c.classList.remove('selected');
-      const chk = c.querySelector('.pkg-selected-check');
-      if (chk) chk.remove();
-    });
+    if (elements.packagesList) {
+      elements.packagesList.querySelectorAll('.pkg-card').forEach(c => {
+        c.classList.remove('selected');
+        const chk = c.querySelector('.pkg-selected-check');
+        if (chk) chk.remove();
+      });
+    }
 
     cardElement.classList.add('selected');
     const checkBadge = document.createElement('div');
@@ -468,16 +529,16 @@
     checkBadge.textContent = '✓';
     cardElement.appendChild(checkBadge);
 
-    // Update Summary Section
     const priceUzs = pkg.price?.amount || (pkg.price?.usd ? Math.round(pkg.price.usd * 12800) : 0);
-    elements.summaryPkgName.textContent = pkg.name;
-    elements.summaryPkgPrice.textContent = formatUzs(priceUzs);
+    if (elements.summaryPkgName) elements.summaryPkgName.textContent = pkg.name;
+    if (elements.summaryPkgPrice) elements.summaryPkgPrice.textContent = formatUzs(priceUzs);
 
-    // Show Player ID Form
-    elements.playerFormSection.style.display = 'block';
-    elements.playerFormSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (elements.playerFormSection) {
+      elements.playerFormSection.style.display = 'block';
+      elements.playerFormSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
-    if (!elements.playerIdInput.value.trim()) {
+    if (elements.playerIdInput && !elements.playerIdInput.value.trim()) {
       elements.playerIdInput.focus();
     }
 
@@ -486,20 +547,20 @@
 
   // --- Player ID Validation & Nickname Verification ---
   function handlePlayerIdChange() {
-    state.playerId = elements.playerIdInput.value.trim();
+    state.playerId = elements.playerIdInput ? elements.playerIdInput.value.trim() : '';
     updateMainButtonState();
 
     if (state.checkIdTimeout) clearTimeout(state.checkIdTimeout);
 
     if (state.playerId.length >= 4 && state.selectedGame) {
-      elements.idCheckSpinner.style.display = 'block';
+      if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'block';
       state.checkIdTimeout = setTimeout(async () => {
         try {
           const body = {
             game_id: state.selectedGame.game_id,
             player_id: state.playerId
           };
-          if (state.selectedGame.requires_server && elements.serverIdInput.value.trim()) {
+          if (state.selectedGame.requires_server && elements.serverIdInput && elements.serverIdInput.value.trim()) {
             body.server_id = elements.serverIdInput.value.trim();
           }
 
@@ -508,26 +569,28 @@
             body: body
           });
 
-          elements.idCheckSpinner.style.display = 'none';
+          if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'none';
 
           if (res && res.ok && (res.charname || res.username || res.name)) {
             const charname = res.charname || res.username || res.name;
             state.verifiedPlayer = charname;
-            elements.idVerificationStatus.className = 'verification-badge valid';
-            elements.idVerificationStatus.innerHTML = `<span>✓</span> <span>O'yinchi: <strong>${escapeHtml(charname)}</strong></span>`;
-            elements.idVerificationStatus.style.display = 'inline-flex';
+            if (elements.idVerificationStatus) {
+              elements.idVerificationStatus.className = 'verification-badge valid';
+              elements.idVerificationStatus.innerHTML = `<span>✓</span> <span>O'yinchi: <strong>${escapeHtml(charname)}</strong></span>`;
+              elements.idVerificationStatus.style.display = 'inline-flex';
+            }
             triggerHaptic('light');
           } else {
-            elements.idVerificationStatus.style.display = 'none';
+            if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
           }
         } catch (e) {
-          elements.idCheckSpinner.style.display = 'none';
-          elements.idVerificationStatus.style.display = 'none';
+          if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'none';
+          if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
         }
       }, 600);
     } else {
-      elements.idCheckSpinner.style.display = 'none';
-      elements.idVerificationStatus.style.display = 'none';
+      if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'none';
+      if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
     }
   }
 
@@ -536,8 +599,9 @@
     const isValid = Boolean(
       state.selectedGame && 
       state.selectedPackage && 
+      elements.playerIdInput && 
       elements.playerIdInput.value.trim().length >= 3 &&
-      (!state.selectedGame.requires_server || elements.serverIdInput.value.trim().length >= 1)
+      (!state.selectedGame.requires_server || (elements.serverIdInput && elements.serverIdInput.value.trim().length >= 1))
     );
 
     const priceUzs = state.selectedPackage?.price?.amount || 
@@ -546,22 +610,24 @@
     if (isValid) {
       const buttonText = `XARID QILISH • ${formatUzs(priceUzs)}`;
 
-      // Update Telegram MainButton
       if (tg?.MainButton) {
         tg.MainButton.setText(buttonText);
         tg.MainButton.enable();
         tg.MainButton.show();
       }
 
-      // Update Fallback button
-      elements.modalPayBtn.disabled = false;
-      elements.modalPayBtn.textContent = buttonText;
+      if (elements.modalPayBtn) {
+        elements.modalPayBtn.disabled = false;
+        elements.modalPayBtn.textContent = buttonText;
+      }
     } else {
       if (tg?.MainButton) {
         tg.MainButton.hide();
       }
-      elements.modalPayBtn.disabled = true;
-      elements.modalPayBtn.textContent = 'Xarid qilish';
+      if (elements.modalPayBtn) {
+        elements.modalPayBtn.disabled = true;
+        elements.modalPayBtn.textContent = 'Xarid qilish';
+      }
     }
   }
 
@@ -569,18 +635,18 @@
   async function handlePurchase() {
     if (!state.selectedGame || !state.selectedPackage) return;
 
-    const playerId = elements.playerIdInput.value.trim();
-    const serverId = elements.serverIdInput.value.trim();
+    const playerId = elements.playerIdInput ? elements.playerIdInput.value.trim() : '';
+    const serverId = elements.serverIdInput ? elements.serverIdInput.value.trim() : '';
 
     if (!playerId) {
       alert("Iltimos, o'yinchi ID raqamini kiriting!");
-      elements.playerIdInput.focus();
+      elements.playerIdInput?.focus();
       return;
     }
 
     if (state.selectedGame.requires_server && !serverId) {
       alert("Iltimos, Server / Zone ID raqamini kiriting!");
-      elements.serverIdInput.focus();
+      elements.serverIdInput?.focus();
       return;
     }
 
@@ -589,8 +655,10 @@
       tg.MainButton.showProgress();
       tg.MainButton.disable();
     }
-    elements.modalPayBtn.disabled = true;
-    elements.modalPayBtn.textContent = 'Buyurtma berilmoqda...';
+    if (elements.modalPayBtn) {
+      elements.modalPayBtn.disabled = true;
+      elements.modalPayBtn.textContent = 'Buyurtma berilmoqda...';
+    }
 
     try {
       const orderPayload = {
@@ -612,7 +680,6 @@
         const priceUzs = state.selectedPackage.price?.amount || 
           (state.selectedPackage.price?.usd ? Math.round(state.selectedPackage.price.usd * 12800) : 0);
 
-        // Save order to Local History
         saveOrderToHistory({
           id: orderId,
           gameName: state.selectedGame.name,
@@ -626,14 +693,12 @@
 
         closeModal();
 
-        // Populate Success Card
-        elements.receiptOrderId.textContent = `#${orderId}`;
-        elements.receiptGameName.textContent = state.selectedGame.name;
-        elements.receiptPkgName.textContent = state.selectedPackage.name;
-        elements.receiptPlayerId.textContent = playerId + (serverId ? ` (${serverId})` : '');
+        if (elements.receiptOrderId) elements.receiptOrderId.textContent = `#${orderId}`;
+        if (elements.receiptGameName) elements.receiptGameName.textContent = state.selectedGame.name;
+        if (elements.receiptPkgName) elements.receiptPkgName.textContent = state.selectedPackage.name;
+        if (elements.receiptPlayerId) elements.receiptPlayerId.textContent = playerId + (serverId ? ` (${serverId})` : '');
 
-        // Show Success Dialog
-        elements.successModal.classList.add('active');
+        if (elements.successModal) elements.successModal.classList.add('active');
       } else {
         throw new Error(res?.error || "Buyurtma yaratib bo'lmadi");
       }
@@ -651,7 +716,7 @@
         tg.MainButton.hideProgress();
         tg.MainButton.enable();
       }
-      elements.modalPayBtn.disabled = false;
+      if (elements.modalPayBtn) elements.modalPayBtn.disabled = false;
       updateMainButtonState();
     }
   }
@@ -674,23 +739,27 @@
 
   function updateOrdersBadge() {
     const list = getOrderHistory();
-    if (list.length > 0) {
-      elements.navOrdersBadge.textContent = list.length;
-      elements.navOrdersBadge.style.display = 'block';
-    } else {
-      elements.navOrdersBadge.style.display = 'none';
+    if (elements.navOrdersBadge) {
+      if (list.length > 0) {
+        elements.navOrdersBadge.textContent = list.length;
+        elements.navOrdersBadge.style.display = 'block';
+      } else {
+        elements.navOrdersBadge.style.display = 'none';
+      }
     }
   }
 
   function renderOrdersList() {
     const list = getOrderHistory();
+    if (!elements.ordersList) return;
+
     if (!list.length) {
       elements.ordersList.innerHTML = '';
-      elements.emptyOrdersState.style.display = 'block';
+      if (elements.emptyOrdersState) elements.emptyOrdersState.style.display = 'block';
       return;
     }
 
-    elements.emptyOrdersState.style.display = 'none';
+    if (elements.emptyOrdersState) elements.emptyOrdersState.style.display = 'none';
     elements.ordersList.innerHTML = list.map(item => `
       <div class="order-card">
         <div class="order-card-header">
@@ -712,14 +781,14 @@
   // --- Profile Stats ---
   function updateProfileStats() {
     const list = getOrderHistory();
-    elements.statsTotalOrders.textContent = list.length;
+    if (elements.statsTotalOrders) elements.statsTotalOrders.textContent = list.length;
     const totalSpent = list.reduce((acc, cur) => acc + (Number(cur.price) || 0), 0);
-    elements.statsTotalSpent.textContent = formatUzs(totalSpent);
+    if (elements.statsTotalSpent) elements.statsTotalSpent.textContent = formatUzs(totalSpent);
   }
 
   // --- Close Modal ---
   function closeModal() {
-    elements.modalOverlay.classList.remove('active');
+    if (elements.modalOverlay) elements.modalOverlay.classList.remove('active');
     document.body.style.overflow = '';
     tg?.BackButton?.hide();
     tg?.MainButton?.hide();
@@ -727,7 +796,6 @@
     state.selectedPackage = null;
   }
 
-  // --- Escape HTML helper ---
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -740,13 +808,14 @@
 
   // --- Copy ID Handler ---
   function setupCopyId() {
-    elements.copyIdBtn.addEventListener('click', () => {
-      const id = elements.profileUserId.textContent;
+    elements.copyIdBtn?.addEventListener('click', () => {
+      const id = elements.profileUserId ? elements.profileUserId.textContent : '';
       navigator.clipboard?.writeText(id).then(() => {
         triggerHaptic('light');
-        elements.copyIdBtn.querySelector('span').textContent = 'Nusxalandi!';
+        const span = elements.copyIdBtn.querySelector('span');
+        if (span) span.textContent = 'Nusxalandi!';
         setTimeout(() => {
-          elements.copyIdBtn.querySelector('span').textContent = 'Nusxalash';
+          if (span) span.textContent = 'Nusxalash';
         }, 1800);
       });
     });
@@ -754,15 +823,14 @@
 
   // --- Event Listeners Setup ---
   function setupEventListeners() {
-    // Bottom Tab Navigation
+    // Bottom Tab Navigation (Home, Orders, Profile)
     elements.navItems.forEach(item => {
       item.addEventListener('click', () => {
         const tab = item.getAttribute('data-tab');
-        switchTab(tab);
+        if (tab) switchTab(tab);
       });
     });
 
-    // Empty orders "Go Shop" button
     elements.goShopBtn?.addEventListener('click', () => {
       switchTab('home');
     });
@@ -779,36 +847,36 @@
     });
 
     // Search
-    elements.searchInput.addEventListener('input', applyFilters);
-    elements.clearSearchBtn.addEventListener('click', () => {
-      elements.searchInput.value = '';
+    elements.searchInput?.addEventListener('input', applyFilters);
+    elements.clearSearchBtn?.addEventListener('click', () => {
+      if (elements.searchInput) elements.searchInput.value = '';
       applyFilters();
-      elements.searchInput.focus();
+      elements.searchInput?.focus();
     });
 
-    // Retry fetch
-    elements.retryFetchBtn.addEventListener('click', loadGames);
+    // Retry fetch button
+    elements.retryFetchBtn?.addEventListener('click', loadGames);
 
     // Modal Close
-    elements.modalCloseBtn.addEventListener('click', closeModal);
-    elements.modalOverlay.addEventListener('click', (e) => {
+    elements.modalCloseBtn?.addEventListener('click', closeModal);
+    elements.modalOverlay?.addEventListener('click', (e) => {
       if (e.target === elements.modalOverlay) closeModal();
     });
 
     // Form inputs
-    elements.playerIdInput.addEventListener('input', handlePlayerIdChange);
-    elements.serverIdInput.addEventListener('input', updateMainButtonState);
+    elements.playerIdInput?.addEventListener('input', handlePlayerIdChange);
+    elements.serverIdInput?.addEventListener('input', updateMainButtonState);
 
     // Fallback modal button
-    elements.modalPayBtn.addEventListener('click', handlePurchase);
+    elements.modalPayBtn?.addEventListener('click', handlePurchase);
 
     // Success Close
-    elements.successCloseBtn.addEventListener('click', () => {
-      elements.successModal.classList.remove('active');
+    elements.successCloseBtn?.addEventListener('click', () => {
+      if (elements.successModal) elements.successModal.classList.remove('active');
       switchTab('orders');
     });
 
-    // Terms & Security modal info
+    // Terms modal
     elements.termsBtn?.addEventListener('click', () => {
       triggerHaptic('light');
       if (tg?.showAlert) {
