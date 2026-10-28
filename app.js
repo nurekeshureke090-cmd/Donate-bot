@@ -2281,7 +2281,7 @@
     }).join('');
   }
 
-  function approveTopUp(transactionId, userId, amount) {
+  async function approveTopUp(transactionId, userId, amount) {
     amount = Number(amount) || 0;
     const list = getPendingTopUps();
     const tx = list.find(t => String(t.id) === String(transactionId));
@@ -2335,6 +2335,32 @@
     }
     localStorage.setItem(targetKey, JSON.stringify(targetUserData));
 
+    // MongoDB backendga tasdiqlash so'rovini yuborish (Barcha qurilmalarda ko'rinishi uchun)
+    try {
+      const resp = await fetch('/api/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'approve_transaction',
+          transactionId: transactionId,
+          userId: userId,
+          amount: amount
+        })
+      });
+      const data = await resp.json();
+      if (data && typeof data.newBalance === 'number') {
+        targetUserData.balance = data.newBalance;
+        localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+        if (String(currentUser.id) === String(userId)) {
+          currentUser.balance = data.newBalance;
+          saveStoredUserData(currentUser);
+          updateBalanceUI();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend approval sync error:', e);
+    }
+
     // Update in users registry
     const allUsers = getAllUsers();
     const uReg = allUsers.find(u => String(u.id) === String(userId));
@@ -2367,7 +2393,7 @@
   }
   window.approveTopUp = approveTopUp;
 
-  function rejectTopUp(transactionId) {
+  async function rejectTopUp(transactionId) {
     const list = getPendingTopUps();
     const tx = list.find(t => String(t.id) === String(transactionId));
     if (!tx) {
@@ -2383,6 +2409,20 @@
     tx.status = 'Rad etildi';
     tx.resolvedAt = new Date().toLocaleString('uz-UZ');
     savePendingTopUps(list);
+
+    // MongoDB backendga rad etish so'rovini yuborish
+    try {
+      await fetch('/api/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reject_transaction',
+          transactionId: transactionId
+        })
+      });
+    } catch (e) {
+      console.warn('Backend reject sync error:', e);
+    }
 
     // Update user record if exists
     const targetKey = getUserStorageKey(tx.userId);
@@ -2737,7 +2777,7 @@
     if (elements.adminBalanceModal) elements.adminBalanceModal.classList.remove('active');
   }
 
-  function handleConfirmBalanceAdjust() {
+  async function handleConfirmBalanceAdjust() {
     if (!selectedAdjustUserId) return;
 
     const amount = Number(elements.adjustAmountInput?.value) || 0;
@@ -2785,6 +2825,32 @@
     });
 
     localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+
+    // MongoDB backendga balans o'zgartirish so'rovini yuborish (Barcha qurilmalar bilan sinxronlash)
+    try {
+      const resp = await fetch('/api/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'adjust_balance',
+          userId: selectedAdjustUserId,
+          amount: amount,
+          type: balanceAdjustAction
+        })
+      });
+      const data = await resp.json();
+      if (data && typeof data.newBalance === 'number') {
+        targetUserData.balance = data.newBalance;
+        localStorage.setItem(targetKey, JSON.stringify(targetUserData));
+        if (String(currentUser.id) === String(selectedAdjustUserId)) {
+          currentUser.balance = data.newBalance;
+          saveStoredUserData(currentUser);
+          updateBalanceUI();
+        }
+      }
+    } catch (e) {
+      console.warn('Backend balance adjust error:', e);
+    }
 
     // Update Registry
     const allUsers = getAllUsers();
