@@ -576,6 +576,39 @@
     }
   }
 
+  // --- Backend MongoDB Sync for Pending Top-ups ---
+  async function syncPendingTopUpsWithBackend() {
+    try {
+      const res = await fetch('/api/topup');
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json && json.ok && Array.isArray(json.data) && json.data.length > 0) {
+        const localList = getPendingTopUps();
+        const localMap = new Map(localList.map(item => [String(item.id), item]));
+
+        for (const serverTx of json.data) {
+          const id = String(serverTx.id || serverTx._id);
+          if (!localMap.has(id)) {
+            localList.unshift(serverTx);
+            localMap.set(id, serverTx);
+          } else {
+            const existing = localMap.get(id);
+            if (serverTx.status && existing.status !== serverTx.status) {
+              existing.status = serverTx.status === 'approved' ? 'Tasdiqlandi' : serverTx.status;
+            }
+          }
+        }
+        savePendingTopUps(localList);
+        if (state.activeTab === 'orders' || state.activeTab === 'profile') {
+          renderOrdersList();
+          renderAdminPendingList();
+        }
+      }
+    } catch (e) {
+      // Offline / background sync
+    }
+  }
+
   // User State
   let currentUser = getStoredUserData();
 
@@ -971,7 +1004,10 @@
 
     // Page-specific updates
     updateBalanceUI();
-    if (tabName === 'orders') renderOrdersList();
+    if (tabName === 'orders') {
+      renderOrdersList();
+      syncPendingTopUpsWithBackend();
+    }
     if (tabName === 'profile') updateProfileStats();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1692,7 +1728,8 @@
     });
 
     // Execute Top-up (Submits Request with Exact Penny Matching & Receipt)
-    elements.executeTopUpBtn?.addEventListener('click', () => {
+    // Execute Top-up (Submits Request with Exact Penny Matching & Receipt to MongoDB /api/topup)
+    elements.executeTopUpBtn?.addEventListener('click', async () => {
       const amount = state.selectedTopUpAmount;
       if (!amount || amount < 1000) {
         alert("Iltimos, to'ldirish miqdorini kamida 1 000 so'm qilib belgilang.");
@@ -1712,65 +1749,89 @@
       elements.executeTopUpBtn.disabled = true;
       elements.executeTopUpBtn.textContent = "So'rov yuborilmoqda...";
 
-      setTimeout(() => {
-        const exactAmount = state.exactTopUpAmount;
-        const transactionId = 'TX' + Math.floor(100000 + Math.random() * 900000);
-        const newTopUpRequest = {
-          id: transactionId,
-          userId: currentUserId,
-          userName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || `@${currentUser.username}` || 'Foydalanuvchi',
-          userHandle: currentUser.username ? `@${currentUser.username}` : '',
-          baseAmount: amount,
-          exactAmount: exactAmount,
-          pennies: state.pennyMatchingNumber,
-          amount: amount, // Credited amount upon admin approval
-          method: state.selectedPayMethod.toUpperCase(),
-          receiptImage: state.uploadedReceiptBase64,
-          date: new Date().toLocaleString('uz-UZ'),
-          status: 'Kutilmoqda'
-        };
+      const exactAmount = parseInt(state.exactTopUpAmount, 10);
+      const baseAmount = parseInt(amount, 10);
+      const transactionId = 'TX' + Math.floor(100000 + Math.random() * 900000);
 
-        // 1. Add to shared pending requests list for Admin approval
-        const pendingList = getPendingTopUps();
-        pendingList.unshift(newTopUpRequest);
-        savePendingTopUps(pendingList);
+      const newTopUpRequest = {
+        id: transactionId,
+        userId: String(currentUserId),
+        telegram_id: isNaN(Number(currentUserId)) ? String(currentUserId) : Number(currentUserId),
+        userName: `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || `@${currentUser.username}` || 'Foydalanuvchi',
+        userHandle: currentUser.username ? `@${currentUser.username}` : '',
+        baseAmount: baseAmount,
+        exactAmount: exactAmount, // Qat'iy butun son (integer Number)
+        pennies: state.pennyMatchingNumber || (exactAmount - baseAmount),
+        amount: baseAmount, // Credited amount upon admin approval
+        method: state.selectedPayMethod.toUpperCase(),
+        receiptImage: state.uploadedReceiptBase64,
+        date: new Date().toLocaleString('uz-UZ'),
+        status: 'pending'
+      };
 
-        // 2. Add to user's personal top-ups history
-        if (!Array.isArray(currentUser.topups)) currentUser.topups = [];
-        currentUser.topups.unshift(newTopUpRequest);
-        saveStoredUserData(currentUser);
-
-        // 3. Record in Admin Master Log
-        recordMasterOrder({
-          id: transactionId,
-          type: 'topup',
-          userId: currentUserId,
-          userName: newTopUpRequest.userName,
-          title: `Balans to'ldirish (${newTopUpRequest.method}) • Aniq: ${formatUzs(exactAmount)}`,
-          price: exactAmount,
-          date: newTopUpRequest.date,
-          status: 'Kutilmoqda',
-          receiptImage: state.uploadedReceiptBase64
+      try {
+        // Haqiqiy Vercel Serverless /api/topup endpointiga POST so'rovi (MongoDB'ga yozish)
+        const response = await fetch('/api/topup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newTopUpRequest)
         });
 
-        triggerHaptic('success');
-        elements.executeTopUpBtn.disabled = false;
-        elements.executeTopUpBtn.innerHTML = `To'ldirish • <span id="topUpBtnAmountText">${formatUzs(exactAmount)}</span>`;
-
-        // Clear uploaded receipt and re-roll penny matching for next request
-        clearReceiptUpload();
-        setTopUpBaseAmount(amount);
-
-        const alertMsg = `✅ To'lov so'rovingiz qabul qilindi!\n\nSo'rov ID: #${transactionId}\nO'tkazilgan aniq summa: ${formatUzs(exactAmount)}\nTo'lov cheki: Muvaffaqiyatli biriktirildi ✓\nHolati: ⏳ Kutilmoqda\n\nAdministrator bank SMS va chekni tekshirib tasdiqlagach, ${formatUzs(amount)} balansingizga qo'shiladi.`;
-        if (tg?.showAlert) {
-          tg.showAlert(alertMsg);
+        const resData = await response.json();
+        if (response.ok && resData.ok) {
+          console.log('[Frontend] To\'lov so\'rovi MongoDB\'ga yozildi:', resData);
+          if (resData.transactionId) {
+            newTopUpRequest.id = resData.transactionId;
+          }
         } else {
-          alert(alertMsg);
+          console.warn('[Frontend] /api/topup server ogohlantirishi:', resData);
         }
+      } catch (err) {
+        console.error('[Frontend] /api/topup fetch xatosi:', err);
+      }
 
-        updateAdminUI();
-        switchTab('orders');
-      }, 600);
+      // 1. Add to shared pending requests list for Admin approval
+      const pendingList = getPendingTopUps();
+      pendingList.unshift(newTopUpRequest);
+      savePendingTopUps(pendingList);
+
+      // 2. Add to user's personal top-ups history
+      if (!Array.isArray(currentUser.topups)) currentUser.topups = [];
+      currentUser.topups.unshift(newTopUpRequest);
+      saveStoredUserData(currentUser);
+
+      // 3. Record in Admin Master Log
+      recordMasterOrder({
+        id: newTopUpRequest.id,
+        type: 'topup',
+        userId: currentUserId,
+        userName: newTopUpRequest.userName,
+        title: `Balans to'ldirish (${newTopUpRequest.method}) • Aniq: ${formatUzs(exactAmount)}`,
+        price: exactAmount,
+        date: newTopUpRequest.date,
+        status: 'Kutilmoqda',
+        receiptImage: state.uploadedReceiptBase64
+      });
+
+      triggerHaptic('success');
+      elements.executeTopUpBtn.disabled = false;
+      elements.executeTopUpBtn.innerHTML = `To'ldirish • <span id="topUpBtnAmountText">${formatUzs(exactAmount)}</span>`;
+
+      // Clear uploaded receipt and re-roll penny matching for next request
+      clearReceiptUpload();
+      setTopUpBaseAmount(amount);
+
+      const alertMsg = `✅ To'lov so'rovingiz qabul qilindi!\n\nSo'rov ID: #${newTopUpRequest.id}\nO'tkazilgan aniq summa: ${formatUzs(exactAmount)}\nTo'lov cheki: Muvaffaqiyatli biriktirildi ✓\nHolati: ⏳ Kutilmoqda\n\nAdministrator yoki Bank SMS orqali avtomatik tasdiqlangach, ${formatUzs(baseAmount)} balansingizga qo'shiladi.`;
+      if (tg?.showAlert) {
+        tg.showAlert(alertMsg);
+      } else {
+        alert(alertMsg);
+      }
+
+      updateAdminUI();
+      switchTab('orders');
     });
   }
 
@@ -3074,6 +3135,7 @@
     updateOrdersBadge();
     updateAdminUI();
     loadGames();
+    syncPendingTopUpsWithBackend();
   }
 
   if (document.readyState === 'loading') {
