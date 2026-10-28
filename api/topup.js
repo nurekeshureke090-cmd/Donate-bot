@@ -37,12 +37,47 @@ export default async function handler(req, res) {
     const db = await getDb();
     const transactionsCol = db.collection('transactions');
 
-    // GET so'rovi: Tranzaksiyalarni ko'rish
+    // GET so'rovi: Foydalanuvchi balansi va tranzaksiyalarini qaytarish
     if (req.method === 'GET') {
       const status = req.query?.status;
-      const filter = status ? { status } : {};
-      const list = await transactionsCol.find(filter).sort({ createdAt: -1 }).limit(100).toArray();
-      return res.status(200).json({ ok: true, data: list });
+      const userId = req.query?.userId;
+      const filter = {};
+
+      if (status) filter.status = status;
+      if (userId) {
+        filter.$or = [
+          { userId: String(userId) },
+          { telegram_id: Number(userId) || String(userId) }
+        ];
+      }
+
+      const list = await transactionsCol
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .toArray();
+
+      // Foydalanuvchi balansi va ma'lumotlarini MongoDB 'users' kolleksiyasidan olish
+      let userDoc = null;
+      if (userId) {
+        const usersCol = db.collection('users');
+        userDoc = await usersCol.findOne({
+          $or: [
+            { telegram_id: Number(userId) },
+            { telegram_id: String(userId) },
+            { telegramId: String(userId) },
+            { id: String(userId) },
+            { id: Number(userId) }
+          ]
+        });
+      }
+
+      return res.status(200).json({
+        ok: true,
+        balance: userDoc ? (userDoc.balance ?? 0) : null,
+        user: userDoc,
+        data: list
+      });
     }
 
     // POST so'rovi: Yangi to'lov so'rovini saqlash
@@ -55,7 +90,6 @@ export default async function handler(req, res) {
       }
       body = body || {};
 
-      // exactAmount QAT'IY BUTUN SON (INTEGER NUMBER) qilinadi
       const rawExact = body.exactAmount;
       const exactAmount = parseInt(rawExact, 10);
 
@@ -82,13 +116,13 @@ export default async function handler(req, res) {
         userName: String(body.userName || 'Foydalanuvchi'),
         userHandle: String(body.userHandle || ''),
         baseAmount: baseAmount,
-        exactAmount: exactAmount, // QAT'IY BUTUN SON (INTEGER NUMBER)
+        exactAmount: exactAmount,
         amount: baseAmount,
         pennies: pennies,
         method: String(body.method || 'UZCARD').toUpperCase(),
         receiptImage: body.receiptImage || null,
         date: body.date || now.toLocaleString('uz-UZ'),
-        status: 'pending',        // Boshlang'ich holati 'pending'
+        status: 'pending',
         createdAt: now
       };
 
