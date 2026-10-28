@@ -576,36 +576,71 @@
     }
   }
 
-  // --- Backend MongoDB Sync for Pending Top-ups ---
+  // --- Backend MongoDB Sync for User Balance & Pending Top-ups ---
   async function syncPendingTopUpsWithBackend() {
     try {
-      const res = await fetch('/api/topup');
+      const uId = String(currentUserId || currentUser.id || '');
+      const url = uId ? `/api/topup?userId=${encodeURIComponent(uId)}` : '/api/topup';
+      const res = await fetch(url);
       if (!res.ok) return;
       const json = await res.json();
-      if (json && json.ok && Array.isArray(json.data) && json.data.length > 0) {
+      if (!json || !json.ok) return;
+
+      // 1. Foydalanuvchi balansini MongoDB'dagi haqiqiy balans bilan sinxronlash
+      if (typeof json.balance === 'number') {
+        currentUser.balance = json.balance;
+        saveStoredUserData(currentUser);
+        updateBalanceUI();
+      }
+
+      // 2. Foydalanuvchi xaridlari / to'lovlari tarixini sinxronlash
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        if (!Array.isArray(currentUser.topups)) currentUser.topups = [];
+        const userTopupsMap = new Map(currentUser.topups.map(t => [String(t.id), t]));
+
+        for (const sTx of json.data) {
+          const id = String(sTx.id || sTx._id);
+          const mappedStatus = sTx.status === 'approved' ? 'Tasdiqlandi' : (sTx.status === 'rejected' ? 'Rad etildi' : sTx.status);
+
+          if (userTopupsMap.has(id)) {
+            const localTx = userTopupsMap.get(id);
+            localTx.status = mappedStatus;
+          } else if (String(sTx.userId) === String(currentUserId) || String(sTx.telegram_id) === String(currentUserId)) {
+            currentUser.topups.unshift({
+              id: id,
+              amount: sTx.amount || sTx.baseAmount,
+              exactAmount: sTx.exactAmount,
+              method: sTx.method,
+              date: sTx.date,
+              status: mappedStatus
+            });
+            userTopupsMap.set(id, currentUser.topups[0]);
+          }
+        }
+        saveStoredUserData(currentUser);
+
+        // 3. Admin so'rovlar ro'yxatini ham yangilash
         const localList = getPendingTopUps();
         const localMap = new Map(localList.map(item => [String(item.id), item]));
-
         for (const serverTx of json.data) {
           const id = String(serverTx.id || serverTx._id);
+          const mappedStatus = serverTx.status === 'approved' ? 'Tasdiqlandi' : (serverTx.status === 'rejected' ? 'Rad etildi' : serverTx.status);
           if (!localMap.has(id)) {
             localList.unshift(serverTx);
             localMap.set(id, serverTx);
           } else {
-            const existing = localMap.get(id);
-            if (serverTx.status && existing.status !== serverTx.status) {
-              existing.status = serverTx.status === 'approved' ? 'Tasdiqlandi' : serverTx.status;
-            }
+            localMap.get(id).status = mappedStatus;
           }
         }
         savePendingTopUps(localList);
-        if (state.activeTab === 'orders' || state.activeTab === 'profile') {
-          renderOrdersList();
-          renderAdminPendingList();
-        }
+
+        // UI ni yangilash
+        updateBalanceUI();
+        renderOrdersList();
+        renderAdminPendingList();
       }
     } catch (e) {
-      // Offline / background sync
+      console.warn('Sync with backend error:', e);
     }
   }
 
