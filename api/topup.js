@@ -1,4 +1,4 @@
-// api/topup.js — To'lov so'rovlarini MongoDB 'transactions' kolleksiyasiga saqlash
+// api/topup.js — To'lov so'rovlari va Admin amallarini MongoDB'ga sinxronlash
 const FALLBACK = {
   MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw.mongodb.net/payersub?retryWrites=true&w=majority',
   DB_NAME: 'payersub'
@@ -36,8 +36,10 @@ export default async function handler(req, res) {
   try {
     const db = await getDb();
     const transactionsCol = db.collection('transactions');
+    const usersCol = db.collection('users');
+    const now = new Date();
 
-    // GET so'rovi: Foydalanuvchi balansi va tranzaksiyalarini qaytarish
+    // GET so'rovi: Foydalanuvchi balansi va tranzaksiyalarini MongoDB'dan olish
     if (req.method === 'GET') {
       const status = req.query?.status;
       const userId = req.query?.userId;
@@ -57,10 +59,8 @@ export default async function handler(req, res) {
         .limit(100)
         .toArray();
 
-      // Foydalanuvchi balansi va ma'lumotlarini MongoDB 'users' kolleksiyasidan olish
       let userDoc = null;
       if (userId) {
-        const usersCol = db.collection('users');
         userDoc = await usersCol.findOne({
           $or: [
             { telegram_id: Number(userId) },
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // POST so'rovi: Yangi to'lov so'rovini saqlash
+    // POST so'rovi: Yangi to'lov yoki Admin amallari
     if (req.method === 'POST') {
       let body = req.body;
       if (typeof body === 'string') {
@@ -90,6 +90,88 @@ export default async function handler(req, res) {
       }
       body = body || {};
 
+      // AMAL 1: Admin paneldan balans qo'shish yoki yechish (Barcha qurilmalarda ko'rinadi)
+      if (body.action === 'adjust_balance') {
+        const targetUserId = String(body.userId);
+        const amount = parseInt(body.amount, 10) || 0;
+        const type = body.type; // 'add' yoki 'deduct'
+        const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount);
+
+        const userUpdate = await usersCol.findOneAndUpdate(
+          {
+            $or: [
+              { telegram_id: Number(targetUserId) },
+              { telegram_id: String(targetUserId) },
+              { telegramId: String(targetUserId) },
+              { id: String(targetUserId) },
+              { id: Number(targetUserId) }
+            ]
+          },
+          {
+            $inc: { balance: delta },
+            $set: {
+              telegram_id: isNaN(Number(targetUserId)) ? String(targetUserId) : Number(targetUserId),
+              telegramId: String(targetUserId),
+              id: String(targetUserId),
+              last_updated: now,
+              updatedAt: now
+            }
+          },
+          { returnDocument: 'after', upsert: true }
+        );
+
+        const updatedUser = userUpdate?.value || userUpdate;
+        return res.status(200).json({
+          ok: true,
+          message: "Foydalanuvchi balansi MongoDB'da yangilandi.",
+          userId: targetUserId,
+          newBalance: updatedUser?.balance ?? 0
+        });
+      }
+
+      // AMAL 2: Admin tomonidan to'lov so'rovini qo'lda tasdiqlash
+      if (body.action === 'approve_transaction') {
+        const txId = String(body.transactionId);
+        const targetUserId = String(body.userId);
+        const amount = parseInt(body.amount, 10) || 0;
+
+        await transactionsCol.updateOne(
+          { id: txId },
+          { $set: { status: 'approved', resolvedAt: now, approvedAt: now, approvalType: 'manual_admin' } }
+        );
+
+        const userUpdate = await usersCol.findOneAndUpdate(
+          {
+            $or: [
+              { telegram_id: Number(targetUserId) },
+              { telegram_id: String(targetUserId) },
+              { telegramId: String(targetUserId) },
+              { id: String(targetUserId) },
+              { id: Number(targetUserId) }
+            ]
+          },
+          {
+            $inc: { balance: amount },
+            $set: {
+              telegram_id: isNaN(Number(targetUserId)) ? String(targetUserId) : Number(targetUserId),
+              telegramId: String(targetUserId),
+              id: String(targetUserId),
+              last_updated: now,
+              updatedAt: now
+            }
+          },
+          { returnDocument: 'after', upsert: true }
+        );
+
+        const updatedUser = userUpdate?.value || userUpdate;
+        return res.status(200).json({
+          ok: true,
+          message: "Tranzaksiya tasdiqlandi va balans MongoDB'da yangilandi.",
+          newBalance: updatedUser?.balance ?? 0
+        });
+      }
+
+      // AMAL 3: Yangi to'ldirish so'rovini saqlash
       const rawExact = body.exactAmount;
       const exactAmount = parseInt(rawExact, 10);
 
@@ -106,7 +188,6 @@ export default async function handler(req, res) {
 
       const targetUserId = String(body.userId || body.telegram_id || 'unknown');
       const txId = body.id || ('TX' + Math.floor(100000 + Math.random() * 900000));
-      const now = new Date();
 
       const newTransaction = {
         id: txId,
