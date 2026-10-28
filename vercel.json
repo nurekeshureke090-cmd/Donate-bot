@@ -5,11 +5,13 @@
     { "src": "style.css", "use": "@vercel/static" },
     { "src": "app.js", "use": "@vercel/static" },
     { "src": "api/proxy.js", "use": "@vercel/node" },
-    { "src": "api/auto-approve.js", "use": "@vercel/node" }
+    { "src": "api/auto-approve.js", "use": "@vercel/node" },
+    { "src": "api/topup.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/proxy(.*)", "dest": "/api/proxy.js$1" },
     { "src": "/api/auto-approve(.*)", "dest": "/api/auto-approve.js$1" },
+    { "src": "/api/topup(.*)", "dest": "/api/topup.js$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
