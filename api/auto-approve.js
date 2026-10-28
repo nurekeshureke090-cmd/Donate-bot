@@ -1,4 +1,11 @@
 // api/auto-approve.js — Bank SMS orqali to'lovlarni 100% avtomatik tasdiqlash endpointi
+// ==============================================================================
+// Ushbu Vercel Serverless Function tashqi skript (Bank SMS parser) orqali kelgan
+// so'rovni qabul qiladi, xavfsizlik kalitini tekshiradi, MongoDB'dan mos keluvchi
+// pending tranzaksiyani topadi, uning statusini 'approved' qiladi, foydalanuvchi
+// balansiga exactAmount miqdorini xavfsiz qo'shadi va Telegram bot orqali xabar yuboradi.
+// ==============================================================================
+
 import crypto from 'crypto';
 
 // Fallback konfiguratsiya (Vercel Environment Variables ustun turadi)
@@ -6,11 +13,14 @@ const FALLBACK = {
   BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',
   MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw.mongodb.net/payersub?retryWrites=true&w=majority',
   DB_NAME: 'payersub',
-  AUTO_APPROVE_SECRET: 'YOUR_SECRET_KEY'
+  AUTO_APPROVE_SECRET: 'YOUR_SECRET_KEY' // O'zingizning maxfiy kalitingizni Vercel env'ga yozing
 };
 
 const getEnv = (key) => process.env[key] || FALLBACK[key] || '';
 
+/**
+ * MongoDB URL parametrlarini normallashtirish
+ */
 function fixMongoUrl(url) {
   return String(url)
     .trim()
@@ -18,6 +28,9 @@ function fixMongoUrl(url) {
     .replace(/([?&])retryWrites=[^&]*/i, '$1retryWrites=true');
 }
 
+/**
+ * MongoDB ulanishi (Serverless so'rovlar orasida keshlanadi)
+ */
 async function getDb() {
   if (!global._mongoClient) {
     const mongoUrl = getEnv('MONGO_URL') || getEnv('MONGODB_URI');
@@ -42,6 +55,9 @@ async function getDb() {
   return client.db(dbName);
 }
 
+/**
+ * Xavfsizlik kalitini tekshirish (Timing Attack himoyasi bilan)
+ */
 function isAuthorized(req) {
   const secretKey = getEnv('AUTO_APPROVE_SECRET');
   if (!secretKey) return false;
@@ -49,6 +65,7 @@ function isAuthorized(req) {
   const authHeader = req.headers['authorization'] || req.headers['x-api-key'] || '';
   if (!authHeader) return false;
 
+  // 'Bearer TOKEN' yoki oddiy 'TOKEN' formatini qabul qilamiz
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
   if (!token) return false;
 
@@ -62,6 +79,9 @@ function isAuthorized(req) {
   }
 }
 
+/**
+ * Telegram Bot orqali foydalanuvchiga xabarnoma yuborish
+ */
 async function sendTelegramNotification(botToken, chatId, text) {
   if (!botToken || !chatId) return { sent: false, error: 'Token or ChatID missing' };
 
@@ -83,7 +103,11 @@ async function sendTelegramNotification(botToken, chatId, text) {
   }
 }
 
+/**
+ * Asosiy Serverless Handler
+ */
 export default async function handler(req, res) {
+  // CORS sarlavhalari (Zarurat bo'lganda tashqi skriptlar uchun)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key');
@@ -92,6 +116,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // 1. Faqat POST so'rovlarni qabul qilish
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({
@@ -100,14 +125,16 @@ export default async function handler(req, res) {
     });
   }
 
+  // 2. Xavfsizlik: Secret authorization token tekshiruvi
   if (!isAuthorized(req)) {
     return res.status(401).json({
       ok: false,
-      error: 'Unauthorized: Invalid or missing secret authorization token.'
+      error: 'Unauthorized: Invalid or missing secret authorization token (Expected: "Bearer YOUR_SECRET_KEY").'
     });
   }
 
   try {
+    // 3. Request body'dan exactAmount qiymatini olish va tekshirish
     let body = req.body;
     if (typeof body === 'string') {
       try {
@@ -119,6 +146,7 @@ export default async function handler(req, res) {
     body = body || {};
 
     const rawAmount = body.exactAmount;
+    // Qat'iy Number(req.body.exactAmount) sifatida butun songa o'tkazish
     const exactAmount = Number(rawAmount);
 
     if (rawAmount === undefined || rawAmount === null || isNaN(exactAmount) || exactAmount <= 0) {
@@ -128,10 +156,12 @@ export default async function handler(req, res) {
       });
     }
 
+    // 4. MongoDB'ga ulanish
     const db = await getDb();
     const transactionsCol = db.collection('transactions');
     const usersCol = db.collection('users');
 
+    // 5. 'pending' (yoki 'Kutilmoqda') holatidagi va exactAmount mos bo'lgan so'rovni qidirish
     // Qat'iy exactAmount BUTUN SON (integer Number) sifatida izlash
     let pendingTx = await transactionsCol.findOne({
       exactAmount: exactAmount,
@@ -169,7 +199,7 @@ export default async function handler(req, res) {
 
     const now = new Date();
 
-    // Tranzaksiyani atomik tarzda 'approved' qilish
+    // 6. Tranzaksiyani atomik tarzda 'approved' holatiga o'tkazish (Poyga holati - Race condition oldini olish)
     const updateTxResult = await transactionsCol.findOneAndUpdate(
       {
         _id: pendingTx._id,
@@ -187,6 +217,7 @@ export default async function handler(req, res) {
     );
 
     const updatedTxDoc = updateTxResult?.value || updateTxResult;
+    // Agar boshqa parallel so'rov uni tasdiqlab bo'lgan bo'lsa
     if (!updatedTxDoc || updatedTxDoc.status !== 'approved') {
       return res.status(409).json({
         ok: false,
@@ -194,6 +225,7 @@ export default async function handler(req, res) {
       });
     }
 
+    // 7. Foydalanuvchi identifikatorini aniqlash (telegram_id, telegramId, userId, user_id)
     const targetTelegramId = pendingTx.telegram_id || pendingTx.telegramId || pendingTx.userId || pendingTx.user_id;
 
     if (!targetTelegramId) {
@@ -203,7 +235,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Foydalanuvchi balansini xavfsiz $inc bilan oshirish
+    // 8. Foydalanuvchi balansini xavfsiz $inc bilan oshirish
     const userFilter = {
       $or: [
         { telegram_id: targetTelegramId },
@@ -219,7 +251,13 @@ export default async function handler(req, res) {
       userFilter,
       {
         $inc: { balance: exactAmount },
-        $set: { last_updated: now, updatedAt: now }
+        $set: {
+          telegram_id: isNaN(Number(targetTelegramId)) ? String(targetTelegramId) : Number(targetTelegramId),
+          telegramId: String(targetTelegramId),
+          id: String(targetTelegramId),
+          last_updated: now,
+          updatedAt: now
+        }
       },
       { returnDocument: 'after', upsert: true }
     );
@@ -227,7 +265,7 @@ export default async function handler(req, res) {
     const updatedUser = userUpdateResult?.value || userUpdateResult;
     const newBalance = updatedUser?.balance ?? null;
 
-    // Telegram Bot orqali foydalanuvchiga tabrik xabari
+    // 9. Telegram Bot orqali foydalanuvchiga xabarnoma jo'natish
     const botToken = getEnv('BOT_TOKEN');
     const notificationText =
       `✅ <b>To'lovingiz avtomatik tasdiqlandi va balansingizga qo'shildi!</b>\n\n` +
@@ -238,6 +276,7 @@ export default async function handler(req, res) {
 
     const notifResult = await sendTelegramNotification(botToken, targetTelegramId, notificationText);
 
+    // 10. Muvaffaqiyatli javob qaytarish
     return res.status(200).json({
       ok: true,
       message: "To'lov muvaffaqiyatli avtomatik tasdiqlandi va balansga qo'shildi.",
