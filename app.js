@@ -1048,37 +1048,2671 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // --- Load Games (Max 50 Games strictly) ---
+const TOP_50_GAMES = [
+  {
+    "game_id": 141,
+    "name": "PUBG Mobile",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/pubg-mobile.png",
+    "id_label": "Player ID (Raqamli ID)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 3,
+        "name": "60 UC",
+        "price": {
+          "amount": 14000,
+          "usd": 1.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "325 + 25 UC",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "660 + 60 UC",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "1800 + 300 UC",
+        "price": {
+          "amount": 335000,
+          "usd": 26.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "3850 + 850 UC",
+        "price": {
+          "amount": 680000,
+          "usd": 53.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 8,
+        "name": "Royale Pass (A-Series)",
+        "price": {
+          "amount": 125000,
+          "usd": 9.8,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 9,
+        "name": "Elite Pass Plus",
+        "price": {
+          "amount": 310000,
+          "usd": 24.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 10,
+        "name": "Prime (1 oy)",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 11,
+        "name": "Prime Plus (1 oy)",
+        "price": {
+          "amount": 125000,
+          "usd": 9.8,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 9
+  },
+  {
+    "game_id": 1002,
+    "name": "Clash of Clans",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/clash-of-clans.png",
+    "id_label": "Player Tag (# bilan boshlanadi)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "80 Gems (Toshlar)",
+        "price": {
+          "amount": 15000,
+          "usd": 1.15,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 Gems (Toshlar)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,200 Gems (Toshlar)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "2,500 Gems (Toshlar)",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "6,500 Gems (Toshlar)",
+        "price": {
+          "amount": 640000,
+          "usd": 50.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "14,000 Gems (Toshlar)",
+        "price": {
+          "amount": 1290000,
+          "usd": 101.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "Gold Pass (Oltin chipta)",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 7
+  },
+  {
+    "game_id": 1003,
+    "name": "Roblox",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/roblox.png",
+    "id_label": "Roblox Username (Login)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "80 Robux",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "400 Robux",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "800 Robux",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1,700 Robux",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "4,500 Robux",
+        "price": {
+          "amount": 640000,
+          "usd": 50.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "10,000 Robux",
+        "price": {
+          "amount": 1290000,
+          "usd": 101.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 6
+  },
+  {
+    "game_id": 1004,
+    "name": "Fortnite",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/epic-games.png",
+    "id_label": "Epic Games ID / Nickname",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "1,000 V-Bucks",
+        "price": {
+          "amount": 115000,
+          "usd": 9.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "2,800 V-Bucks",
+        "price": {
+          "amount": 275000,
+          "usd": 21.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "5,000 V-Bucks",
+        "price": {
+          "amount": 460000,
+          "usd": 36.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "13,500 V-Bucks",
+        "price": {
+          "amount": 1150000,
+          "usd": 90.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Battle Pass (Jang Chiptasi)",
+        "price": {
+          "amount": 120000,
+          "usd": 9.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1005,
+    "name": "Steam Wallet",
+    "category": "services",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/steam.png",
+    "id_label": "Steam Login (Akkount nomi)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "$5 Steam Wallet",
+        "price": {
+          "amount": 70000,
+          "usd": 5.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "$10 Steam Wallet",
+        "price": {
+          "amount": 140000,
+          "usd": 11.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "$20 Steam Wallet",
+        "price": {
+          "amount": 280000,
+          "usd": 22.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "$50 Steam Wallet",
+        "price": {
+          "amount": 690000,
+          "usd": 54.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "$100 Steam Wallet",
+        "price": {
+          "amount": 1380000,
+          "usd": 108.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "500 RUB Steam CIS",
+        "price": {
+          "amount": 85000,
+          "usd": 6.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "1000 RUB Steam CIS",
+        "price": {
+          "amount": 165000,
+          "usd": 13.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 7
+  },
+  {
+    "game_id": 1006,
+    "name": "Brawl Stars",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/brawl-stars.png",
+    "id_label": "Player Tag (# bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "30 Gems (Gem)",
+        "price": {
+          "amount": 28000,
+          "usd": 2.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "80 Gems (Gem)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "170 Gems (Gem)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "360 Gems (Gem)",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "950 Gems (Gem)",
+        "price": {
+          "amount": 640000,
+          "usd": 50.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "Brawl Pass",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "Brawl Pass Plus",
+        "price": {
+          "amount": 145000,
+          "usd": 11.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 7
+  },
+  {
+    "game_id": 147,
+    "name": "Free Fire",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/freefire-global.png",
+    "id_label": "Player ID (UID)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 + 10 Olmos",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "310 + 31 Olmos",
+        "price": {
+          "amount": 44000,
+          "usd": 3.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "520 + 52 Olmos",
+        "price": {
+          "amount": 72000,
+          "usd": 5.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1060 + 106 Olmos",
+        "price": {
+          "amount": 144000,
+          "usd": 11.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "2180 + 218 Olmos",
+        "price": {
+          "amount": 285000,
+          "usd": 22.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "Haftalik Obuna (Weekly)",
+        "price": {
+          "amount": 26000,
+          "usd": 2.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "Oylik Obuna (Monthly)",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 7
+  },
+  {
+    "game_id": 53,
+    "name": "Mobile Legends: Bang Bang",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/mobile-legends-global.png",
+    "id_label": "User ID",
+    "requires_server": true,
+    "server_label": "Zone ID (Qavs ichidagi 4-5 xonali raqam)",
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "86 Diamonds",
+        "price": {
+          "amount": 22000,
+          "usd": 1.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "172 Diamonds",
+        "price": {
+          "amount": 44000,
+          "usd": 3.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "257 Diamonds",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "706 Diamonds",
+        "price": {
+          "amount": 170000,
+          "usd": 13.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "2195 Diamonds",
+        "price": {
+          "amount": 510000,
+          "usd": 40.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "Weekly Diamond Pass",
+        "price": {
+          "amount": 28000,
+          "usd": 2.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 7,
+        "name": "Twilight Pass",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 7
+  },
+  {
+    "game_id": 1009,
+    "name": "Standoff 2",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/standoff-2.png",
+    "id_label": "Player ID (Akkount ID)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 Gold (Oltin)",
+        "price": {
+          "amount": 25000,
+          "usd": 1.95,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 Gold (Oltin)",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,000 Gold (Oltin)",
+        "price": {
+          "amount": 175000,
+          "usd": 13.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "3,000 Gold (Oltin)",
+        "price": {
+          "amount": 490000,
+          "usd": 38.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Gold Pass (Pass)",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1010,
+    "name": "Clash Royale",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/clash-royale.png",
+    "id_label": "Player Tag (# bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "80 Gems (Tosh)",
+        "price": {
+          "amount": 15000,
+          "usd": 1.15,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 Gems (Tosh)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,200 Gems (Tosh)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "2,500 Gems (Tosh)",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Pass Royale",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 204,
+    "name": "Genshin Impact",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/genshin-impact.png",
+    "id_label": "UID (Raqamli ID)",
+    "requires_server": true,
+    "server_label": "Server (Asia / Europe / America / TW)",
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Genesis Crystals",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 + 30 Genesis Crystals",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 + 110 Genesis Crystals",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1980 + 260 Genesis Crystals",
+        "price": {
+          "amount": 390000,
+          "usd": 30.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "3280 + 600 Genesis Crystals",
+        "price": {
+          "amount": 640000,
+          "usd": 50.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "Blessing of the Welkin Moon",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 6
+  },
+  {
+    "game_id": 5,
+    "name": "Call of Duty: Mobile",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/call-of-duty-mobile.png",
+    "id_label": "Player ID / OpenID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "80 CP",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "420 CP",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "880 CP",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "2400 CP",
+        "price": {
+          "amount": 325000,
+          "usd": 25.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "5000 CP",
+        "price": {
+          "amount": 640000,
+          "usd": 50.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 6,
+        "name": "Battle Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 6
+  },
+  {
+    "game_id": 1013,
+    "name": "Minecraft",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/minecraft.png",
+    "id_label": "Microsoft / Gamertag",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "320 Minecoins",
+        "price": {
+          "amount": 30000,
+          "usd": 2.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "1,020 Minecoins",
+        "price": {
+          "amount": 80000,
+          "usd": 6.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,720 Minecoins",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "3,500 Minecoins",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Minecraft Java & Bedrock Edition",
+        "price": {
+          "amount": 320000,
+          "usd": 25.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 40,
+    "name": "EA SPORTS FC Mobile (FIFA)",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/eafc-mobile-cambodia.png",
+    "id_label": "Player ID / UID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 FC Points",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 FC Points",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1050 FC Points",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "2200 FC Points",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Star Pass (Yulduz chiptasi)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 88,
+    "name": "Valorant",
+    "category": "services",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/valorant-malaysia.png",
+    "id_label": "Riot ID (Masalan: Player#TAG)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "475 VP (Valorant Points)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "1,000 VP",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "2,050 VP",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "3,650 VP",
+        "price": {
+          "amount": 450000,
+          "usd": 35.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "5,350 VP",
+        "price": {
+          "amount": 650000,
+          "usd": 51.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 146,
+    "name": "Honkai: Star Rail",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/honkai-star-rail.png",
+    "id_label": "UID",
+    "requires_server": true,
+    "server_label": "Server (Asia / Europe / America)",
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Oneiric Shards",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 + 30 Oneiric Shards",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 + 110 Oneiric Shards",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Express Supply Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 71,
+    "name": "Blood Strike",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/blood-strike.png",
+    "id_label": "User ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 Gold",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Gold",
+        "price": {
+          "amount": 42000,
+          "usd": 3.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "500 Gold",
+        "price": {
+          "amount": 68000,
+          "usd": 5.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1000 Gold",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Strike Pass",
+        "price": {
+          "amount": 50000,
+          "usd": 3.9,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 3,
+    "name": "Bullet Echo",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/bullet-echo.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Bucks",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "320 Bucks",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "700 Bucks",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1500 Bucks",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 16,
+    "name": "League of Legends: Wild Rift",
+    "category": "mobile",
+    "is_popular": true,
+    "image": "https://playpay.uz/image/league-of-legends-sg.png",
+    "id_label": "Riot ID (Tag bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "475 Wild Cores",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "1000 Wild Cores",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "2050 Wild Cores",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Wild Pass",
+        "price": {
+          "amount": 80000,
+          "usd": 6.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1020,
+    "name": "Telegram Stars (Yulduzlar)",
+    "category": "services",
+    "is_popular": true,
+    "provider": "uzpin",
+    "image": "https://api.uzpinhub.uz/uploads/997e7cfb-f335-45c4-b1df-24924a1650a9.webp",
+    "id_label": "Telegram @username",
+    "requires_server": false,
+    "packages": [
+      { "paket_id": "c8459344-0c5a-47f0-a03f-cd1518fbecc0", "uzpin_product_id": "c8459344-0c5a-47f0-a03f-cd1518fbecc0", "name": "50 stars ⭐", "price": { "amount": 15000, "usd": 0.76, "currency": "UZS" } },
+      { "paket_id": "ea8178be-01d9-4d87-a1d6-e5b928492844", "uzpin_product_id": "ea8178be-01d9-4d87-a1d6-e5b928492844", "name": "75 stars ⭐", "price": { "amount": 22000, "usd": 1.14, "currency": "UZS" } },
+      { "paket_id": "5fd07426-f219-41b2-b953-127ebd084f0f", "uzpin_product_id": "5fd07426-f219-41b2-b953-127ebd084f0f", "name": "100 stars ⭐", "price": { "amount": 28000, "usd": 1.52, "currency": "UZS" } },
+      { "paket_id": "5c7b83ea-aa6b-4bd7-885d-6b6e6c4a77a3", "uzpin_product_id": "5c7b83ea-aa6b-4bd7-885d-6b6e6c4a77a3", "name": "150 stars ⭐", "price": { "amount": 42000, "usd": 2.27, "currency": "UZS" } },
+      { "paket_id": "36f20270-d0fd-491e-8eb4-56577baa1724", "uzpin_product_id": "36f20270-d0fd-491e-8eb4-56577baa1724", "name": "250 stars ⭐", "price": { "amount": 68000, "usd": 3.79, "currency": "UZS" } },
+      { "paket_id": "6f75ddd9-66fe-41fe-9a1b-86cab3fb0d8d", "uzpin_product_id": "6f75ddd9-66fe-41fe-9a1b-86cab3fb0d8d", "name": "350 stars ⭐", "price": { "amount": 95000, "usd": 5.30, "currency": "UZS" } },
+      { "paket_id": "f9a290df-1b7c-4035-b426-9381da2f7040", "uzpin_product_id": "f9a290df-1b7c-4035-b426-9381da2f7040", "name": "500 stars ⭐", "price": { "amount": 135000, "usd": 7.58, "currency": "UZS" } },
+      { "paket_id": "3690f2f7-8b0d-4bfa-8b22-a075b8934f81", "uzpin_product_id": "3690f2f7-8b0d-4bfa-8b22-a075b8934f81", "name": "750 stars ⭐", "price": { "amount": 199000, "usd": 11.36, "currency": "UZS" } },
+      { "paket_id": "1a7bfc07-3493-4e4c-a340-c8654b012adc", "uzpin_product_id": "1a7bfc07-3493-4e4c-a340-c8654b012adc", "name": "1,000 stars ⭐", "price": { "amount": 265000, "usd": 15.15, "currency": "UZS" } },
+      { "paket_id": "092875f8-9173-4cfd-8437-254ffc83802e", "uzpin_product_id": "092875f8-9173-4cfd-8437-254ffc83802e", "name": "1,500 stars ⭐", "price": { "amount": 395000, "usd": 22.73, "currency": "UZS" } },
+      { "paket_id": "0e1801a6-d947-4702-8fb0-e0d071882255", "uzpin_product_id": "0e1801a6-d947-4702-8fb0-e0d071882255", "name": "2,500 stars ⭐", "price": { "amount": 650000, "usd": 37.88, "currency": "UZS" } },
+      { "paket_id": "bed6c0ce-1dba-4a75-9554-71f39dfc1b04", "uzpin_product_id": "bed6c0ce-1dba-4a75-9554-71f39dfc1b04", "name": "5,000 stars ⭐", "price": { "amount": 1290000, "usd": 75.75, "currency": "UZS" } }
+    ],
+    "packages_count": 12
+  },
+  {
+    "game_id": 1021,
+    "name": "Telegram Premium",
+    "category": "services",
+    "is_popular": true,
+    "provider": "uzpin",
+    "image": "https://api.uzpinhub.uz/uploads/f790a2b5-c205-45ed-8ac7-9f7c700408fe.webp",
+    "id_label": "Telegram @username",
+    "requires_server": false,
+    "packages": [
+      { "paket_id": "1c1024c3-3ab7-4f78-8a5a-94a4afeb0414", "uzpin_product_id": "1c1024c3-3ab7-4f78-8a5a-94a4afeb0414", "name": "Premium 3 oy", "price": { "amount": 185000, "usd": 14.28, "currency": "UZS" } },
+      { "paket_id": "891f8dd2-ceed-4176-853b-09f557209181", "uzpin_product_id": "891f8dd2-ceed-4176-853b-09f557209181", "name": "Premium 6 oy", "price": { "amount": 225000, "usd": 17.34, "currency": "UZS" } },
+      { "paket_id": "59697eaf-a6ea-4be7-8577-68976fab9d24", "uzpin_product_id": "59697eaf-a6ea-4be7-8577-68976fab9d24", "name": "Premium 12 oy (Yillik)", "price": { "amount": 410000, "usd": 31.62, "currency": "UZS" } }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1022,
+    "name": "Discord Nitro",
+    "category": "services",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/discord.png",
+    "id_label": "Discord Username",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "Nitro Basic (1 oy)",
+        "price": {
+          "amount": 40000,
+          "usd": 3.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "Nitro Boost (1 oy)",
+        "price": {
+          "amount": 125000,
+          "usd": 9.8,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "Nitro Boost (1 yil)",
+        "price": {
+          "amount": 1150000,
+          "usd": 90.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1023,
+    "name": "PlayStation Network (PSN)",
+    "category": "services",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/playstation.png",
+    "id_label": "PSN Email / Region",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "$10 PSN Card (USA)",
+        "price": {
+          "amount": 145000,
+          "usd": 11.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "$25 PSN Card (USA)",
+        "price": {
+          "amount": 350000,
+          "usd": 27.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "$50 PSN Card (USA)",
+        "price": {
+          "amount": 690000,
+          "usd": 54.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "$100 PSN Card (USA)",
+        "price": {
+          "amount": 1380000,
+          "usd": 108.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1024,
+    "name": "Xbox Game Pass",
+    "category": "services",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/xbox.png",
+    "id_label": "Xbox Gamertag / Email",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "Game Pass Ultimate (1 oy)",
+        "price": {
+          "amount": 155000,
+          "usd": 12.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "Game Pass Ultimate (3 oy)",
+        "price": {
+          "amount": 440000,
+          "usd": 34.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "$15 Xbox Gift Card",
+        "price": {
+          "amount": 210000,
+          "usd": 16.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "$25 Xbox Gift Card",
+        "price": {
+          "amount": 350000,
+          "usd": 27.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1025,
+    "name": "Google Play Gift Card",
+    "category": "services",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/google-play.png",
+    "id_label": "Gmail manzili / Region",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "$5 Google Play Card",
+        "price": {
+          "amount": 70000,
+          "usd": 5.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "$10 Google Play Card",
+        "price": {
+          "amount": 140000,
+          "usd": 11.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "$25 Google Play Card",
+        "price": {
+          "amount": 345000,
+          "usd": 27.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "$50 Google Play Card",
+        "price": {
+          "amount": 690000,
+          "usd": 54.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1026,
+    "name": "Apple App Store & iTunes",
+    "category": "services",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/apple.png",
+    "id_label": "Apple ID / Region",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "$5 iTunes Gift Card",
+        "price": {
+          "amount": 70000,
+          "usd": 5.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "$10 iTunes Gift Card",
+        "price": {
+          "amount": 140000,
+          "usd": 11.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "$15 iTunes Gift Card",
+        "price": {
+          "amount": 210000,
+          "usd": 16.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "$25 iTunes Gift Card",
+        "price": {
+          "amount": 345000,
+          "usd": 27.0,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1027,
+    "name": "Hay Day",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f33e.png",
+    "id_label": "Player Tag (# bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "50 Diamonds (Olmos)",
+        "price": {
+          "amount": 25000,
+          "usd": 1.95,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "130 Diamonds (Olmos)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "275 Diamonds (Olmos)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "570 Diamonds (Olmos)",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Farm Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1028,
+    "name": "Boom Beach",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4a3.png",
+    "id_label": "Player Tag (# bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "500 Diamonds (Olmos)",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "1,200 Diamonds (Olmos)",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "2,500 Diamonds (Olmos)",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1029,
+    "name": "Squad Busters",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9b8.png",
+    "id_label": "Player Tag (# bilan)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "5,000 Coins",
+        "price": {
+          "amount": 25000,
+          "usd": 1.95,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "25,000 Coins",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "60,000 Coins",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Gem Pass",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1030,
+    "name": "PUBG New State Mobile",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3af.png",
+    "id_label": "Account ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "300 + 10 NC",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "1,500 + 80 NC",
+        "price": {
+          "amount": 68000,
+          "usd": 5.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "3,600 + 250 NC",
+        "price": {
+          "amount": 155000,
+          "usd": 12.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Survivor Pass",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1031,
+    "name": "Apex Legends",
+    "category": "services",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f52b.png",
+    "id_label": "EA ID / Gamertag",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "1,000 Apex Coins",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "2,150 Apex Coins",
+        "price": {
+          "amount": 270000,
+          "usd": 21.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "4,350 Apex Coins",
+        "price": {
+          "amount": 520000,
+          "usd": 41.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Battle Pass",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1032,
+    "name": "World of Tanks Blitz",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f6e1.png",
+    "id_label": "User ID / Wargaming ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "1,500 Gold",
+        "price": {
+          "amount": 45000,
+          "usd": 3.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "3,250 Gold",
+        "price": {
+          "amount": 85000,
+          "usd": 6.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "8,500 Gold",
+        "price": {
+          "amount": 210000,
+          "usd": 16.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "17,500 Gold",
+        "price": {
+          "amount": 420000,
+          "usd": 33.0,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Premium Account 30 kun",
+        "price": {
+          "amount": 75000,
+          "usd": 5.9,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1033,
+    "name": "Car Parking Multiplayer",
+    "category": "mobile",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f697.png",
+    "id_label": "Player ID (Akkount ID)",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "10,000,000 Game Money",
+        "price": {
+          "amount": 35000,
+          "usd": 2.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "50,000,000 Game Money",
+        "price": {
+          "amount": 85000,
+          "usd": 6.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "5,000 Coins",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "King Rank (Doimiy Status)",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Siren & Smoke Unlock",
+        "price": {
+          "amount": 50000,
+          "usd": 3.9,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1034,
+    "name": "CarX Street",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3ce.png",
+    "id_label": "Player ID / Email",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 Gold",
+        "price": {
+          "amount": 30000,
+          "usd": 2.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 Gold",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,000 Gold",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Premium Pass",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1035,
+    "name": "Garena Undawn",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9df.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 RC",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 RC",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 RC",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Weekly Card",
+        "price": {
+          "amount": 35000,
+          "usd": 2.7,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1036,
+    "name": "Farlight 84",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/26a1.png",
+    "id_label": "User ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Diamonds",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Diamonds",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Diamonds",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Battle Pass",
+        "price": {
+          "amount": 75000,
+          "usd": 5.9,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1037,
+    "name": "Arena Breakout",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f396.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Bonds",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "310 Bonds",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "630 Bonds",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "1,600 Bonds",
+        "price": {
+          "amount": 310000,
+          "usd": 24.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 5,
+        "name": "Battle Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 5
+  },
+  {
+    "game_id": 1038,
+    "name": "Naruto Mobile",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f343.png",
+    "id_label": "Account ID / Server",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Gold",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Gold",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Gold",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Monthly Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1039,
+    "name": "Black Desert Mobile",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f525.png",
+    "id_label": "Player ID / Server",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "120 Pearls",
+        "price": {
+          "amount": 35000,
+          "usd": 2.7,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "600 Pearls",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,200 Pearls",
+        "price": {
+          "amount": 260000,
+          "usd": 20.4,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1040,
+    "name": "Dragon Raja",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f409.png",
+    "id_label": "Character ID / Server",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Coupons",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Coupons",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Coupons",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Investment Fund",
+        "price": {
+          "amount": 135000,
+          "usd": 10.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1041,
+    "name": "Identity V",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f47b.png",
+    "id_label": "User ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Echoes",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "305 Echoes",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "690 Echoes",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1042,
+    "name": "Tower of Fantasy",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f5fc.png",
+    "id_label": "UID",
+    "requires_server": true,
+    "server_label": "Server",
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Tanium",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Tanium",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Tanium",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Monthly Pass",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 1043,
+    "name": "Dead by Daylight Mobile",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1fa78.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "50 Auric Cells",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "250 Auric Cells",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "500 Auric Cells",
+        "price": {
+          "amount": 130000,
+          "usd": 10.2,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1044,
+    "name": "Asphalt 9: Legends",
+    "category": "mobile",
+    "is_popular": false,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f698.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "100 Tokens",
+        "price": {
+          "amount": 25000,
+          "usd": 1.95,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "500 Tokens",
+        "price": {
+          "amount": 95000,
+          "usd": 7.5,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1,200 Tokens",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "Legend Pass",
+        "price": {
+          "amount": 110000,
+          "usd": 8.6,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  },
+  {
+    "game_id": 48,
+    "name": "Hero Clash",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/hero-clash.png",
+    "id_label": "User ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Diamonds",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Diamonds",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Diamonds",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 202,
+    "name": "Tomb Busters",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/tomb-busters.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Gems",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Gems",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Gems",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 49,
+    "name": "Honkai Impact 3rd",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/honkai-impact-3rd.png",
+    "id_label": "User ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "65 Crystals",
+        "price": {
+          "amount": 16000,
+          "usd": 1.25,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "330 Crystals",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "1090 Crystals",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 220,
+    "name": "Delta Force: Hawk Ops",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/delta-force.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Delta Coins",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Delta Coins",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Delta Coins",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 222,
+    "name": "Devil May Cry: Peak of Combat",
+    "category": "mobile",
+    "is_popular": false,
+    "image": "https://playpay.uz/image/devil-may-cry-peak-of-combat.png",
+    "id_label": "Player ID",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "60 Devil Gems",
+        "price": {
+          "amount": 15000,
+          "usd": 1.2,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "300 Devil Gems",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "980 Devil Gems",
+        "price": {
+          "amount": 195000,
+          "usd": 15.3,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 3
+  },
+  {
+    "game_id": 1050,
+    "name": "Spotify Premium",
+    "category": "services",
+    "is_popular": true,
+    "is_custom": true,
+    "image": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/spotify.png",
+    "id_label": "Spotify Hisob Emaili",
+    "requires_server": false,
+    "packages": [
+      {
+        "paket_id": 1,
+        "name": "1 oylik Individual",
+        "price": {
+          "amount": 25000,
+          "usd": 1.95,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 2,
+        "name": "3 oylik Individual",
+        "price": {
+          "amount": 65000,
+          "usd": 5.1,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 3,
+        "name": "6 oylik Individual",
+        "price": {
+          "amount": 120000,
+          "usd": 9.4,
+          "currency": "UZS"
+        }
+      },
+      {
+        "paket_id": 4,
+        "name": "12 oylik Individual (Yillik)",
+        "price": {
+          "amount": 210000,
+          "usd": 16.5,
+          "currency": "UZS"
+        }
+      }
+    ],
+    "packages_count": 4
+  }
+];
+
+  // --- Load Games (Top 50 Popular & Best Games) ---
   async function loadGames() {
     state.isLoadingGames = true;
     showGamesSkeleton();
 
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Server javob berish vaqti tugadi (Timeout 10s)")), 10000)
-    );
-
     try {
-      const res = await Promise.race([apiFetch('/games'), timeoutPromise]);
-      let gamesList = [];
+      // 1. Zudlik bilan saralangan TOP 50 mashhur o'yinlarni yuklash
+      state.games = JSON.parse(JSON.stringify(TOP_50_GAMES));
+      state.filteredGames = state.games;
+      renderGamesCatalog();
+      renderHomeFeaturedGames();
 
-      if (Array.isArray(res)) gamesList = res;
-      else if (res && Array.isArray(res.games)) gamesList = res.games;
-      else if (res && Array.isArray(res.data)) gamesList = res.data;
-      else if (res && res.data && Array.isArray(res.data.games)) gamesList = res.data.games;
-      else if (res && res.data && Array.isArray(res.data.data)) gamesList = res.data.data;
+      // 2. Orqa fonda PlayPay API orqali yangilanishlarni tekshirish (Agar o'yinlar bo'lsa)
+      apiFetch('/games').then(res => {
+        let gamesList = [];
+        if (Array.isArray(res)) gamesList = res;
+        else if (res && Array.isArray(res.games)) gamesList = res.games;
+        else if (res && Array.isArray(res.data)) gamesList = res.data;
+        else if (res && res.data && Array.isArray(res.data.games)) gamesList = res.data.games;
 
-      if (gamesList && gamesList.length > 0) {
-        // Strictly max 50 games
-        state.games = gamesList.slice(0, 50);
-        state.filteredGames = state.games;
-        renderGamesCatalog();
-        renderHomeFeaturedGames();
-      } else {
-        throw new Error(res?.error || res?.message || "O'yinlar topilmadi");
-      }
+        if (gamesList && gamesList.length > 0) {
+          state.games.forEach(g => {
+            const apiMatch = gamesList.find(ag => ag.game_id === g.game_id || (ag.name && ag.name.toLowerCase() === g.name.toLowerCase()));
+            if (apiMatch) {
+              if (apiMatch.image && !apiMatch.image.includes('placeholder')) g.image = apiMatch.image;
+              if (apiMatch.packages_count > 0) g.packages_count = apiMatch.packages_count;
+            }
+          });
+          applyFilters();
+          renderHomeFeaturedGames();
+        }
+      }).catch(err => {
+        console.warn('PlayPay enrich warning (Curated top 50 is active):', err);
+      });
+
     } catch (error) {
       console.error('Failed to load games:', error);
-      showGamesError(error.message || "Internet yoki server bilan aloqa uzildi");
+      showGamesError(error.message || "O'yinlarni yuklashda xatolik");
     } finally {
       state.isLoadingGames = false;
     }
@@ -1113,7 +3747,7 @@
   // Render Home Featured Games (First 4 top titles)
   function renderHomeFeaturedGames() {
     if (!elements.homeFeaturedGrid) return;
-    const featured = state.games.slice(0, 4);
+    const featured = state.games.slice(0, 6);
     elements.homeFeaturedGrid.innerHTML = featured.map(game => createGameCardHtml(game)).join('');
 
     elements.homeFeaturedGrid.querySelectorAll('.game-card').forEach(card => {
@@ -1183,17 +3817,17 @@
     `;
   }
 
-  // --- Filtering & Search ---
+// --- Filtering & Search ---
   function applyFilters() {
     let result = state.games;
 
     if (state.activeCategory === 'popular') {
-      const popKeywords = ['pubg', 'free fire', 'mobile legends', 'genshin', 'ea', 'brawl', 'telegram'];
-      result = result.filter(g => popKeywords.some(kw => g.name.toLowerCase().includes(kw)));
+      const popKeywords = ['pubg', 'clash', 'roblox', 'fortnite', 'brawl', 'free fire', 'mobile legends', 'standoff', 'steam', 'stars', 'telegram'];
+      result = result.filter(g => g.is_popular || popKeywords.some(kw => g.name.toLowerCase().includes(kw)));
     } else if (state.activeCategory === 'mobile') {
-      result = result.filter(g => !g.name.toLowerCase().includes('steam') && !g.name.toLowerCase().includes('telegram'));
+      result = result.filter(g => g.category === 'mobile' || (!g.name.toLowerCase().includes('steam') && !g.name.toLowerCase().includes('telegram') && !g.name.toLowerCase().includes('discord') && !g.name.toLowerCase().includes('spotify') && !g.name.toLowerCase().includes('playstation') && !g.name.toLowerCase().includes('xbox')));
     } else if (state.activeCategory === 'services') {
-      result = result.filter(g => g.name.toLowerCase().includes('telegram') || g.name.toLowerCase().includes('steam'));
+      result = result.filter(g => g.category === 'services' || g.name.toLowerCase().includes('telegram') || g.name.toLowerCase().includes('steam') || g.name.toLowerCase().includes('discord') || g.name.toLowerCase().includes('spotify') || g.name.toLowerCase().includes('playstation') || g.name.toLowerCase().includes('xbox') || g.name.toLowerCase().includes('google') || g.name.toLowerCase().includes('apple'));
     }
 
     const q = elements.searchInput ? elements.searchInput.value.trim().toLowerCase() : '';
@@ -1237,14 +3871,25 @@
     document.body.style.overflow = 'hidden';
     tg?.BackButton?.show();
 
-    await loadPackages(game.game_id);
+    await loadPackages(game);
   }
 
-  async function loadPackages(gameId) {
+async function loadPackages(game) {
     state.isLoadingPackages = true;
     if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'grid';
     if (elements.packagesList) elements.packagesList.style.display = 'none';
     if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = 'Yuklanmoqda...';
+
+    const gameId = (typeof game === 'object' && game) ? game.game_id : game;
+    const currentGame = (typeof game === 'object' && game) ? game : (state.games.find(g => g.game_id === gameId) || state.selectedGame || {});
+
+    // Agar o'yinda o'zining tayyor paketlari bo'lsa (Clash of Clans, Roblox, Steam, Fortnite va boshqalar)
+    if (currentGame.is_custom || (currentGame.packages && currentGame.packages.length > 0 && (!gameId || gameId >= 1000))) {
+      state.packages = currentGame.packages || [];
+      renderPackages();
+      state.isLoadingPackages = false;
+      return;
+    }
 
     try {
       const res = await apiFetch(`/games/${gameId}/packages`);
@@ -1257,21 +3902,29 @@
       if (list && list.length > 0) {
         state.packages = list;
         renderPackages();
+      } else if (currentGame.packages && currentGame.packages.length > 0) {
+        state.packages = currentGame.packages;
+        renderPackages();
       } else {
         throw new Error(res?.error || 'Paketlar topilmadi');
       }
     } catch (err) {
-      console.error('Packages error:', err);
-      if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'none';
-      if (elements.packagesList) {
-        elements.packagesList.style.display = 'block';
-        elements.packagesList.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color); font-size: 13px;">
-            Paketlar mavjud emas yoki yuklashda xatolik yuz berdi.
-          </div>
-        `;
+      console.warn('Packages fetch error, fallback ishlatilmoqda:', err);
+      if (currentGame.packages && currentGame.packages.length > 0) {
+        state.packages = currentGame.packages;
+        renderPackages();
+      } else {
+        if (elements.packagesSkeleton) elements.packagesSkeleton.style.display = 'none';
+        if (elements.packagesList) {
+          elements.packagesList.style.display = 'block';
+          elements.packagesList.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--hint-color); font-size: 13px;">
+              Paketlar mavjud emas yoki yuklashda xatolik yuz berdi.
+            </div>
+          `;
+        }
+        if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = '0 dona';
       }
-      if (elements.packagesCountBadge) elements.packagesCountBadge.textContent = '0 dona';
     } finally {
       state.isLoadingPackages = false;
     }
@@ -1386,7 +4039,32 @@
 
     if (state.checkIdTimeout) clearTimeout(state.checkIdTimeout);
 
-    if (state.playerId.length >= 4 && state.selectedGame) {
+    // UzpinHUB Telegram Stars / Premium username verification
+    if ((state.selectedGame?.game_id === 1020 || state.selectedGame?.game_id === 1021) && state.playerId.replace(/^@/, '').trim().length >= 3) {
+      const cleanUser = state.playerId.replace(/^@/, '').trim();
+      if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'inline-block';
+      state.checkIdTimeout = setTimeout(async () => {
+        try {
+          const res = await apiFetch('/uzpin/stars/check', {
+            method: 'POST',
+            body: { username: cleanUser }
+          });
+          if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'none';
+          if (res && res.user_info) {
+            const fullName = [res.user_info.first_name, res.user_info.last_name].filter(Boolean).join(' ') || cleanUser;
+            state.verifiedPlayer = fullName;
+            if (elements.idVerifiedNick) elements.idVerifiedNick.textContent = fullName;
+            if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'inline-flex';
+            triggerHaptic('light');
+          } else {
+            if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
+          }
+        } catch (e) {
+          if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'none';
+          if (elements.idVerificationStatus) elements.idVerificationStatus.style.display = 'none';
+        }
+      }, 500);
+    } else if (state.playerId.length >= 4 && state.selectedGame) {
       if (elements.idCheckSpinner) elements.idCheckSpinner.style.display = 'block';
       state.checkIdTimeout = setTimeout(async () => {
         try {
@@ -1507,7 +4185,7 @@
       elements.modalPayBtn.textContent = 'Xarid amalga oshirilmoqda...';
     }
 
-    try {
+try {
       const orderPayload = {
         game_id: state.selectedGame.game_id,
         paket_id: state.selectedPackage.paket_id,
@@ -1516,16 +4194,65 @@
       if (serverId) orderPayload.server_id = serverId;
       if (state.verifiedPlayer) orderPayload.charname = state.verifiedPlayer;
 
-      // Send to proxy API
-      const res = await apiFetch('/order', {
-        method: 'POST',
-        body: orderPayload
-      });
+      let orderRes = null;
+      // 1. Agar o'yin UzpinHUB orqali bo'lsa (Telegram Stars, Telegram Premium)
+      if (state.selectedGame.provider === 'uzpin') {
+        try {
+          if (state.selectedGame.game_id === 1020) {
+            // Telegram Stars avtomat UzpinHUB API
+            orderRes = await apiFetch('/uzpin/stars/buy', {
+              method: 'POST',
+              body: {
+                game_product_id: state.selectedPackage.uzpin_product_id || state.selectedPackage.paket_id,
+                username: playerId.replace(/^@/, '').trim(),
+                quantity: 1
+              }
+            });
+          } else if (state.selectedGame.game_id === 1021) {
+            // Telegram Premium avtomat UzpinHUB API
+            orderRes = await apiFetch('/uzpin/topup/buy', {
+              method: 'POST',
+              body: {
+                game_product_id: state.selectedPackage.uzpin_product_id || state.selectedPackage.paket_id,
+                player_id: playerId.replace(/^@/, '').trim()
+              }
+            });
+          }
+        } catch (uzpinErr) {
+          console.warn('UzpinHUB purchase warning:', uzpinErr);
+        }
+      } else if (!state.selectedGame.is_custom && state.selectedGame.game_id && state.selectedGame.game_id < 1000) {
+        // 2. PlayPay rasmiy API
+        try {
+          orderRes = await apiFetch('/order', {
+            method: 'POST',
+            body: orderPayload
+          });
+        } catch (apiErr) {
+          console.warn('PlayPay order warning (ichki qayd yozilmoqda):', apiErr);
+        }
+      }
 
-      // 2. Deduct from User Balance
+      // 2. Balansdan summani ayirish (mahalliy va MongoDB'da sinxron)
       currentUser.balance -= priceUzs;
 
-      const orderId = res?.order_id || Math.floor(100000 + Math.random() * 900000);
+      // MongoDB'da balansni darhol yangilash
+      try {
+        await fetch('/api/topup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'adjust_balance',
+            userId: currentUserId,
+            amount: priceUzs,
+            type: 'deduct'
+          })
+        });
+      } catch (e) {
+        console.warn('MongoDB balance deduct warning:', e);
+      }
+
+      const orderId = orderRes?.order_id || ('ORD' + Math.floor(100000 + Math.random() * 900000));
 
       // 3. Save order to User Storage
       const orderRecord = {
