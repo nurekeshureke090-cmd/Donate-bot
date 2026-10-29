@@ -7,7 +7,8 @@ const FALLBACK = {
   BOT_TOKEN: '8914170959:AAEXGpAD0fIFWMV6S-Wr_mFw3A5utpUUqAc',          
   MONGO_URL: 'mongodb+srv://nurekeshureke090_db_user:qKFmlTnxjnAe27Gi@cluster0.1dcdbiw',          
   ADMIN_ID: '8467707826', 
-  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a'     
+  PLAYPAY_API_KEY: 'pp_30423aa1e19e3c83031a92f3938f7760822e1f4ce025bc1a',
+  UZPINHUB_API_KEY: '3d1170b6-a9e5-4bd6-af5e-3955fafb8dda'
 };
 
 import crypto from 'crypto';
@@ -17,6 +18,7 @@ import { mnemonicToPrivateKey } from '@ton/crypto';
 
 const env = (k) => (k === 'ADMIN_ID' && FALLBACK.ADMIN_ID) ? FALLBACK.ADMIN_ID : (process.env[k] || FALLBACK[k] || '');
 const PLAYPAY_API = 'https://playpay.uz/api/v1';
+const UZPINHUB_API = 'https://api.uzpinhub.uz/api';
 
 const GET_PUBLIC = [/^\/games$/, /^\/games\/\d+\/packages$/, /^\/_config$/];
 const GET_USER = [/^\/order\/[\w-]+$/];
@@ -193,6 +195,51 @@ export default async function handler(req, res) {
       }
     }
 
+    // ============================================================
+    //  UZPINHUB INTEGRATION (/uzpin/...)
+    // ============================================================
+    if (path.startsWith('/uzpin')) {
+      const uzpinKey = env('UZPINHUB_API_KEY') || '3d1170b6-a9e5-4bd6-af5e-3955fafb8dda';
+      let subpath = path.replace(/^\/uzpin\/?/, '');
+      let bodyData = req.body?.data || req.body || {};
+      if (typeof bodyData === 'string') try { bodyData = JSON.parse(bodyData); } catch (e) {}
+
+      if (subpath === 'stars/buy') {
+        subpath = 'order/telegram/buy';
+        if (!bodyData.external_order_id) bodyData.external_order_id = crypto.randomUUID();
+        if (bodyData.username) bodyData.username = String(bodyData.username).replace(/^@/, '').trim();
+      } else if (subpath === 'stars/check') {
+        subpath = 'order/telegram/check-username';
+        if (bodyData.username) bodyData.username = String(bodyData.username).replace(/^@/, '').trim();
+      } else if (subpath === 'topup/buy') {
+        subpath = 'order/topup/buy';
+        if (!bodyData.external_order_id) bodyData.external_order_id = crypto.randomUUID();
+      } else if (subpath === 'steam/buy') {
+        subpath = 'order/steam-topup/buy';
+        if (!bodyData.external_order_id) bodyData.external_order_id = crypto.randomUUID();
+      }
+
+      const uzpinUrl = `${UZPINHUB_API}/${subpath}`;
+      const uzpinOptions = {
+        method,
+        headers: {
+          'X-Api-Key': uzpinKey,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        }
+      };
+      if (method === 'POST') {
+        uzpinOptions.body = JSON.stringify(bodyData);
+      }
+
+      const uzpinRes = await fetch(uzpinUrl, uzpinOptions);
+      const uzpinData = await uzpinRes.json();
+      return res.status(uzpinRes.status).json(uzpinData);
+    }
+
+    // ============================================================
+    //  PLAYPAY INTEGRATION (Default)
+    // ============================================================
     const apiKey = env('PLAYPAY_API_KEY');
     if (!apiKey) return res.status(500).json({ error: 'PLAYPAY_API_KEY yoq' });
 
